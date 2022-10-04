@@ -1,0 +1,9 @@
+# Mirror the basic requirements
+-r requirements.txt
+
+# Commit hooks
+pre-commit
+
+# Testing
+pytest
+pytest-cov

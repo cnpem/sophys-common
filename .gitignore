@@ -1,0 +1,21 @@
+__pycache__
+
+# Unit test / coverage reports
+build
+dist
+*.egg-info
+htmlcov/
+.tox/
+.coverage
+.coverage.*
+.cache
+nosetests.xml
+coverage.xml
+*.cover
+.hypothesis/
+.pytest_cache/
+
+# DAF stuff
+Log
+*.Experiment
+default
