@@ -10,13 +10,13 @@ def readme():
 
 
 setup(
-    name="sol-ophyd",
+    name="lnls-ophyd",
     version="0.0.1",
     description="Simulated devices abstraction",
     long_description=readme(),
     author="Hugo Campos",
     author_email="hugo.campos@lnls.br",
-    url="https://gitlab.cnpem.br/SOL/bluesky/sol_ophyd",
+    url="https://gitlab.cnpem.br/SOL/bluesky/lnls-ophyd",
     install_requires=[
         "ophyd",
     ],
