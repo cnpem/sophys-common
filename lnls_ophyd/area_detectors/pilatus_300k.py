@@ -16,7 +16,7 @@ class HDF5PluginWithFileStore(HDF5Plugin, FileStoreHDF5IterativeWrite):
 class Pilatus(SingleTrigger, PilatusDetector):
     
     image = Component(ImagePlugin, 'image1:')
-    cam = Component(PilatusDetectorCam, 'cam1:')
+    cam = Component(PilatusDetectorCam, 'cam1:', timeout=10)
 
     hdf5 = Component(HDF5PluginWithFileStore, 'HDF1:',
              write_path_template="/tmp",
