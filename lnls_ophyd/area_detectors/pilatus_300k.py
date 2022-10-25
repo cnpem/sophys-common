@@ -19,8 +19,8 @@ class Pilatus(SingleTrigger, PilatusDetector):
     cam = Component(PilatusDetectorCam, 'cam1:')
 
     hdf5 = Component(HDF5PluginWithFileStore, 'HDF1:',
-             write_path_template=PATH_TO_WRITE_PILATUS_FILES,
-             read_path_template=PATH_TO_WRITE_PILATUS_FILES,
+             write_path_template="/tmp",
+             read_path_template="/tmp",
              read_attrs=[],
              root='/')
     
