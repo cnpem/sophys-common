@@ -16,18 +16,21 @@ class HDF5PluginWithFileStore(HDF5Plugin, FileStoreHDF5IterativeWrite):
 class Pilatus(SingleTrigger, PilatusDetector):
     
     image = Component(ImagePlugin, 'image1:')
-    cam = Component(PilatusDetectorCam, 'cam1:', timeout=10)
-
+    cam = Component(PilatusDetectorCam, 'cam1:')
+    proc1 = Component(ProcessPlugin, 'Proc1:')
     hdf5 = Component(HDF5PluginWithFileStore, 'HDF1:',
              write_path_template="/tmp",
-             read_path_template="/tmp",
              read_attrs=[],
-             root='/')
+             root='/usr/local/ema_proposals/')
     
     def __init__(self, *args, write_path=None, **kwargs):
         super().__init__(*args, **kwargs)
         self.hdf5.write_path_template = write_path
-        self.hdf5.read_path_template = write_path
+
+    # def stage(self):
+    #     status = super().stage()
+    #     self.wait_for_plugins = 0
+    #     return status
         
 #     stats1 = Component(StatsPlugin, 'Stats1:')
 #     stats2 = Component(StatsPlugin, 'Stats2:')
@@ -38,7 +41,6 @@ class Pilatus(SingleTrigger, PilatusDetector):
 #     roi2 = Component(ROIPlugin, 'ROI2:')
 #     roi3 = Component(ROIPlugin, 'ROI3:')
 #     roi4 = Component(ROIPlugin, 'ROI4:')
-#     proc1 = Component(ProcessPlugin, 'Proc1:')
 
 class Pilatus6ROIs(Device):
     roi1_rbv = Component(EpicsSignalRO, 'ROIStat1:1:Net_RBV')
@@ -49,5 +51,5 @@ class Pilatus6ROIs(Device):
     roi6_rbv = Component(EpicsSignalRO, 'ROIStat1:6:Net_RBV')
 
 if __name__ == "__main__":
-    camera = Pilatus(name="camera", prefix="EMA:B:P300K01:", write_path = '/usr/local/ema_proposals/test_ophyd/', read_attrs=["hdf5"])
-    rois = PilatusROIs(name="ROIs", prefix="EMA:B:P300K01:")
+    pilatus300k = Pilatus(name="pilatus300k", prefix="EMA:B:P300K01:", write_path='test_ophyd', read_attrs=["hdf5"])
+    rois_pilatus300k = Pilatus6ROIs(name="rois_pilatus300k", prefix="EMA:B:P300K01:")
