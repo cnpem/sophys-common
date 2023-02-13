@@ -50,6 +50,11 @@ class Pilatus6ROIs(Device):
     roi4_rbv = Component(EpicsSignalRO, "ROIStat1:4:Net_RBV")
     roi5_rbv = Component(EpicsSignalRO, "ROIStat1:5:Net_RBV")
     roi6_rbv = Component(EpicsSignalRO, "ROIStat1:6:Net_RBV")
+    hints = {"fields": []}
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.hints["fields"] = [self.name + "_roi1_rbv"]
 
 
 if __name__ == "__main__":
