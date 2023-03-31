@@ -24,7 +24,7 @@ class Pilatus(SingleTrigger, PilatusDetector):
         "HDF1:",
         write_path_template="/tmp",
         read_attrs=[],
-        root="/usr/local/ema_proposals/",
+        # root="/usr/local/ema_proposals/",
     )
 
     def __init__(self, *args, write_path=None, **kwargs):
