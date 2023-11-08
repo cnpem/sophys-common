@@ -3,6 +3,8 @@ from ophyd.areadetector.cam import CamBase
 from ophyd.areadetector.detectors import DetectorBase
 from ophyd.areadetector.plugins import ImagePlugin
 
+from ..utils import HDF5PluginWithFileStore
+
 
 class C400Cam(CamBase):
     burst_size = Component(
@@ -97,3 +99,13 @@ class C400(SingleTrigger, C400Detector):
     """This is a C400 (Four-channel Pulse Counting Detector Controller) device using an AreaDetector-based IOC."""
 
     image = Component(ImagePlugin, "image1:")
+    hdf5 = Component(
+        HDF5PluginWithFileStore,
+        "HDF1:",
+        write_path_template="/tmp",
+        read_attrs=[],
+    )
+
+    def __init__(self, *args, write_path=None, **kwargs):
+        super(C400, self).__init__(*args, **kwargs)
+        self.hdf5.write_path_template = write_path
