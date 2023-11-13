@@ -1,4 +1,11 @@
-from ophyd import Component, EpicsSignalRO, EpicsSignalWithRBV, Kind, SingleTrigger
+from ophyd import (
+    Component,
+    Device,
+    EpicsSignalRO,
+    EpicsSignalWithRBV,
+    Kind,
+    SingleTrigger,
+)
 from ophyd.areadetector.cam import CamBase
 from ophyd.areadetector.detectors import DetectorBase
 from ophyd.areadetector.plugins import ImagePlugin
@@ -109,3 +116,16 @@ class C400(SingleTrigger, C400Detector):
     def __init__(self, *args, write_path=None, **kwargs):
         super(C400, self).__init__(*args, **kwargs)
         self.hdf5.write_path_template = write_path
+
+
+class C400ROIs(Device):
+    roi1_rbv = Component(EpicsSignalRO, "ROIStat1:1:Net_RBV")
+    roi2_rbv = Component(EpicsSignalRO, "ROIStat1:2:Net_RBV")
+    roi3_rbv = Component(EpicsSignalRO, "ROIStat1:3:Net_RBV")
+    roi4_rbv = Component(EpicsSignalRO, "ROIStat1:4:Net_RBV")
+
+    hints = {"fields": []}
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.hints["fields"] = [self.name + "_roi1_rbv"]
