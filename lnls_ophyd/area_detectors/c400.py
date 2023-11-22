@@ -117,6 +117,11 @@ class C400(SingleTrigger, C400Detector):
         super(C400, self).__init__(*args, **kwargs)
         self.hdf5.write_path_template = write_path
 
+    def stage(self):
+        self.hdf5.warmup()
+
+        super().stage()
+
 
 class C400ROIs(Device):
     roi1_rbv = Component(EpicsSignalRO, "ROIStat1:1:Net_RBV")
