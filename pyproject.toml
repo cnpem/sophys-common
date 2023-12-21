@@ -1,0 +1,37 @@
+[build-system]
+requires = ["pdm-backend"]
+build-backend = "pdm.backend"
+
+[project]
+name = "lnls-ophyd"
+authors = [
+  { name="Hugo Campos", email="hugo.campos@lnls.br" },
+  { name="Thiago Ferreira", email="thiago.ferreira@lnls.br" },
+]
+description = "Common ophyd devices from SIRIUS/LNLS"
+readme = "README.md"
+classifiers = [
+    "Programming Language :: Python :: 3",
+    "Operating System :: OS Independent",
+]
+
+requires-python = ">=3.7"
+dynamic = ["version"]
+dependencies = [
+  "ophyd"
+]
+
+[project.optional-dependencies]
+dev = [
+  "pre-commit",
+  "pytest",
+  "pytest-cov",
+]
+
+[project.urls]
+"Homepage" = "https://gitlab.cnpem.br/SOL/bluesky/lnls-ophyd"
+"Bug Tracker" = "https://gitlab.cnpem.br/SOL/bluesky/lnls-ophyd/-/issues"
+
+
+[tool.pdm]
+version = { source = "file", path = "lnls_ophyd/__version__.py" }

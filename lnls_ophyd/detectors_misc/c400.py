@@ -1,10 +1,9 @@
+import logging
 from ophyd import (
     Device,
     Component,
     EpicsSignal,
-    EpicsSignalRO,
     set_and_wait,
-    DeviceStatus,
 )
 
 
@@ -14,6 +13,9 @@ class C400(Device):
     acquire = Component(EpicsSignal, ":ACQUIRE", kind="omitted", put_complete=True)
 
     def stage(self):
+        logging.warn(
+            "This C400 device is deprecated! Please consider using the new AreaDetector-based version."
+        )
         self.initial_enabled_state = 0
         set_and_wait(self.acquire, 1)
         return super().stage()
@@ -22,7 +24,3 @@ class C400(Device):
         ret = super().unstage()
         set_and_wait(self.acquire, self.initial_enabled_state)
         return ret
-
-
-if __name__ == "__main__":
-    c400 = C400("EMA:B:c40001", name="c400")
