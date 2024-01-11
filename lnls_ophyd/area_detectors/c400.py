@@ -113,8 +113,8 @@ class C400(SingleTrigger, C400Detector):
         read_attrs=[],
     )
 
-    def __init__(self, *args, write_path=None, **kwargs):
-        super(C400, self).__init__(*args, **kwargs)
+    def __init__(self, *args, name, write_path=None, **kwargs):
+        super(C400, self).__init__(*args, name=name, **kwargs)
         self.hdf5.write_path_template = write_path
 
     def stage(self):
