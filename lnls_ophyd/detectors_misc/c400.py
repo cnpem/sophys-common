@@ -1,10 +1,5 @@
 import logging
-from ophyd import (
-    Device,
-    Component,
-    EpicsSignal,
-    set_and_wait,
-)
+from ophyd import Device, Component, EpicsSignal
 
 
 class C400(Device):
@@ -17,10 +12,10 @@ class C400(Device):
             "This C400 device is deprecated! Please consider using the new AreaDetector-based version."
         )
         self.initial_enabled_state = 0
-        set_and_wait(self.acquire, 1)
+        self.acquire.set(1).wait()
         return super().stage()
 
     def unstage(self):
         ret = super().unstage()
-        set_and_wait(self.acquire, self.initial_enabled_state)
+        self.acquire.set(self.initial_enabled_state).wait()
         return ret
