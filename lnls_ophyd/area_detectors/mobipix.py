@@ -1,9 +1,8 @@
 import logging
+from typing import Optional
 
 from ophyd import (
     ADComponent,
-    ad_group,
-    DynamicDeviceComponent as DDC,
     Device,
     EpicsSignal,
     EpicsSignalWithRBV,
@@ -19,6 +18,7 @@ from ophyd.areadetector.plugins import (
     ROIStatPlugin_V34 as ROIStatPlugin,
     ROIStatNPlugin_V25 as ROIStatNPlugin,
 )
+from ophyd.utils.errors import WaitTimeoutError
 
 from ..utils import HDF5PluginWithFileStore, EpicsSignalWithCustomReadoutRBV
 
@@ -50,13 +50,13 @@ class MobipixBackend(Device):
         EpicsSignalWithCustomReadoutRBV,
         "acquire_time",
         tolerance=1e-5,
-        convert_to_type=float,
+        enforce_type=float,
     )  # NOTE: It is a String on the .db, for some reason...
     acquire_period = ADComponent(
         EpicsSignalWithCustomReadoutRBV,
         "acquire_period",
         tolerance=1e-5,
-        convert_to_type=float,
+        enforce_type=float,
     )  # NOTE: It is a String on the .db, for some reason...
 
     enable_num_images = ADComponent(EpicsSignal, "EnableNumImages")
@@ -80,48 +80,54 @@ class MobipixDetector(DetectorBase):
     cam = ADComponent(MobipixCam, "cam:")
     backend = ADComponent(MobipixBackend, "Backend:")
 
-    acquire = ADComponent(EpicsSignal, "acquire")
+    acquire = ADComponent(EpicsSignal, "cam:Acquire_RBV", write_pv="acquire")
     num_exposures = ADComponent(EpicsSignal, "num_exposures")
 
 
 class Mobipix(SingleTrigger, MobipixDetector):
+    class MobipixROIStatPlugin(ROIStatPlugin):
+        stat_1 = ADComponent(ROIStatNPlugin, "1:")
+
     hdf5 = ADComponent(
         HDF5PluginWithFileStore,
         "HDF1:",
         write_path_template="/tmp",
         read_attrs=[],
     )
-
     plugin_transform = ADComponent(TransformPlugin, "Trans1:")
-
-    plugin_roi = DDC(ad_group(ROIPlugin, (("roi_1", "ROI1:"))))
-
-    class MobipixROIStatPlugin(ROIStatPlugin):
-        stats = DDC(ad_group(ROIStatNPlugin, (("stat_1", "1:"))))
-
-    plugin_roi_stat = DDC(ad_group(MobipixROIStatPlugin, (("roi_stat_1", "ROIStat1"))))
+    plugin_roi_1 = ADComponent(ROIPlugin, "ROI1:")
+    plugin_roi_stat_1 = ADComponent(MobipixROIStatPlugin, "ROIStat1:")
 
     def __init__(
         self,
         name,
         prefix,
         *,
-        image_mode=MobipixCam.ImageMode.MULTIPLE,
-        hdf_file_template="%s%s_%3.3d.h5",
+        save_hdf_file=True,
+        enable_num_images=False,
+        image_mode=MobipixCam.ImageMode.SINGLE,
         **kwargs
     ):
         """
         This is a Mobipix device using an AreaDetector-based IOC.
 
         When using it in a plan, make sure to set the following variables to appropriate values:
+        - 'acquisition_time' --> Time taken to acquire a single image (disconsidering control overheads).
+
         - 'num_images' or 'num_steps' --> Total number of images to take.
         - 'num_exposures' --> Number of images to take for each trigger signal.
-        - 'acquisition_time' --> Time taken to acquire a single image.
-        - 'hdf5.file_name' --> Name of the HDF5 to save. It will be formatted into 'hdf_file_template'.
-        - 'hdf5.file_path' --> Path to save the HDF5 file to.
+
+        - 'hdf_file_name' --> Name of the HDF5 to save. It will be formatted into 'hdf_file_template'. Defaults to the UUID of the run.
+        - 'hdf_file_path' --> Path to save the HDF5 file to. Defaults to '/tmp'.
+        - 'hdf_file_template' --> Value of the FileTemplate PV in the HDF5 plugin. Defaults to '%s%s_%3.3d.h5'.
 
         Parameters
         ----------
+        enable_num_images: bool, optional
+            Whether to enable the NumImages field or not. Defaults to False.
+
+            Note that enabling this option is mostly a performance optimization, and shouldn't be
+            very useful at low framerates. Due to some issues with the IOC, keeping it disabled is the safest option.
         image_mode: MobipixCam.ImageMode, optional
             Value of the ImageMode PV in the driver. Defaults to MULTIPLE.
         hdf_file_template: str, optional
@@ -131,35 +137,38 @@ class Mobipix(SingleTrigger, MobipixDetector):
         super(Mobipix, self).__init__(prefix, name=name, **kwargs)
 
         self.__logger = logging.getLogger(str(self.__class__))
+        self.__enable_num_images = enable_num_images
         self.__num_images = -1
         self.__acquire_time = -1
 
-        self._acquisition_signal = self.backend.acquire
+        self._acquisition_signal = self.acquire
 
-        self.stage_sigs[self.cam.array_callbacks] = 1
-        self.stage_sigs[self.cam.image_mode] = image_mode
-        self.stage_sigs[self.cam.trigger_mode] = 0
-        self.stage_sigs[self.backend.enable_num_images] = 1
+        self.cam.stage_sigs["array_callbacks"] = 1
+        self.cam.stage_sigs["trigger_mode"] = 0
+        self.backend.stage_sigs["enable_num_images"] = enable_num_images
 
-        self.stage_sigs[self.hdf5.enable] = 1
-        self.stage_sigs[self.hdf5.capture] = 1
-        self.stage_sigs[self.hdf5.file_template] = hdf_file_template
-        self.stage_sigs[self.hdf5.auto_save] = 1
-        self.stage_sigs[self.hdf5.file_write_mode] = self.hdf5.FileWriteMode.STREAM
+        if save_hdf_file:
+            self.hdf5.enable_on_stage()
+            self.hdf5.stage_sigs["auto_save"] = 1
+        else:
+            self.hdf5.disable_on_stage()
+            self.hdf5.stage_sigs["capture"] = 0
 
-        self.plugin_roi_stat.roi_stat_1.stats.stat_1.net.kind = Kind.normal
+        self.plugin_roi_stat_1.stat_1.net.kind = Kind.hinted
+        self.read_attrs = ["plugin_roi_stat_1.stat_1.net"]
 
     def stage(self):
         super(Mobipix, self).stage()
 
-        # Plan parameters
-        if self.num_images <= 0:
-            raise MobipixMissingConfigurationError(
-                "You must set the number of images to a positive integer."
-            )
+        # NOTE: num_images is ignored when enable_num_images is not set
+        if self.__enable_num_images:
+            if self.num_images <= 0:
+                raise MobipixMissingConfigurationError(
+                    "You must set the number of images to a positive integer."
+                )
 
-        self.cam.num_images.set(self.num_images)
-        self.hdf5.num_capture.set(self.num_images)
+            self.cam.num_images.set(self.num_images).wait()
+        self.hdf5.num_capture.set(self.num_images).wait()
 
         if self.acquire_time <= 0:
             raise MobipixMissingConfigurationError(
@@ -169,10 +178,33 @@ class Mobipix(SingleTrigger, MobipixDetector):
         self.backend.acquire_time.set(self.acquire_time).wait()
         self.backend.acquire_period.set(0).wait()
 
-        if self.hdf5.file_path == "/tmp":
-            self.__logger.warn("The HDF5 file path is set to '/tmp'.")
+        if "/tmp" in self.hdf5.file_path.get():
+            self.__logger.warning("The HDF5 file path is set to '/tmp'.")
 
-        # Do not warmup the HDF5 plugin, as we take care of that as well in the Backend's stage
+    def trigger(self):
+        # NOTE: 2.0 is an arbitrary value that should cover every scenario.
+        timeout_time = self.acquire_time + 2.0
+
+        trigger_status = super().trigger()
+        try:
+            trigger_status.wait(timeout_time)
+        except WaitTimeoutError:
+            # Fallback for when Acquire_RBV gets stuck after making an image.
+            # In this case, we manually tell the IOC to stop acquiring, which
+            # corrects the RBV value, and proceed as normal.
+            self.__logger.debug(
+                "Trigger has stuck the RBV value. Manually correcting it."
+            )
+
+            # When num_images is enabled, putting 0 in the acquire signal will close the
+            # service <-> IOC connection, reverting the performance optimization from that mode.
+            if not self.__enable_num_images:
+                self._acquisition_signal.set(0).wait()
+
+            new_status = self._status_type(self)
+            new_status.set_finished()
+            return new_status
+        return trigger_status
 
     @property
     def num_steps(self):
@@ -198,16 +230,49 @@ class Mobipix(SingleTrigger, MobipixDetector):
     def acquire_time(self, value: float):
         self.__acquire_time = value
 
+    @property
+    def hdf_file_name(self):
+        return self.hdf5.stage_sigs.get("file_name", None)
+
+    @hdf_file_name.setter
+    def hdf_file_name(self, value: Optional[str]):
+        if value is not None:
+            self.hdf5.stage_sigs["file_name"] = value
+
+    @property
+    def hdf_file_path(self):
+        return self.hdf5.stage_sigs.get("file_path", None)
+
+    @hdf_file_path.setter
+    def hdf_file_path(self, value: Optional[str]):
+        if value is not None:
+            self.hdf5.stage_sigs["file_path"] = value
+
+    @property
+    def hdf_file_template(self):
+        return self.hdf5.stage_sigs.get("file_template", None)
+
+    @hdf_file_template.setter
+    def hdf_file_template(self, value: Optional[str]):
+        if value is not None:
+            self.hdf5.stage_sigs["file_template"] = value
+
 
 class MobipixEnergyThresholdSetter(Device):
     img_chip_number_id = ADComponent(
         EpicsSignalWithRBV, "ImgChipNumberID", kind=Kind.config
     )
     dac_threshold_energy_0 = ADComponent(
-        EpicsSignalWithCustomReadoutRBV, "DAC_ThresholdEnergy0", kind=Kind.config
+        EpicsSignalWithCustomReadoutRBV,
+        "DAC_ThresholdEnergy0",
+        enforce_type=str,
+        kind=Kind.config,
     )
     dac_threshold_energy_1 = ADComponent(
-        EpicsSignalWithCustomReadoutRBV, "DAC_ThresholdEnergy1", kind=Kind.config
+        EpicsSignalWithCustomReadoutRBV,
+        "DAC_ThresholdEnergy1",
+        enforce_type=str,
+        kind=Kind.config,
     )
 
     def __init__(self, mobipix: Mobipix):
@@ -238,11 +303,11 @@ class MobipixEnergyThresholdSetter(Device):
 
             if len(self.low_threshold_adjust) > i:
                 self.dac_threshold_energy_0.set(
-                    int(self.low_threshold_adjust[i](nrg)), convert_to_type=str
+                    int(self.low_threshold_adjust[i](nrg))
                 ).wait(timeout=timeout)
             if len(self.high_threshold_adjust) > i:
                 self.dac_threshold_energy_1.set(
-                    int(self.high_threshold_adjust[i](nrg)), convert_to_type=str
+                    int(self.high_threshold_adjust[i](nrg))
                 ).wait(timeout=timeout)
 
         self.__current_nrg = nrg
