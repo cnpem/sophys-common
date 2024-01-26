@@ -29,8 +29,8 @@ class EpicsSignalWithCustomReadout(EpicsSignal):
             read_pv=read_pv, write_pv=write_pv, **kwargs
         )
 
-        self.__expected_readout = None
-        self.__enforce_type = enforce_type
+        self._expected_readout = None
+        self._enforce_type = enforce_type
 
     # FIXME: Use the default value for timeout
     def set(self, value, *, expected_readout=None, timeout=5.0, settle_time=None):
@@ -64,12 +64,12 @@ class EpicsSignalWithCustomReadout(EpicsSignal):
         --------
         EpicsSignal.set
         """
-        self.__expected_readout = (
+        self._expected_readout = (
             expected_readout if expected_readout is not None else value
         )
-        if self.__enforce_type is not None:
-            self.__expected_readout = create_loose_comparator(
-                self.__enforce_type, self.__expected_readout
+        if self._enforce_type is not None:
+            self._expected_readout = create_loose_comparator(
+                self._enforce_type, self._expected_readout
             )
 
         return super(EpicsSignalWithCustomReadout, self).set(
@@ -79,18 +79,18 @@ class EpicsSignalWithCustomReadout(EpicsSignal):
     def _set_and_wait(self, value, timeout, **kwargs):
         self.put(value, **kwargs)
 
-        if is_loose_comparator(self.__expected_readout) and (
+        if is_loose_comparator(self._expected_readout) and (
             self.tolerance or self.rtolerance
         ):
-            self.__expected_readout.atol = self.tolerance
-            self.__expected_readout.rtol = self.rtolerance
+            self._expected_readout.atol = self.tolerance
+            self._expected_readout.rtol = self.rtolerance
 
             self.tolerance = None
             self.rtolerance = None
 
         _wait_for_value(
             self,
-            self.__expected_readout,
+            self._expected_readout,
             poll_time=0.01,
             timeout=timeout,
             atol=self.tolerance,
@@ -102,13 +102,11 @@ class EpicsSignalWithCustomReadoutRBV(EpicsSignalWithCustomReadout):
     """An EpicsSignalWithCustomReadout subclass setting the read_pv to 'write_pv + _RBV' by default."""
 
     def __init__(self, write_pv, **kwargs):
-        super(EpicsSignalWithCustomReadout, self).__init__(
-            read_pv=write_pv + "_RBV", write_pv=write_pv, **kwargs
-        )
+        super().__init__(read_pv=write_pv + "_RBV", write_pv=write_pv, **kwargs)
 
 
 def create_loose_comparator(common_type, readout):
-    ret = _LooseComparator(common_type)
+    ret = _LooseComparator(common_type)()
     ret._value = readout
     return ret
 
