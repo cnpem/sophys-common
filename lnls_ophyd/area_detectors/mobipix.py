@@ -99,14 +99,7 @@ class Mobipix(SingleTrigger, MobipixDetector):
     plugin_roi_stat_1 = ADComponent(MobipixROIStatPlugin, "ROIStat1:")
 
     def __init__(
-        self,
-        name,
-        prefix,
-        *,
-        save_hdf_file=True,
-        enable_num_images=False,
-        image_mode=MobipixCam.ImageMode.SINGLE,
-        **kwargs
+        self, name, prefix, *, save_hdf_file=True, enable_num_images=False, **kwargs
     ):
         """
         This is a Mobipix device using an AreaDetector-based IOC.
@@ -128,8 +121,6 @@ class Mobipix(SingleTrigger, MobipixDetector):
 
             Note that enabling this option is mostly a performance optimization, and shouldn't be
             very useful at low framerates. Due to some issues with the IOC, keeping it disabled is the safest option.
-        image_mode: MobipixCam.ImageMode, optional
-            Value of the ImageMode PV in the driver. Defaults to MULTIPLE.
         hdf_file_template: str, optional
             Value of the FileTemplate PV in the HDF5 plugin. Defaults to '%s%s_%3.3d.h5'.
         """
