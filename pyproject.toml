@@ -3,12 +3,12 @@ requires = ["setuptools"]
 build-backend = "setuptools.build_meta"
 
 [project]
-name = "lnls-ophyd"
+name = "common-sophys"
 authors = [
   { name="Hugo Campos", email="hugo.campos@lnls.br" },
   { name="Thiago Ferreira", email="thiago.ferreira@lnls.br" },
 ]
-description = "Common ophyd devices from SIRIUS/LNLS"
+description = "Common bluesky and ophyd utilities from SIRIUS/LNLS"
 readme = "README.md"
 classifiers = [
     "Programming Language :: Python :: 3",
@@ -29,11 +29,11 @@ dev = [
 ]
 
 [project.urls]
-"Homepage" = "https://gitlab.cnpem.br/SOL/bluesky/lnls-ophyd"
-"Bug Tracker" = "https://gitlab.cnpem.br/SOL/bluesky/lnls-ophyd/-/issues"
+"Homepage" = "https://gitlab.cnpem.br/SOL/bluesky/common-sophys"
+"Bug Tracker" = "https://gitlab.cnpem.br/SOL/bluesky/common-sophys/-/issues"
 
 [tool.setuptools.dynamic]
-version = {attr = "lnls_ophyd.__version__.__version__"}
+version = {attr = "sophys.common.__version__.__version__"}
 
 [tool.setuptools.packages.find]
 where = ["src"]
