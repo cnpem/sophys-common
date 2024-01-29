@@ -18,6 +18,7 @@ from ophyd.areadetector.plugins import (
     ROIStatPlugin_V34 as ROIStatPlugin,
     ROIStatNPlugin_V25 as ROIStatNPlugin,
 )
+from ophyd.signal import InternalSignal
 from ophyd.utils.errors import WaitTimeoutError
 
 from ..utils import HDF5PluginWithFileStore, EpicsSignalWithCustomReadoutRBV
@@ -256,15 +257,17 @@ class MobipixEnergyThresholdSetter(Device):
     dac_threshold_energy_0 = ADComponent(
         EpicsSignalWithCustomReadoutRBV,
         "DAC_ThresholdEnergy0",
-        enforce_type=str,
+        enforce_type=int,
         kind=Kind.config,
     )
     dac_threshold_energy_1 = ADComponent(
         EpicsSignalWithCustomReadoutRBV,
         "DAC_ThresholdEnergy1",
-        enforce_type=str,
+        enforce_type=int,
         kind=Kind.config,
     )
+
+    nrg = ADComponent(InternalSignal, kind=Kind.hinted)
 
     def __init__(self, mobipix: Mobipix):
         super(MobipixEnergyThresholdSetter, self).__init__(
@@ -281,10 +284,7 @@ class MobipixEnergyThresholdSetter(Device):
         self.__high_threshold_adjust = []
         # no defaults
 
-        self.__current_nrg = 0
-
-    def read(self):
-        return self.__current_nrg
+        self.read_attrs = ["nrg"]
 
     def set(self, nrg, timeout=None):
         original_chip = self.img_chip_number_id.get()
@@ -301,7 +301,7 @@ class MobipixEnergyThresholdSetter(Device):
                     int(self.high_threshold_adjust[i](nrg))
                 ).wait(timeout=timeout)
 
-        self.__current_nrg = nrg
+        self.nrg.set(nrg, internal=True).wait()
         return self.img_chip_number_id.set(original_chip)
 
     @property
