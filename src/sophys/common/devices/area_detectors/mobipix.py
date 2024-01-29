@@ -21,7 +21,7 @@ from ophyd.areadetector.plugins import (
 from ophyd.signal import InternalSignal
 from ophyd.utils.errors import WaitTimeoutError
 
-from ..utils import HDF5PluginWithFileStore, EpicsSignalWithCustomReadoutRBV
+from ...utils import HDF5PluginWithFileStore, EpicsSignalWithCustomReadoutRBV
 
 
 class MobipixError(Exception):

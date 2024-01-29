@@ -10,7 +10,7 @@ from ophyd.areadetector.cam import CamBase
 from ophyd.areadetector.detectors import DetectorBase
 from ophyd.areadetector.plugins import ImagePlugin
 
-from ..utils import HDF5PluginWithFileStore
+from ...utils import HDF5PluginWithFileStore
 
 
 class C400Cam(CamBase):
