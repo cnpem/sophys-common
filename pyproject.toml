@@ -35,3 +35,9 @@ dev = [
 
 [tool.pdm]
 version = { source = "file", path = "lnls_ophyd/__version__.py" }
+
+
+# https://black.readthedocs.io/en/stable/the_black_code_style/current_style.html#flake8
+[tool.flake8]
+max-line-length = 88
+extend-ignore = ["E203", "E704"]
