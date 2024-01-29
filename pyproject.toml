@@ -34,7 +34,7 @@ dev = [
 
 
 [tool.pdm]
-version = { source = "file", path = "lnls_ophyd/__version__.py" }
+version = { source = "file", path = "src/lnls_ophyd/__version__.py" }
 
 
 # https://black.readthedocs.io/en/stable/the_black_code_style/current_style.html#flake8
