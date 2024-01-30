@@ -105,24 +105,33 @@ class Mobipix(SingleTrigger, MobipixDetector):
         """
         This is a Mobipix device using an AreaDetector-based IOC.
 
-        When using it in a plan, make sure to set the following variables to appropriate values:
-        - 'acquisition_time' --> Time taken to acquire a single image (disconsidering control overheads).
-
-        - 'num_images' or 'num_steps' --> Total number of images to take.
-        - 'num_exposures' --> Number of images to take for each trigger signal.
-
-        - 'hdf_file_name' --> Name of the HDF5 to save. It will be formatted into 'hdf_file_template'. Defaults to the UUID of the run.
-        - 'hdf_file_path' --> Path to save the HDF5 file to. Defaults to '/tmp'.
-        - 'hdf_file_template' --> Value of the FileTemplate PV in the HDF5 plugin. Defaults to '%s%s_%3.3d.h5'.
-
         Parameters
         ----------
-        enable_num_images: bool, optional
+        name : str
+            The human-readable device's name. It will be used by visualization tools and similar.
+        prefix : str
+            The PV prefix for the detector. It needs a trailing separator, usually ':'.
+        save_hdf_file : bool, optional
+            Whether to setup the NDFileHDF5 plugin to save images from the detector. Defaults to True.
+        enable_num_images : bool, optional
             Whether to enable the NumImages field or not. Defaults to False.
 
             Note that enabling this option is mostly a performance optimization, and shouldn't be
             very useful at low framerates. Due to some issues with the IOC, keeping it disabled is the safest option.
-        hdf_file_template: str, optional
+
+        Attributes
+        ----------
+        acquisition_time : float
+            Time taken to acquire a single image (disconsidering control overheads).
+        num_images|num_steps : int
+            Total number of images to take.
+        num_exposures : int
+            Number of images to take for each trigger signal.
+        hdf_file_name : str, optional
+            Name of the HDF5 to save. It will be formatted into 'hdf_file_template'. Defaults to the UUID of the run.
+        hdf_file_path : str, optional
+            Path to save the HDF5 file to. Defaults to '/tmp'.
+        hdf_file_template : str, optional
             Value of the FileTemplate PV in the HDF5 plugin. Defaults to '%s%s_%3.3d.h5'.
         """
 
