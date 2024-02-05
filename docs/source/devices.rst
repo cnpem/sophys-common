@@ -4,6 +4,6 @@ Ophyd devices
 .. toctree::
     :maxdepth: 2
 
-    devices.area_detector
-    devices.misc_detector
-    devices.motors
+    devices_area_detector
+    devices_misc_detector
+    devices_motors

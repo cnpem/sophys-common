@@ -5,7 +5,7 @@ from ophyd.areadetector.plugins import (
     ProcessPlugin,
 )
 
-from ...utils import HDF5PluginWithFileStore
+from ..utils import HDF5PluginWithFileStore
 
 
 class Pilatus(SingleTrigger, PilatusDetector):

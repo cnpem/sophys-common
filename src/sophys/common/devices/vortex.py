@@ -1,7 +1,7 @@
 from ophyd import Component
 from ophyd.areadetector import Xspress3Detector, SingleTrigger
 
-from ...utils import HDF5PluginWithFileStore
+from ..utils import HDF5PluginWithFileStore
 
 
 class Vortex(SingleTrigger, Xspress3Detector):

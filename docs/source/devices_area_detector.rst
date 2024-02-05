@@ -4,7 +4,7 @@ AreaDetector devices
 C400
 ----
 
-.. automodule:: sophys.common.devices.area_detectors.c400
+.. automodule:: sophys.common.devices.c400
     :members: C400ROIs
     :show-inheritance:
 
@@ -24,7 +24,7 @@ C400
 Mobipix
 -------
 
-.. automodule:: sophys.common.devices.area_detectors.mobipix
+.. automodule:: sophys.common.devices.mobipix
     :members: MobipixCam, MobipixBackend, MobipixDetector, MobipixError, MobipixMissingConfigurationError
     :show-inheritance:
 
@@ -47,7 +47,7 @@ Mobipix
 Pilatus 300K
 ------------
 
-.. automodule:: sophys.common.devices.area_detectors.pilatus_300k
+.. automodule:: sophys.common.devices.pilatus_300k
     :members:
     :show-inheritance:
 
@@ -56,6 +56,6 @@ Pilatus 300K
 Vortex
 ------
 
-.. automodule:: sophys.common.devices.area_detectors.vortex
+.. automodule:: sophys.common.devices.vortex
     :members:
     :show-inheritance:

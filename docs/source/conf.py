@@ -48,8 +48,6 @@ def custom_docstring_process(app, what, name, obj, options, lines):
             obj.cls.__name__, (obj.suffix or "None").replace(":", ""), str(obj.kind)
         )
 
-    print(obj)
-
     if what == "attribute" and isinstance(obj, Component):
         if len(lines) == 0:
             lines.append(pretty_print_component(obj))
