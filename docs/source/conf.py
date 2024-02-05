@@ -67,8 +67,10 @@ tags_badge_colors = {
 
 def custom_docstring_process(app, what, name, obj, options, lines):
     def pretty_print_component(obj: Component):
-        return "**{0}** --- Suffix = *{1}* | *{2}*".format(
-            obj.cls.__name__, (obj.suffix or "None").replace(":", ""), str(obj.kind)
+        return "**{0}** --- Suffix = *{1}* | *Kind.{2}*".format(
+            obj.cls.__name__,
+            (obj.suffix or "None").replace(":", ""),
+            getattr(obj.kind, "name"),
         )
 
     if what == "attribute" and isinstance(obj, Component):
