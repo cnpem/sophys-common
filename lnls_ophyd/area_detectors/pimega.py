@@ -18,6 +18,7 @@ class PimegaCam(CamBase):
 
     magic_start = ADComponent(EpicsSignal, "MagicStart")
     acquire_capture = ADComponent(EpicsSignal, "AcquireCapture")
+    num_capture = ADComponent(EpicsSignalWithRBV, "NumCapture")
 
     medipix_mode = ADComponent(EpicsSignalWithRBV, "MedipixMode")
 
@@ -81,7 +82,6 @@ class PimegaCam(CamBase):
             "auto_increment",
             "auto_save",
         ]
-
 
 class PimegaDetector(DetectorBase):
     cam = ADComponent(PimegaCam, "cam1:")
