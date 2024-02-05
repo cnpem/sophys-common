@@ -4,6 +4,7 @@ from ophyd import (
     ADComponent,
     Device,
     EpicsSignal,
+    EpicsSignalRO,
     EpicsSignalWithRBV,
     EpicsSignalNoValidation,
     Kind,
@@ -19,8 +20,11 @@ class PimegaCam(CamBase):
     magic_start = ADComponent(EpicsSignal, "MagicStart")
     acquire_capture = ADComponent(EpicsSignal, "AcquireCapture")
     num_capture = ADComponent(EpicsSignalWithRBV, "NumCapture")
-
+    
     medipix_mode = ADComponent(EpicsSignalWithRBV, "MedipixMode")
+
+    processed_acquisition_counter = ADComponent(EpicsSignalRO, "ProcessedAcquisitionCounter_RBV")
+    num_captured = ADComponent(EpicsSignalRO, "NumCaptured_RBV")
 
     dac_cas = ADComponent(EpicsSignalWithRBV, "DAC_CAS")
     dac_delay = ADComponent(EpicsSignalWithRBV, "DAC_Delay")
