@@ -1,13 +1,14 @@
-AreaDetector devices
-====================
+Detectors
+=========
 
 C400
 ----
 
+.. tags:: AreaDetector
+
 .. automodule:: sophys.common.devices.c400
     :members: C400ROIs
     :show-inheritance:
-
 
     .. autoclass:: C400
         :members: __init__
@@ -19,10 +20,36 @@ C400
 
             C400Cam
 
+.. rubric:: Old C400 (Deprecated)
+
+.. raw:: html
+
+    <div title="Derived directly from Ophyd's Device.">
+.. tags:: Standalone
+.. raw:: html
+
+    </div>
+
+.. autoclass:: OldC400
+    :show-inheritance:
+    :no-index:
+
+    .. container:: hidden
+
+        .. autosummary::
+            :toctree: _generated
+            :template: device_attr_list_embed.rst
+
+            sophys.common.devices.c400.OldC400
+
+    .. include:: _generated/sophys.common.devices.c400.OldC400.rst
+
 ----
 
 Mobipix
 -------
+
+.. tags:: AreaDetector
 
 .. automodule:: sophys.common.devices.mobipix
     :members: MobipixCam, MobipixBackend, MobipixDetector, MobipixError, MobipixMissingConfigurationError
@@ -47,6 +74,8 @@ Mobipix
 Pilatus 300K
 ------------
 
+.. tags:: AreaDetector
+
 .. automodule:: sophys.common.devices.pilatus_300k
     :members:
     :show-inheritance:
@@ -55,6 +84,8 @@ Pilatus 300K
 
 Vortex
 ------
+
+.. tags:: AreaDetector
 
 .. automodule:: sophys.common.devices.vortex
     :members:

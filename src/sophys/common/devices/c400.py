@@ -139,7 +139,7 @@ class C400ROIs(Device):
         self.hints["fields"] = [self.name + "_roi1_rbv"]
 
 
-class OldC400:
+class OldC400(Device):
     exposure_time = Component(EpicsSignal, ":PERIOD", kind="config")
     reading = Component(EpicsSignal, ":COUNT_ch1", kind="normal")
     acquire = Component(EpicsSignal, ":ACQUIRE", kind="omitted", put_complete=True)
