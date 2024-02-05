@@ -32,14 +32,37 @@ extensions = [
     "sphinx.ext.autosummary",
     "sphinx.ext.viewcode",
     "sphinx.ext.napoleon",
-    "sphinx_rtd_theme",
+    "sphinx_design",
     "sphinx_remove_toctrees",
+    "sphinx_rtd_theme",
+    "sphinx_tags",
 ]
+
+# HACK: This patches the sphinx_remove_toctrees setup function, so that the 'remove_from_toctrees' key
+# is not added twice (sphinx_tags also uses it, for some god-forsaken reason).
+
+# fmt: off
+import sphinx_remove_toctrees  # noqa
+
+def __patched_setup(app):  # noqa
+    app.add_config_value("remove_toctrees_from", [], "html")
+    app.connect("env-updated", sphinx_remove_toctrees.remove_toctrees)
+    return {"parallel_read_safe": True, "parallel_write_safe": True}
+
+sphinx_remove_toctrees.setup = __patched_setup  # noqa
+# fmt: on
+
 
 templates_path = ["_templates"]
 exclude_patterns = []
 
 remove_from_toctrees = ["_generated/*"]
+
+tags_intro_text = "Type:"
+tags_create_badges = True
+tags_badge_colors = {
+    "AreaDetector": "info",
+}
 
 
 def custom_docstring_process(app, what, name, obj, options, lines):
