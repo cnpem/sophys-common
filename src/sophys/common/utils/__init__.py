@@ -12,6 +12,8 @@ from ophyd.utils.epics_pvs import _wait_for_value
 from ophyd.areadetector.plugins import HDF5Plugin
 from ophyd.areadetector.filestore_mixins import FileStoreHDF5IterativeWrite
 
+from .callbacks import *  # noqa: F403
+
 
 class HDF5PluginWithFileStore(HDF5Plugin, FileStoreHDF5IterativeWrite):
     pass
