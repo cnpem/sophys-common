@@ -82,6 +82,25 @@ Pilatus 300K
 
 ----
 
+Pimega
+------
+
+.. tags:: AreaDetector
+
+.. automodule:: sophys.common.devices.pimega
+
+    .. autoclass:: Pimega
+        :members: __init__
+        :show-inheritance:
+
+        .. autosummary::
+            :toctree: _generated
+            :template: device_attr_list.rst
+
+            PimegaCam
+
+----
+
 Vortex
 ------
 
