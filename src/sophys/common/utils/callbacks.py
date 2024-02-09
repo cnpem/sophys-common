@@ -17,14 +17,14 @@ def make_kafka_callback(
     topic_names : list of str
         A list of topic names to send the data to.
     bootstrap_servers : list of str, optional
-        A list of IPs / hosts to check for the specified topics. Defaults to 'localhost:9092'.
+        A list of IPs / hosts to check for the specified topics. Defaults to ``localhost:9092``.
     backoff_times : list of float, optional
         A list of times, in seconds, to delay each successive attempt at connecting to a Kafka broker.
 
-        If a connection fails, it will be retried len(backoff_times) times, sleeping for backoff_times[i]
+        If a connection fails, it will be retried ``len(backoff_times)`` times, sleeping for ``backoff_times[i]``
         seconds between each attempt. If it reaches the end of the list, it will raise an Exception.
 
-        Defaults to [0.1, 1.0, 5.0, 20.0, 60.0].
+        Defaults to ``[0.1, 1.0, 5.0, 20.0, 60.0]``.
     """
     if not isinstance(topic_names, list):
         topic_names = [topic_names]
