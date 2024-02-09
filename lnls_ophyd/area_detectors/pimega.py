@@ -20,9 +20,10 @@ class PimegaCam(CamBase):
     magic_start = ADComponent(EpicsSignal, "MagicStart")
     acquire_capture = ADComponent(EpicsSignal, "AcquireCapture")
     num_capture = ADComponent(EpicsSignalWithRBV, "NumCapture")
-    
+
     medipix_mode = ADComponent(EpicsSignalWithRBV, "MedipixMode")
 
+    detector_state = ADComponent(EpicsSignalRO, "DetectorState_RBV")
     processed_acquisition_counter = ADComponent(EpicsSignalRO, "ProcessedAcquisitionCounter_RBV")
     num_captured = ADComponent(EpicsSignalRO, "NumCaptured_RBV")
 
@@ -56,39 +57,9 @@ class PimegaCam(CamBase):
     def __init__(self, prefix, name, **kwargs):
         super(PimegaCam, self).__init__(prefix, name=name, **kwargs)
 
-        self.read_attrs = [
-            "magic_start",
-            "acquire_capture",
-            "medipix_mode",
-            "dac_cas",
-            "dac_delay",
-            "dac_disc",
-            "dac_disch",
-            "dac_discl",
-            "dac_discls",
-            "dac_fbk",
-            "dac_gnd",
-            "dac_ikrum",
-            "dac_preamp",
-            "dac_RPZ",
-            "dac_shaper",
-            "dac_threshold0",
-            "dac_threshold1",
-            "dac_tp_buffer_in",
-            "dac_tp_buffer_out",
-            "dac_tpref",
-            "dac_tpref_a",
-            "dac_tpref_b",
-            "file_name",
-            "file_path",
-            "file_number",
-            "file_template",
-            "auto_increment",
-            "auto_save",
-        ]
 
 class PimegaDetector(DetectorBase):
-    cam = ADComponent(PimegaCam, "cam1:")
+    cam = ADComponent(PimegaCam, "cam1:", kind="config")
 
 
 class Pimega(SingleTrigger, PimegaDetector):
