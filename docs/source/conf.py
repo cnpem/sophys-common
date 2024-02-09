@@ -16,9 +16,9 @@ from ophyd import Component
 sys.path.insert(0, os.path.abspath("../.."))
 
 year = datetime.date.today().year
-authors = metadata.metadata("common-sophys")["Author-email"]
-name = metadata.metadata("common-sophys")["Name"]
-version = metadata.version("common-sophys")
+authors = metadata.metadata("sophys-common")["Author-email"]
+name = metadata.metadata("sophys-common")["Name"]
+version = metadata.version("sophys-common")
 
 project = name
 copyright = f"{year}, SwC/LNLS"

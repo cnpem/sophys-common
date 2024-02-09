@@ -3,7 +3,7 @@ requires = ["setuptools"]
 build-backend = "setuptools.build_meta"
 
 [project]
-name = "common-sophys"
+name = "sophys-common"
 authors = [
   { name="Hugo Campos", email="hugo.campos@lnls.br" },
   { name="Thiago Ferreira", email="thiago.ferreira@lnls.br" },
@@ -30,8 +30,8 @@ dev = [
 ]
 
 [project.urls]
-"Homepage" = "https://gitlab.cnpem.br/SOL/bluesky/common-sophys"
-"Bug Tracker" = "https://gitlab.cnpem.br/SOL/bluesky/common-sophys/-/issues"
+"Homepage" = "https://gitlab.cnpem.br/SOL/bluesky/sophys-common"
+"Bug Tracker" = "https://gitlab.cnpem.br/SOL/bluesky/sophys-common/-/issues"
 
 [tool.setuptools.dynamic]
 version = {attr = "sophys.common.__version__.__version__"}
