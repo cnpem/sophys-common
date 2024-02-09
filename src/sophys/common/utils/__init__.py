@@ -206,6 +206,10 @@ class DebugOptions:
         # Workaround for deepcopy failing on IOBase subclasses
         return dict((field.name, getattr(self, field.name)) for field in fields(self))
 
+    @staticmethod
+    def no_debug():
+        return DebugOptions(level="INFO")
+
 
 def set_debug_mode(
     run_engine: RunEngine,
