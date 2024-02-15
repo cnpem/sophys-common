@@ -14,3 +14,12 @@ Callbacks
 .. automodule:: sophys.common.utils.callbacks
     :members:
     :show-inheritance:
+
+----
+
+Signals
+-------
+
+.. automodule:: sophys.common.utils.signals
+    :members:
+    :show-inheritance:
