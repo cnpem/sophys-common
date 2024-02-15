@@ -1,13 +1,6 @@
 Utility
 =======
 
-.. automodule:: sophys.common.utils
-    :members:
-    :undoc-members:
-    :show-inheritance:
-
-----
-
 Callbacks
 ---------
 
@@ -22,4 +15,14 @@ Signals
 
 .. automodule:: sophys.common.utils.signals
     :members:
+    :show-inheritance:
+
+----
+
+Misc.
+-----
+
+.. automodule:: sophys.common.utils
+    :members:
+    :undoc-members:
     :show-inheritance:
