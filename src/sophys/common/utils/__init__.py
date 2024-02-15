@@ -9,6 +9,7 @@ from ophyd.areadetector.plugins import HDF5Plugin
 from ophyd.areadetector.filestore_mixins import FileStoreHDF5IterativeWrite
 
 from .callbacks import *  # noqa: F403
+from .registry import *  # noqa: F403
 from .signals import *  # noqa: F403
 
 
