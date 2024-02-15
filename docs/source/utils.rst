@@ -5,3 +5,12 @@ Utility
     :members:
     :undoc-members:
     :show-inheritance:
+
+----
+
+Callbacks
+---------
+
+.. automodule:: sophys.common.utils.callbacks
+    :members:
+    :show-inheritance:
