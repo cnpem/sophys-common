@@ -73,7 +73,7 @@ except ImportError:
         "parameters": {
             "detectors": {
                 "description": "List of 'readable' devices.",
-                "annotation": "typing.Sequence[__READABLE__]",
+                "annotation": "typing.Sequence[bluesky.protocols.Readable]",
                 "convert_device_names": True,
             },
             "num": {
