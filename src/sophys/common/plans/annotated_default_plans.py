@@ -152,7 +152,7 @@ def count(
 @wraps(plans.scan)
 def scan(
     detectors: DETECTORS_TYPE,
-    *args: typing.Sequence[typing.Tuple[protocols.Movable, typing.Any, typing.Any]],
+    *args: typing.Union[protocols.Movable, typing.Any],
     num: NUM_TYPE = None,
     per_step: PER_STEP_TYPE = None,
     md: MD_TYPE = None,
@@ -168,12 +168,8 @@ def scan(
 @wraps(plans.grid_scan)
 def grid_scan(
     detectors: DETECTORS_TYPE,
-    *args: typing.Sequence[
-        typing.Tuple[protocols.Movable, typing.Any, typing.Any, int]
-    ],
-    snake_axes: typing.Optional[
-        typing.Union[bool, typing.Iterable[protocols.Movable]]
-    ] = None,
+    *args: typing.Union[protocols.Movable, typing.Any],
+    snake_axes: typing.Union[bool, typing.Iterable[protocols.Movable]] = False,
     per_step: PER_STEP_TYPE = None,
     md: MD_TYPE = None,
 ):
