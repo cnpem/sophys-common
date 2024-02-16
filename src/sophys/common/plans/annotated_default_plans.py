@@ -10,10 +10,55 @@ import functools
 import inspect
 import typing
 
-from bluesky import plans, protocols
+from bluesky import plans, protocols, Msg
 
 
 __all__ = ["count"]
+
+
+DETECTORS_TYPE = typing.Sequence[protocols.Readable]
+MOTORS_TYPE = typing.Sequence[typing.Tuple[protocols.Movable, typing.Any, typing.Any]]
+NUM_TYPE = typing.Optional[int]
+MD_TYPE = typing.Optional[dict]
+
+#: Return type of a plan, usually None. Always optional for dry-runs.
+P = typing.TypeVar("P")
+
+MSG_GENERATOR = typing.Generator[Msg, typing.Any, typing.Optional[P]]
+
+#: Any plan function that takes a reading given a list of Readables
+TAKE_READING = typing.Callable[
+    [list[protocols.Readable]], MSG_GENERATOR[typing.Mapping[str, protocols.Reading]]
+]
+
+#: Plan function that can be used for each shot in a detector acquisition involving no actuation
+PER_SHOT = typing.Callable[
+    [typing.Iterable[protocols.Readable], typing.Optional[TAKE_READING]], MSG_GENERATOR
+]
+
+#: Plan function that can be used for each step in a scan
+PER_STEP = typing.Callable[
+    [
+        typing.Iterable[protocols.Readable],
+        typing.Mapping[protocols.Movable, typing.Any],
+        typing.Mapping[protocols.Movable, typing.Any],
+        typing.Optional[TAKE_READING],
+    ],
+    MSG_GENERATOR,
+]
+
+
+DEFAULT_ANNOTATION = {
+    "parameters": {
+        "detectors": {
+            "convert_device_names": True,
+        },
+        "md": {
+            "convert_device_names": False,
+        },
+    },
+}
+
 
 # https://docs.python.org/3/library/functools.html#functools.update_wrapper
 # This removes __annotations__, so our type hints get through.
@@ -84,26 +129,15 @@ except ImportError:
         return function_wrap
 
 
-@parameter_annotation_decorator(
-    {
-        "parameters": {
-            "detectors": {
-                "convert_device_names": True,
-            },
-            "md": {
-                "convert_device_names": False,
-            },
-        },
-    }
-)
+@parameter_annotation_decorator(DEFAULT_ANNOTATION)
 @wraps(plans.count)
 def count(
-    detectors: typing.Sequence[protocols.Readable],
-    num: typing.Optional[int] = 1,
+    detectors: DETECTORS_TYPE,
+    num: NUM_TYPE = 1,
     delay: typing.Union[float, typing.Iterable, None] = None,
     *,
-    per_shot: typing.Optional[typing.Callable] = None,
-    md: typing.Optional[dict] = None,
+    per_shot: PER_SHOT = None,
+    md: MD_TYPE = None,
 ):
     return (
         yield from plans.count(
