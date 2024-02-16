@@ -10,10 +10,27 @@ import functools
 import inspect
 import typing
 
-from bluesky import plans
+from bluesky import plans, protocols
 
 
 __all__ = ["count"]
+
+# https://docs.python.org/3/library/functools.html#functools.update_wrapper
+# This removes __annotations__, so our type hints get through.
+WRAPPER_ASSIGNMENTS = ["__module__", "__name__", "__qualname__", "__doc__"]
+__update_wrapper = functools.partial(
+    functools.update_wrapper, assigned=WRAPPER_ASSIGNMENTS
+)
+
+
+# Wrapper salad to remove __wrapped__ from the wrapper, so that typehints go through inspect.signature
+def wraps(wrapped_func):
+    def __wrapper__(wrapper_func):
+        wrapped = __update_wrapper(wrapper_func, wrapped_func)
+        del wrapped.__wrapped__
+        return wrapped
+
+    return __wrapper__
 
 
 try:
@@ -71,8 +88,6 @@ except ImportError:
     {
         "parameters": {
             "detectors": {
-                "description": "List of 'readable' devices.",
-                "annotation": "typing.Sequence[bluesky.protocols.Readable]",
                 "convert_device_names": True,
             },
             "md": {
@@ -81,9 +96,9 @@ except ImportError:
         },
     }
 )
-@functools.wraps(plans.count)
+@wraps(plans.count)
 def count(
-    detectors,
+    detectors: typing.Sequence[protocols.Readable],
     num: typing.Optional[int] = 1,
     delay: typing.Union[float, typing.Iterable, None] = None,
     *,
