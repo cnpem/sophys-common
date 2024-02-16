@@ -13,7 +13,7 @@ import typing
 from bluesky import plans, protocols, Msg
 
 
-__all__ = ["count"]
+__all__ = ["count", "scan", "grid_scan"]
 
 
 DETECTORS_TYPE = typing.Sequence[protocols.Readable]
@@ -24,27 +24,29 @@ MD_TYPE = typing.Optional[dict]
 #: Return type of a plan, usually None. Always optional for dry-runs.
 P = typing.TypeVar("P")
 
-MSG_GENERATOR = typing.Generator[Msg, typing.Any, typing.Optional[P]]
+MSG_GENERATOR_TYPE = typing.Generator[Msg, typing.Any, typing.Optional[P]]
 
 #: Any plan function that takes a reading given a list of Readables
-TAKE_READING = typing.Callable[
-    [list[protocols.Readable]], MSG_GENERATOR[typing.Mapping[str, protocols.Reading]]
+TAKE_READING_TYPE = typing.Callable[
+    [list[protocols.Readable]],
+    MSG_GENERATOR_TYPE[typing.Mapping[str, protocols.Reading]],
 ]
 
 #: Plan function that can be used for each shot in a detector acquisition involving no actuation
-PER_SHOT = typing.Callable[
-    [typing.Iterable[protocols.Readable], typing.Optional[TAKE_READING]], MSG_GENERATOR
+PER_SHOT_TYPE = typing.Callable[
+    [typing.Iterable[protocols.Readable], typing.Optional[TAKE_READING_TYPE]],
+    MSG_GENERATOR_TYPE,
 ]
 
 #: Plan function that can be used for each step in a scan
-PER_STEP = typing.Callable[
+PER_STEP_TYPE = typing.Callable[
     [
         typing.Iterable[protocols.Readable],
         typing.Mapping[protocols.Movable, typing.Any],
         typing.Mapping[protocols.Movable, typing.Any],
-        typing.Optional[TAKE_READING],
+        typing.Optional[TAKE_READING_TYPE],
     ],
-    MSG_GENERATOR,
+    MSG_GENERATOR_TYPE,
 ]
 
 
@@ -136,11 +138,51 @@ def count(
     num: NUM_TYPE = 1,
     delay: typing.Union[float, typing.Iterable, None] = None,
     *,
-    per_shot: PER_SHOT = None,
+    per_shot: PER_SHOT_TYPE = None,
     md: MD_TYPE = None,
 ):
     return (
         yield from plans.count(
             detectors=detectors, num=num, delay=delay, per_shot=per_shot, md=md
+        )
+    )
+
+
+@parameter_annotation_decorator(DEFAULT_ANNOTATION)
+@wraps(plans.scan)
+def scan(
+    detectors: DETECTORS_TYPE,
+    *args: typing.Sequence[typing.Tuple[protocols.Movable, typing.Any, typing.Any]],
+    num: NUM_TYPE = None,
+    per_step: PER_STEP_TYPE = None,
+    md: MD_TYPE = None,
+):
+    return (
+        yield from plans.scan(
+            detectors=detectors, args=args, num=num, per_step=per_step, md=md
+        )
+    )
+
+
+@parameter_annotation_decorator(DEFAULT_ANNOTATION)
+@wraps(plans.grid_scan)
+def grid_scan(
+    detectors: DETECTORS_TYPE,
+    *args: typing.Sequence[
+        typing.Tuple[protocols.Movable, typing.Any, typing.Any, int]
+    ],
+    snake_axes: typing.Optional[
+        typing.Union[bool, typing.Iterable[protocols.Movable]]
+    ] = None,
+    per_step: PER_STEP_TYPE = None,
+    md: MD_TYPE = None,
+):
+    return (
+        yield from plans.grid_scan(
+            detectors=detectors,
+            args=args,
+            snake_axes=snake_axes,
+            per_step=per_step,
+            md=md,
         )
     )
