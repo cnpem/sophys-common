@@ -164,7 +164,28 @@ def scan(
     )
 
 
-@parameter_annotation_decorator(DEFAULT_ANNOTATION)
+@parameter_annotation_decorator(
+    DEFAULT_ANNOTATION
+    | {
+        "parameters": {
+            "args": {
+                "description": """
+For one dimension, ``motor, start, stop, num``, meaning
+``motor`` will go from ``start`` to ``stop`` in ``num`` steps.
+
+In general:
+
+.. code-block:: python
+
+    motor1, start1, stop1, num1,
+    motor2, start2, stop2, num2,
+    ...,
+    motorN, startN, stopN, numN
+""",
+            },
+        },
+    }
+)
 @wraps(plans.grid_scan)
 def grid_scan(
     detectors: DETECTORS_TYPE,
