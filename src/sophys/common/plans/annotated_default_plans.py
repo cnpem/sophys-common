@@ -69,24 +69,13 @@ except ImportError:
 
 @parameter_annotation_decorator(
     {
-        "description": "Take one or more readings from detectors.",
         "parameters": {
             "detectors": {
                 "description": "List of 'readable' devices.",
                 "annotation": "typing.Sequence[bluesky.protocols.Readable]",
                 "convert_device_names": True,
             },
-            "num": {
-                "description": "Number of readings to take\nIf None, capture data until canceled.",
-            },
-            "delay": {
-                "description": "Time delay in seconds between successive readings.",
-            },
-            "per_shot": {
-                "description": "Hook for customizing action of inner loop (messages per step).",
-            },
             "md": {
-                "description": "Metadata.",
                 "convert_device_names": False,
             },
         },
