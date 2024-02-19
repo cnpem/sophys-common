@@ -3,6 +3,28 @@ This is essentially a copy of https://github.com/bluesky/bluesky/pull/1610,
 with some stuff for queueserver annotation added.
 
 The typing part should be removed once that PR is merged.
+
+----
+
+For the motor arguments, the plans expect a list of misc. stuff. To make stuff make sense
+in our GUI applications, we developed a simple CSV-like comment to put in the argument's description,
+for specifying what each argument in the list means.
+
+The comment starts and ends with the ``-.-`` string, and between those, it has three CSV row entries,
+separated by a ';' character, like so:
+
+``-.-row one; row two; row three-.-``
+
+Row one represents the name of each argument in that list, in sequence. For instance, ``grid_scan``
+would have the following as their first row: ``motor,start,stop,num``. Meanwhile, ``list_scan`` would
+instead have something like ``motor,start,stop``, since it has no ``num`` parameter.
+
+Row two represents the description for each argument, in sequence. It must be the same length as the
+first row, though any or all elements in there can be empty (``,,``).
+
+Row three represents the type of each argument, in sequence. As with row two, it must be the same length
+as the first row, but unlike the second row, it must have all elements be non-empty, even if it's all just
+``typing.Any``.
 """
 
 import copy
@@ -17,7 +39,7 @@ __all__ = ["count", "scan", "grid_scan"]
 
 
 DETECTORS_TYPE = typing.Sequence[protocols.Readable]
-MOTORS_TYPE = typing.Sequence[typing.Tuple[protocols.Movable, typing.Any, typing.Any]]
+MOTORS_TYPE = typing.Sequence[typing.Union[protocols.Movable, typing.Any]]
 NUM_TYPE = typing.Optional[int]
 MD_TYPE = typing.Optional[dict]
 
@@ -152,7 +174,7 @@ def count(
 @wraps(plans.scan)
 def scan(
     detectors: DETECTORS_TYPE,
-    *args: typing.Union[protocols.Movable, typing.Any],
+    *args: MOTORS_TYPE,
     num: NUM_TYPE = None,
     per_step: PER_STEP_TYPE = None,
     md: MD_TYPE = None,
@@ -181,6 +203,8 @@ In general:
     motor2, start2, stop2, num2,
     ...,
     motorN, startN, stopN, numN
+
+-.-motor,start,stop,num;the n-th motor to move from slowest to fastest,the starting point in the motor's trajectory,the ending point in the motor's trajectory,the number of steps to take in each iteration;__MOVABLE__,float,float,int-.-
 """,
             },
         },
@@ -189,7 +213,7 @@ In general:
 @wraps(plans.grid_scan)
 def grid_scan(
     detectors: DETECTORS_TYPE,
-    *args: typing.Union[protocols.Movable, typing.Any],
+    *args: MOTORS_TYPE,
     snake_axes: typing.Union[bool, typing.Iterable[protocols.Movable]] = False,
     per_step: PER_STEP_TYPE = None,
     md: MD_TYPE = None,
