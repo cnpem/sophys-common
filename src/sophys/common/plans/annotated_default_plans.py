@@ -35,7 +35,7 @@ import typing
 from bluesky import plans, protocols, Msg
 
 
-__all__ = ["count", "scan", "list_scan", "grid_scan"]
+__all__ = ["count", "scan", "rel_scan", "list_scan", "grid_scan"]
 
 
 DETECTORS_TYPE = typing.Sequence[protocols.Readable]
@@ -204,6 +204,45 @@ def scan(
 ):
     return (
         yield from plans.scan(
+            detectors=detectors, args=args, num=num, per_step=per_step, md=md
+        )
+    )
+
+
+@parameter_annotation_decorator(
+    DEFAULT_ANNOTATION
+    | {
+        "parameters": {
+            "args": {
+                "description": """
+For one dimension, ``motor, start, stop``, meaning
+``motor`` will go from ``start`` to ``stop``.
+
+In general:
+
+.. code-block:: python
+
+    motor1, start1, stop1,
+    motor2, start2, stop2,
+    ...,
+    motorN, startN, stopN,
+
+-.-motor,start,stop;the n-th motor to move from slowest to fastest,the starting point in the motor's trajectory, relative to the current position,the ending point in the motor's trajectory, relative to the current position;__MOVABLE__,typing.Any,typing.Any-.-
+""",
+            },
+        },
+    }
+)
+@wraps(plans.rel_scan)
+def rel_scan(
+    detectors: DETECTORS_TYPE,
+    *args: MOTORS_TYPE,
+    num: NUM_TYPE = None,
+    per_step: PER_STEP_TYPE = None,
+    md: MD_TYPE = None,
+):
+    return (
+        yield from plans.rel_scan(
             detectors=detectors, args=args, num=num, per_step=per_step, md=md
         )
     )
