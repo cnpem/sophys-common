@@ -46,6 +46,7 @@ __all__ = [
     "log_scan",
     "rel_log_scan",
     "grid_scan",
+    "rel_grid_scan",
 ]
 
 
@@ -497,6 +498,49 @@ def grid_scan(
 ):
     return (
         yield from plans.grid_scan(
+            detectors=detectors,
+            args=args,
+            snake_axes=snake_axes,
+            per_step=per_step,
+            md=md,
+        )
+    )
+
+
+@parameter_annotation_decorator(
+    DEFAULT_ANNOTATION
+    | {
+        "parameters": {
+            "args": {
+                "description": """
+For one dimension, ``motor, start, stop, num``, meaning
+``motor`` will go from ``start`` to ``stop`` in ``num`` steps.
+
+In general:
+
+.. code-block:: python
+
+    motor1, start1, stop1, num1,
+    motor2, start2, stop2, num2,
+    ...,
+    motorN, startN, stopN, numN
+
+-.-motor,start,stop,num;the n-th motor to move from slowest to fastest,the starting point in the motor's trajectory relative to the origin,the ending point in the motor's trajectory relative to the origin,the number of steps to take in each iteration;__MOVABLE__,typing.Any,typing.Any,int-.-
+""",
+            },
+        },
+    }
+)
+@wraps(plans.rel_grid_scan)
+def rel_grid_scan(
+    detectors: DETECTORS_TYPE,
+    *args: MOTORS_TYPE,
+    snake_axes: typing.Union[bool, typing.Iterable[protocols.Movable]] = False,
+    per_step: PER_STEP_TYPE = None,
+    md: MD_TYPE = None,
+):
+    return (
+        yield from plans.rel_grid_scan(
             detectors=detectors,
             args=args,
             snake_axes=snake_axes,
