@@ -32,6 +32,7 @@ import functools
 import inspect
 import typing
 
+import cycler
 from bluesky import plans, protocols, Msg
 
 
@@ -47,6 +48,7 @@ __all__ = [
     "rel_log_scan",
     "grid_scan",
     "rel_grid_scan",
+    "scan_nd",
 ]
 
 
@@ -546,5 +548,21 @@ def rel_grid_scan(
             snake_axes=snake_axes,
             per_step=per_step,
             md=md,
+        )
+    )
+
+
+@parameter_annotation_decorator(DEFAULT_ANNOTATION)
+@wraps(plans.scan_nd)
+def scan_nd(
+    detectors: DETECTORS_TYPE,
+    cycler: cycler.Cycler,
+    *,
+    per_step: PER_STEP_TYPE = None,
+    md: MD_TYPE = None,
+):
+    return (
+        yield from plans.scan_nd(
+            detectors=detectors, cycler=cycler, per_step=per_step, md=md
         )
     )
