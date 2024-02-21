@@ -49,6 +49,12 @@ __all__ = [
     "grid_scan",
     "rel_grid_scan",
     "scan_nd",
+    "spiral",
+    "spiral_fermat",
+    "spiral_square",
+    "rel_spiral",
+    "rel_spiral_fermat",
+    "rel_spiral_square",
 ]
 
 
@@ -564,5 +570,207 @@ def scan_nd(
     return (
         yield from plans.scan_nd(
             detectors=detectors, cycler=cycler, per_step=per_step, md=md
+        )
+    )
+
+
+@parameter_annotation_decorator(DEFAULT_ANNOTATION)
+@wraps(plans.spiral)
+def spiral(
+    detectors: DETECTORS_TYPE,
+    x_motor: protocols.Movable,
+    y_motor: protocols.Movable,
+    x_start: float,
+    y_start: float,
+    x_range: float,
+    y_range: float,
+    dr: float,
+    nth: float,
+    *,
+    dr_y: typing.Optional[float] = None,
+    tilt: float = 0.0,
+    per_step: PER_STEP_TYPE = None,
+    md: MD_TYPE = None,
+):
+    return (
+        yield from plans.spiral(
+            detectors=detectors,
+            x_motor=x_motor,
+            y_motor=y_motor,
+            x_start=x_start,
+            y_start=y_start,
+            x_range=x_range,
+            y_range=y_range,
+            dr=dr,
+            nth=nth,
+            dr_y=dr_y,
+            tilt=tilt,
+            per_step=per_step,
+            md=md,
+        )
+    )
+
+
+@parameter_annotation_decorator(DEFAULT_ANNOTATION)
+@wraps(plans.spiral_fermat)
+def spiral_fermat(
+    detectors: DETECTORS_TYPE,
+    x_motor: protocols.Movable,
+    y_motor: protocols.Movable,
+    x_start: float,
+    y_start: float,
+    x_range: float,
+    y_range: float,
+    dr: float,
+    factor: float,
+    *,
+    dr_y: typing.Optional[float] = None,
+    tilt: float = 0.0,
+    per_step: PER_STEP_TYPE = None,
+    md: MD_TYPE = None,
+):
+    return (
+        yield from plans.spiral_fermat(
+            detectors=detectors,
+            x_motor=x_motor,
+            y_motor=y_motor,
+            x_start=x_start,
+            y_start=y_start,
+            x_range=x_range,
+            y_range=y_range,
+            dr=dr,
+            factor=factor,
+            dr_y=dr_y,
+            tilt=tilt,
+            per_step=per_step,
+            md=md,
+        )
+    )
+
+
+@parameter_annotation_decorator(DEFAULT_ANNOTATION)
+@wraps(plans.spiral_square)
+def spiral_square(
+    detectors: DETECTORS_TYPE,
+    x_motor: protocols.Movable,
+    y_motor: protocols.Movable,
+    x_center: float,
+    y_center: float,
+    x_range: float,
+    y_range: float,
+    x_num: float,
+    y_num: float,
+    *,
+    per_step: PER_STEP_TYPE = None,
+    md: MD_TYPE = None,
+):
+    return (
+        yield from plans.spiral_square(
+            detectors=detectors,
+            x_motor=x_motor,
+            y_motor=y_motor,
+            x_center=x_center,
+            y_center=y_center,
+            x_range=x_range,
+            y_range=y_range,
+            x_num=x_num,
+            y_num=y_num,
+            per_step=per_step,
+            md=md,
+        )
+    )
+
+
+@parameter_annotation_decorator(DEFAULT_ANNOTATION)
+@wraps(plans.rel_spiral)
+def rel_spiral(
+    detectors: DETECTORS_TYPE,
+    x_motor: protocols.Movable,
+    y_motor: protocols.Movable,
+    x_range: float,
+    y_range: float,
+    dr: float,
+    nth: float,
+    *,
+    dr_y: typing.Optional[float] = None,
+    tilt: float = 0.0,
+    per_step: PER_STEP_TYPE = None,
+    md: MD_TYPE = None,
+):
+    return (
+        yield from plans.rel_spiral(
+            detectors=detectors,
+            x_motor=x_motor,
+            y_motor=y_motor,
+            x_range=x_range,
+            y_range=y_range,
+            dr=dr,
+            nth=nth,
+            dr_y=dr_y,
+            tilt=tilt,
+            per_step=per_step,
+            md=md,
+        )
+    )
+
+
+@parameter_annotation_decorator(DEFAULT_ANNOTATION)
+@wraps(plans.rel_spiral_fermat)
+def rel_spiral_fermat(
+    detectors: DETECTORS_TYPE,
+    x_motor: protocols.Movable,
+    y_motor: protocols.Movable,
+    x_range: float,
+    y_range: float,
+    dr: float,
+    factor: float,
+    *,
+    dr_y: typing.Optional[float] = None,
+    tilt: float = 0.0,
+    per_step: PER_STEP_TYPE = None,
+    md: MD_TYPE = None,
+):
+    return (
+        yield from plans.rel_spiral_fermat(
+            detectors=detectors,
+            x_motor=x_motor,
+            y_motor=y_motor,
+            x_range=x_range,
+            y_range=y_range,
+            dr=dr,
+            factor=factor,
+            dr_y=dr_y,
+            tilt=tilt,
+            per_step=per_step,
+            md=md,
+        )
+    )
+
+
+@parameter_annotation_decorator(DEFAULT_ANNOTATION)
+@wraps(plans.rel_spiral_square)
+def rel_spiral_square(
+    detectors: DETECTORS_TYPE,
+    x_motor: protocols.Movable,
+    y_motor: protocols.Movable,
+    x_range: float,
+    y_range: float,
+    x_num: float,
+    y_num: float,
+    *,
+    per_step: PER_STEP_TYPE = None,
+    md: MD_TYPE = None,
+):
+    return (
+        yield from plans.rel_spiral_square(
+            detectors=detectors,
+            x_motor=x_motor,
+            y_motor=y_motor,
+            x_range=x_range,
+            y_range=y_range,
+            x_num=x_num,
+            y_num=y_num,
+            per_step=per_step,
+            md=md,
         )
     )
