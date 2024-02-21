@@ -43,6 +43,8 @@ __all__ = [
     "rel_list_scan",
     "list_grid_scan",
     "rel_list_grid_scan",
+    "log_scan",
+    "rel_log_scan",
     "grid_scan",
 ]
 
@@ -405,6 +407,56 @@ def rel_list_grid_scan(
             detectors=detectors,
             args=args,
             snake_axes=snake_axes,
+            per_step=per_step,
+            md=md,
+        )
+    )
+
+
+@parameter_annotation_decorator(DEFAULT_ANNOTATION)
+@wraps(plans.log_scan)
+def log_scan(
+    detectors: DETECTORS_TYPE,
+    motor: protocols.Movable,
+    start: float,
+    stop: float,
+    num: NUM_TYPE = 1,
+    *,
+    per_step: PER_STEP_TYPE = None,
+    md: MD_TYPE = None,
+):
+    return (
+        yield from plans.log_scan(
+            detectors=detectors,
+            motor=motor,
+            start=start,
+            stop=stop,
+            num=num,
+            per_step=per_step,
+            md=md,
+        )
+    )
+
+
+@parameter_annotation_decorator(DEFAULT_ANNOTATION)
+@wraps(plans.rel_log_scan)
+def rel_log_scan(
+    detectors: DETECTORS_TYPE,
+    motor: protocols.Movable,
+    start: float,
+    stop: float,
+    num: NUM_TYPE = 1,
+    *,
+    per_step: PER_STEP_TYPE = None,
+    md: MD_TYPE = None,
+):
+    return (
+        yield from plans.rel_log_scan(
+            detectors=detectors,
+            motor=motor,
+            start=start,
+            stop=stop,
+            num=num,
             per_step=per_step,
             md=md,
         )
