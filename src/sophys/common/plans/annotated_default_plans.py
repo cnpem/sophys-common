@@ -82,14 +82,14 @@ TAKE_READING_TYPE = typing.Callable[
 
 #: Plan function that can be used for each shot in a detector acquisition involving no actuation
 PER_SHOT_TYPE = typing.Callable[
-    [typing.Iterable[protocols.Readable], typing.Optional[TAKE_READING_TYPE]],
+    [typing.Sequence[protocols.Readable], typing.Optional[TAKE_READING_TYPE]],
     MSG_GENERATOR_TYPE,
 ]
 
 #: Plan function that can be used for each step in a scan
 PER_STEP_TYPE = typing.Callable[
     [
-        typing.Iterable[protocols.Readable],
+        typing.Sequence[protocols.Readable],
         typing.Mapping[protocols.Movable, typing.Any],
         typing.Mapping[protocols.Movable, typing.Any],
         typing.Optional[TAKE_READING_TYPE],
@@ -184,7 +184,7 @@ except ImportError:
 def count(
     detectors: DETECTORS_TYPE,
     num: NUM_TYPE = 1,
-    delay: typing.Union[float, typing.Iterable, None] = None,
+    delay: typing.Union[float, typing.Sequence[float], None] = None,
     *,
     per_shot: PER_SHOT_TYPE = None,
     md: MD_TYPE = None,
@@ -372,7 +372,7 @@ In general:
 def list_grid_scan(
     detectors: DETECTORS_TYPE,
     *args: MOTORS_TYPE,
-    snake_axes: typing.Union[bool, typing.Iterable[protocols.Movable]] = False,
+    snake_axes: typing.Union[bool, typing.Sequence[protocols.Movable]] = False,
     per_step: PER_STEP_TYPE = None,
     md: MD_TYPE = None,
 ):
@@ -413,7 +413,7 @@ In general:
 def rel_list_grid_scan(
     detectors: DETECTORS_TYPE,
     *args: MOTORS_TYPE,
-    snake_axes: typing.Union[bool, typing.Iterable[protocols.Movable]] = False,
+    snake_axes: typing.Union[bool, typing.Sequence[protocols.Movable]] = False,
     per_step: PER_STEP_TYPE = None,
     md: MD_TYPE = None,
 ):
@@ -506,7 +506,7 @@ In general:
 def grid_scan(
     detectors: DETECTORS_TYPE,
     *args: MOTORS_TYPE,
-    snake_axes: typing.Union[bool, typing.Iterable[protocols.Movable]] = False,
+    snake_axes: typing.Union[bool, typing.Sequence[protocols.Movable]] = False,
     per_step: PER_STEP_TYPE = None,
     md: MD_TYPE = None,
 ):
@@ -549,7 +549,7 @@ In general:
 def rel_grid_scan(
     detectors: DETECTORS_TYPE,
     *args: MOTORS_TYPE,
-    snake_axes: typing.Union[bool, typing.Iterable[protocols.Movable]] = False,
+    snake_axes: typing.Union[bool, typing.Sequence[protocols.Movable]] = False,
     per_step: PER_STEP_TYPE = None,
     md: MD_TYPE = None,
 ):
