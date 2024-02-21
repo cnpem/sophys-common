@@ -59,10 +59,12 @@ __all__ = [
     "rel_adaptive_scan",
     "tune_centroid",
     "tweak",
+    "fly",
 ]
 
 
 DETECTORS_TYPE = typing.Sequence[protocols.Readable]
+FLYERS_TYPE = typing.Sequence[protocols.Flyable]
 MOTORS_TYPE = typing.Sequence[typing.Union[protocols.Movable, typing.Any]]
 NUM_TYPE = typing.Optional[int]
 MD_TYPE = typing.Optional[dict]
@@ -896,3 +898,20 @@ def tweak(
             md=md,
         )
     )
+
+
+@parameter_annotation_decorator(
+    {
+        "parameters": {
+            "flyers": {
+                "convert_device_names": True,
+            },
+            "md": {
+                "convert_device_names": False,
+            },
+        },
+    }
+)
+@wraps(plans.fly)
+def fly(flyers: FLYERS_TYPE, *, md: MD_TYPE = None):
+    return (yield from plans.fly(flyers=flyers, md=md))
