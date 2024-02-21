@@ -58,6 +58,7 @@ __all__ = [
     "adaptive_scan",
     "rel_adaptive_scan",
     "tune_centroid",
+    "tweak",
 ]
 
 
@@ -871,6 +872,27 @@ def tune_centroid(
             num=num,
             step_factor=step_factor,
             snake=snake,
+            md=md,
+        )
+    )
+
+
+@parameter_annotation_decorator(DEFAULT_ANNOTATION)
+@wraps(plans.tweak)
+def tweak(
+    detectors: DETECTORS_TYPE,
+    target_field: str,
+    motor: protocols.Movable,
+    step: float,
+    *,
+    md: MD_TYPE = None,
+):
+    return (
+        yield from plans.tweak(
+            detectors=detectors,
+            target_field=target_field,
+            motor=motor,
+            step=step,
             md=md,
         )
     )
