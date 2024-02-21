@@ -170,7 +170,30 @@ def count(
     )
 
 
-@parameter_annotation_decorator(DEFAULT_ANNOTATION)
+@parameter_annotation_decorator(
+    DEFAULT_ANNOTATION
+    | {
+        "parameters": {
+            "args": {
+                "description": """
+For one dimension, ``motor, start, stop``, meaning
+``motor`` will go from ``start`` to ``stop``.
+
+In general:
+
+.. code-block:: python
+
+    motor1, start1, stop1,
+    motor2, start2, stop2,
+    ...,
+    motorN, startN, stopN,
+
+-.-motor,start,stop;the n-th motor to move from slowest to fastest,the starting point in the motor's trajectory,the ending point in the motor's trajectory;__MOVABLE__,float,float-.-
+""",
+            },
+        },
+    }
+)
 @wraps(plans.scan)
 def scan(
     detectors: DETECTORS_TYPE,
