@@ -57,6 +57,7 @@ __all__ = [
     "rel_spiral_square",
     "adaptive_scan",
     "rel_adaptive_scan",
+    "tune_centroid",
 ]
 
 
@@ -839,6 +840,37 @@ def rel_adaptive_scan(
             target_delta=target_delta,
             backstep=backstep,
             threshold=threshold,
+            md=md,
+        )
+    )
+
+
+@parameter_annotation_decorator(DEFAULT_ANNOTATION)
+@wraps(plans.tune_centroid)
+def tune_centroid(
+    detectors: DETECTORS_TYPE,
+    signal: str,
+    motor: protocols.Movable,
+    start: float,
+    stop: float,
+    min_step: float,
+    num: int = 10,
+    step_factor: float = 3.0,
+    snake: bool = False,
+    *,
+    md: MD_TYPE = None,
+):
+    return (
+        yield from plans.tune_centroid(
+            detectors=detectors,
+            signal=signal,
+            motor=motor,
+            start=start,
+            stop=stop,
+            min_step=min_step,
+            num=num,
+            step_factor=step_factor,
+            snake=snake,
             md=md,
         )
     )
