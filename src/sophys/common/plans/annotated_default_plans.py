@@ -188,7 +188,7 @@ In general:
     ...,
     motorN, startN, stopN,
 
--.-motor,start,stop;the n-th motor to move from slowest to fastest,the starting point in the motor's trajectory,the ending point in the motor's trajectory;__MOVABLE__,float,float-.-
+-.-motor,start,stop;the n-th motor to move from slowest to fastest,the starting point in the motor's trajectory,the ending point in the motor's trajectory;__MOVABLE__,typing.Any,typing.Any-.-
 """,
             },
         },
@@ -225,7 +225,7 @@ In general:
     ...,
     motorN, [point1, point2, ...]
 
--.-motor,point list;the n-th motor to move (all of them move simultaneously),the list of points that motor will stop by;__MOVABLE__,typing.List[float]-.-
+-.-motor,point list;the n-th motor to move (all of them move simultaneously),the list of points that motor will stop by;__MOVABLE__,typing.List[typing.Any]-.-
 """,
             },
         },
@@ -263,7 +263,7 @@ In general:
     ...,
     motorN, startN, stopN, numN
 
--.-motor,start,stop,num;the n-th motor to move from slowest to fastest,the starting point in the motor's trajectory,the ending point in the motor's trajectory,the number of steps to take in each iteration;__MOVABLE__,float,float,int-.-
+-.-motor,start,stop,num;the n-th motor to move from slowest to fastest,the starting point in the motor's trajectory,the ending point in the motor's trajectory,the number of steps to take in each iteration;__MOVABLE__,typing.Any,typing.Any,int-.-
 """,
             },
         },
