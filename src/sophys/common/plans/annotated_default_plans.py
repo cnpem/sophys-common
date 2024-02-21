@@ -55,6 +55,8 @@ __all__ = [
     "rel_spiral",
     "rel_spiral_fermat",
     "rel_spiral_square",
+    "adaptive_scan",
+    "rel_adaptive_scan",
 ]
 
 
@@ -771,6 +773,72 @@ def rel_spiral_square(
             x_num=x_num,
             y_num=y_num,
             per_step=per_step,
+            md=md,
+        )
+    )
+
+
+@parameter_annotation_decorator(DEFAULT_ANNOTATION)
+@wraps(plans.adaptive_scan)
+def adaptive_scan(
+    detectors: DETECTORS_TYPE,
+    target_field: str,
+    motor: protocols.Movable,
+    start: float,
+    stop: float,
+    min_step: float,
+    max_step: float,
+    target_delta: float,
+    backstep: bool,
+    threshold: float = 0.8,
+    *,
+    md: MD_TYPE = None,
+):
+    return (
+        yield from plans.adaptive_scan(
+            detectors=detectors,
+            target_field=target_field,
+            motor=motor,
+            start=start,
+            stop=stop,
+            min_step=min_step,
+            max_step=max_step,
+            target_delta=target_delta,
+            backstep=backstep,
+            threshold=threshold,
+            md=md,
+        )
+    )
+
+
+@parameter_annotation_decorator(DEFAULT_ANNOTATION)
+@wraps(plans.rel_adaptive_scan)
+def rel_adaptive_scan(
+    detectors: DETECTORS_TYPE,
+    target_field: str,
+    motor: protocols.Movable,
+    start: float,
+    stop: float,
+    min_step: float,
+    max_step: float,
+    target_delta: float,
+    backstep: bool,
+    threshold: float = 0.8,
+    *,
+    md: MD_TYPE = None,
+):
+    return (
+        yield from plans.rel_adaptive_scan(
+            detectors=detectors,
+            target_field=target_field,
+            motor=motor,
+            start=start,
+            stop=stop,
+            min_step=min_step,
+            max_step=max_step,
+            target_delta=target_delta,
+            backstep=backstep,
+            threshold=threshold,
             md=md,
         )
     )
