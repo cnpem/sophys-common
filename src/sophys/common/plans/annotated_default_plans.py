@@ -228,11 +228,7 @@ def scan(
     per_step: PER_STEP_TYPE = None,
     md: MD_TYPE = None,
 ):
-    return (
-        yield from plans.scan(
-            detectors=detectors, args=args, num=num, per_step=per_step, md=md
-        )
-    )
+    return (yield from plans.scan(detectors, *args, num=num, per_step=per_step, md=md))
 
 
 @parameter_annotation_decorator(
@@ -268,9 +264,7 @@ def rel_scan(
     md: MD_TYPE = None,
 ):
     return (
-        yield from plans.rel_scan(
-            detectors=detectors, args=args, num=num, per_step=per_step, md=md
-        )
+        yield from plans.rel_scan(detectors, *args, num=num, per_step=per_step, md=md)
     )
 
 
@@ -303,11 +297,7 @@ def list_scan(
     per_step: PER_STEP_TYPE = None,
     md: MD_TYPE = None,
 ):
-    return (
-        yield from plans.list_scan(
-            detectors=detectors, args=args, per_step=per_step, md=md
-        )
-    )
+    return (yield from plans.list_scan(detectors, *args, per_step=per_step, md=md))
 
 
 @parameter_annotation_decorator(
@@ -339,11 +329,7 @@ def rel_list_scan(
     per_step: PER_STEP_TYPE = None,
     md: MD_TYPE = None,
 ):
-    return (
-        yield from plans.rel_list_scan(
-            detectors=detectors, args=args, per_step=per_step, md=md
-        )
-    )
+    return (yield from plans.rel_list_scan(detectors, *args, per_step=per_step, md=md))
 
 
 @parameter_annotation_decorator(
@@ -378,8 +364,8 @@ def list_grid_scan(
 ):
     return (
         yield from plans.list_grid_scan(
-            detectors=detectors,
-            args=args,
+            detectors,
+            *args,
             snake_axes=snake_axes,
             per_step=per_step,
             md=md,
@@ -419,8 +405,8 @@ def rel_list_grid_scan(
 ):
     return (
         yield from plans.rel_list_grid_scan(
-            detectors=detectors,
-            args=args,
+            detectors,
+            *args,
             snake_axes=snake_axes,
             per_step=per_step,
             md=md,
@@ -512,8 +498,8 @@ def grid_scan(
 ):
     return (
         yield from plans.grid_scan(
-            detectors=detectors,
-            args=args,
+            detectors,
+            *args,
             snake_axes=snake_axes,
             per_step=per_step,
             md=md,
@@ -555,8 +541,8 @@ def rel_grid_scan(
 ):
     return (
         yield from plans.rel_grid_scan(
-            detectors=detectors,
-            args=args,
+            detectors,
+            *args,
             snake_axes=snake_axes,
             per_step=per_step,
             md=md,
