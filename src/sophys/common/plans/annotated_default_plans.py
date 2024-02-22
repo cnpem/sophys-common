@@ -223,6 +223,7 @@ In general:
 @wraps(plans.scan)
 def scan(
     detectors: DETECTORS_TYPE,
+    /,
     *args: MOTORS_TYPE,
     num: NUM_TYPE = None,
     per_step: PER_STEP_TYPE = None,
@@ -258,6 +259,7 @@ In general:
 @wraps(plans.rel_scan)
 def rel_scan(
     detectors: DETECTORS_TYPE,
+    /,
     *args: MOTORS_TYPE,
     num: NUM_TYPE = None,
     per_step: PER_STEP_TYPE = None,
@@ -293,6 +295,7 @@ In general:
 @wraps(plans.list_scan)
 def list_scan(
     detectors: DETECTORS_TYPE,
+    /,
     *args: MOTORS_TYPE,
     per_step: PER_STEP_TYPE = None,
     md: MD_TYPE = None,
@@ -325,6 +328,7 @@ In general:
 @wraps(plans.rel_list_scan)
 def rel_list_scan(
     detectors: DETECTORS_TYPE,
+    /,
     *args: MOTORS_TYPE,
     per_step: PER_STEP_TYPE = None,
     md: MD_TYPE = None,
@@ -357,6 +361,7 @@ In general:
 @wraps(plans.list_grid_scan)
 def list_grid_scan(
     detectors: DETECTORS_TYPE,
+    /,
     *args: MOTORS_TYPE,
     snake_axes: typing.Union[bool, typing.Sequence[protocols.Movable]] = False,
     per_step: PER_STEP_TYPE = None,
@@ -398,6 +403,7 @@ In general:
 @wraps(plans.rel_list_grid_scan)
 def rel_list_grid_scan(
     detectors: DETECTORS_TYPE,
+    /,
     *args: MOTORS_TYPE,
     snake_axes: typing.Union[bool, typing.Sequence[protocols.Movable]] = False,
     per_step: PER_STEP_TYPE = None,
@@ -491,6 +497,7 @@ In general:
 @wraps(plans.grid_scan)
 def grid_scan(
     detectors: DETECTORS_TYPE,
+    /,
     *args: MOTORS_TYPE,
     snake_axes: typing.Union[bool, typing.Sequence[protocols.Movable]] = False,
     per_step: PER_STEP_TYPE = None,
@@ -534,6 +541,7 @@ In general:
 @wraps(plans.rel_grid_scan)
 def rel_grid_scan(
     detectors: DETECTORS_TYPE,
+    /,
     *args: MOTORS_TYPE,
     snake_axes: typing.Union[bool, typing.Sequence[protocols.Movable]] = False,
     per_step: PER_STEP_TYPE = None,
