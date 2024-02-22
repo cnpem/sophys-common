@@ -13,6 +13,11 @@ Sophys stands for **S**\ irius **Oph**\ yd and Bluesk\ **y** utilitie\ **s**\ . 
 .. toctree::
     :maxdepth: 2
 
+    plans
+
+.. toctree::
+    :maxdepth: 2
+
     utils
 
 .. toctree::
