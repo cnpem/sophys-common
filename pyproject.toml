@@ -32,6 +32,9 @@ kafka = [
   "kafka-python",
   "msgpack"
 ]
+registry = [
+  "ophyd-registry"
+]
 
 [project.urls]
 "Homepage" = "https://gitlab.cnpem.br/SOL/bluesky/sophys-common"
