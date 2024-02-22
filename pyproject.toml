@@ -1,5 +1,5 @@
 [build-system]
-requires = ["setuptools"]
+requires = ["setuptools", "setuptools-scm"]
 build-backend = "setuptools.build_meta"
 
 [project]
@@ -40,8 +40,8 @@ registry = [
 "Homepage" = "https://gitlab.cnpem.br/SOL/bluesky/sophys-common"
 "Bug Tracker" = "https://gitlab.cnpem.br/SOL/bluesky/sophys-common/-/issues"
 
-[tool.setuptools.dynamic]
-version = {attr = "sophys.common.__version__.__version__"}
+[tool.setuptools_scm]
+version_file = "src/sophys/common/__version__.py"
 
 [tool.setuptools.packages.find]
 where = ["src"]

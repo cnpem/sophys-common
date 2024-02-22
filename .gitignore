@@ -14,3 +14,5 @@ coverage.xml
 *.cover
 .hypothesis/
 .pytest_cache/
+
+src/sophys/common/__version__.py
