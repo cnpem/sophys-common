@@ -83,7 +83,7 @@ TAKE_READING_TYPE = typing.Callable[
 #: Plan function that can be used for each shot in a detector acquisition involving no actuation
 PER_SHOT_TYPE = typing.Callable[
     [typing.Sequence[protocols.Readable], typing.Optional[TAKE_READING_TYPE]],
-    MSG_GENERATOR_TYPE,
+    MSG_GENERATOR_TYPE[None],
 ]
 
 #: Plan function that can be used for each step in a scan
@@ -94,7 +94,7 @@ PER_STEP_TYPE = typing.Callable[
         typing.Mapping[protocols.Movable, typing.Any],
         typing.Optional[TAKE_READING_TYPE],
     ],
-    MSG_GENERATOR_TYPE,
+    MSG_GENERATOR_TYPE[None],
 ]
 
 
