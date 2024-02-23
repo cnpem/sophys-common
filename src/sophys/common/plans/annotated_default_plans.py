@@ -65,7 +65,6 @@ __all__ = [
 
 DETECTORS_TYPE = typing.Sequence[protocols.Readable]
 FLYERS_TYPE = typing.Sequence[protocols.Flyable]
-NUM_TYPE = typing.Optional[int]
 MD_TYPE = typing.Optional[dict]
 
 #: Return type of a plan, usually None. Always optional for dry-runs.
@@ -182,7 +181,7 @@ except ImportError:
 @wraps(plans.count)
 def count(
     detectors: DETECTORS_TYPE,
-    num: NUM_TYPE = 1,
+    num: typing.Optional[int] = 1,
     delay: typing.Union[float, typing.Sequence[float], None] = None,
     *,
     per_shot: PER_SHOT_TYPE = None,
@@ -224,7 +223,7 @@ def scan(
     detectors: DETECTORS_TYPE,
     /,
     *args,
-    num: NUM_TYPE = None,
+    num: int = None,
     per_step: PER_STEP_TYPE = None,
     md: MD_TYPE = None,
 ):
@@ -260,7 +259,7 @@ def rel_scan(
     detectors: DETECTORS_TYPE,
     /,
     *args,
-    num: NUM_TYPE = None,
+    num: int = None,
     per_step: PER_STEP_TYPE = None,
     md: MD_TYPE = None,
 ):
@@ -426,7 +425,7 @@ def log_scan(
     motor: protocols.Movable,
     start: float,
     stop: float,
-    num: NUM_TYPE = 1,
+    num: typing.Optional[int] = 1,
     *,
     per_step: PER_STEP_TYPE = None,
     md: MD_TYPE = None,
@@ -451,7 +450,7 @@ def rel_log_scan(
     motor: protocols.Movable,
     start: float,
     stop: float,
-    num: NUM_TYPE = 1,
+    num: typing.Optional[int] = 1,
     *,
     per_step: PER_STEP_TYPE = None,
     md: MD_TYPE = None,
