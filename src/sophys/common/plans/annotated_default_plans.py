@@ -65,7 +65,6 @@ __all__ = [
 
 DETECTORS_TYPE = typing.Sequence[protocols.Readable]
 FLYERS_TYPE = typing.Sequence[protocols.Flyable]
-MOTORS_TYPE = typing.Sequence[typing.Union[protocols.Movable, typing.Any]]
 NUM_TYPE = typing.Optional[int]
 MD_TYPE = typing.Optional[dict]
 
@@ -224,7 +223,7 @@ In general:
 def scan(
     detectors: DETECTORS_TYPE,
     /,
-    *args: MOTORS_TYPE,
+    *args,
     num: NUM_TYPE = None,
     per_step: PER_STEP_TYPE = None,
     md: MD_TYPE = None,
@@ -260,7 +259,7 @@ In general:
 def rel_scan(
     detectors: DETECTORS_TYPE,
     /,
-    *args: MOTORS_TYPE,
+    *args,
     num: NUM_TYPE = None,
     per_step: PER_STEP_TYPE = None,
     md: MD_TYPE = None,
@@ -296,7 +295,7 @@ In general:
 def list_scan(
     detectors: DETECTORS_TYPE,
     /,
-    *args: MOTORS_TYPE,
+    *args,
     per_step: PER_STEP_TYPE = None,
     md: MD_TYPE = None,
 ):
@@ -329,7 +328,7 @@ In general:
 def rel_list_scan(
     detectors: DETECTORS_TYPE,
     /,
-    *args: MOTORS_TYPE,
+    *args,
     per_step: PER_STEP_TYPE = None,
     md: MD_TYPE = None,
 ):
@@ -362,7 +361,7 @@ In general:
 def list_grid_scan(
     detectors: DETECTORS_TYPE,
     /,
-    *args: MOTORS_TYPE,
+    *args,
     snake_axes: typing.Union[bool, typing.Sequence[protocols.Movable]] = False,
     per_step: PER_STEP_TYPE = None,
     md: MD_TYPE = None,
@@ -404,7 +403,7 @@ In general:
 def rel_list_grid_scan(
     detectors: DETECTORS_TYPE,
     /,
-    *args: MOTORS_TYPE,
+    *args,
     snake_axes: typing.Union[bool, typing.Sequence[protocols.Movable]] = False,
     per_step: PER_STEP_TYPE = None,
     md: MD_TYPE = None,
@@ -498,7 +497,7 @@ In general:
 def grid_scan(
     detectors: DETECTORS_TYPE,
     /,
-    *args: MOTORS_TYPE,
+    *args,
     snake_axes: typing.Union[bool, typing.Sequence[protocols.Movable]] = False,
     per_step: PER_STEP_TYPE = None,
     md: MD_TYPE = None,
@@ -542,7 +541,7 @@ In general:
 def rel_grid_scan(
     detectors: DETECTORS_TYPE,
     /,
-    *args: MOTORS_TYPE,
+    *args,
     snake_axes: typing.Union[bool, typing.Sequence[protocols.Movable]] = False,
     per_step: PER_STEP_TYPE = None,
     md: MD_TYPE = None,
