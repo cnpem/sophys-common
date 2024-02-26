@@ -1,11 +1,13 @@
 from itertools import chain
 import logging
 from contextlib import contextmanager
+import re
 import threading
 import typing
 
 
 __global_registries = dict()
+__global_registry_names = dict()
 __auto_register = threading.local()
 
 
@@ -46,6 +48,7 @@ def create_named_registry(registry_name: str):
         return
 
     global __global_registries
+    global __global_registry_names
     if len(__global_registries) == 0:
 
         def instantiation_callback(obj):
@@ -63,8 +66,16 @@ def create_named_registry(registry_name: str):
         registry.clear()
         return registry
     except RuntimeError:
-        __global_registries[registry_name] = Registry(auto_register=False)
-        return __global_registries[registry_name]
+        registry = Registry(auto_register=False)
+        __global_registries[registry_name] = registry
+        __global_registry_names[registry] = registry_name
+        return registry
+
+
+def get_registry_name(registry):
+    """Return the name associated with this registry."""
+    global __global_registry_names
+    return __global_registry_names[registry]
 
 
 def get_all_registries():
@@ -73,8 +84,16 @@ def get_all_registries():
     return __global_registries.values()
 
 
-def get_all_devices():
-    """Return all the root devices from all the registries currently instantiated."""
+def get_all_devices(as_dict: bool = False):
+    """
+    Return all the root devices from all the registries currently instantiated.
+
+    Parameters
+    ----------
+    as_dict : bool, optional
+        If True, return a dictionary, as per :func:`to_variable_dict`.
+        Otherwise, return a list of all devices. Defaults to False.
+    """
     global __global_registries
     return list(
         chain.from_iterable(v.root_devices for v in __global_registries.values())
@@ -135,6 +154,26 @@ def register_devices(registry_name: str):
     __auto_register.val = registry_name
     yield
     __auto_register.val = None
+
+
+def to_variable_dict(self, *registries):
+    """
+    Turns a registry (or set of registries) into a dictionary, intended of being used as such:
+
+    - ``globals().update(<return value>)``
+    - ``locals().update(<return value>)``
+    """
+
+    def process_name(registry, name: str):
+        pattern = re.compile("[^a-zA-Z1-9_]")
+        device_name = re.sub(pattern, "_", name)
+        return "_{}_{}".format(get_registry_name(registry), device_name)
+
+    ret = {}
+    for registry in registries:
+        ret.update({process_name(registry, d.name): d for d in registry.root_devices})
+
+    return ret
 
 
 try:
