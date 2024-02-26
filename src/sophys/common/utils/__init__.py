@@ -100,3 +100,17 @@ def set_debug_mode(
         return_dict["print_sub_id"] = run_engine.subscribe(pretty_doc_print)
 
     return return_dict
+
+
+def is_in_queueserver() -> bool:
+    """
+    Returns whether the current code is running in a queueserver environment (e.g. in the startup sequence), or not.
+
+    This is very similar to queueserver's :func:`bluesky_queueserver.is_re_worker_active`, but without a hard dependency on queueserver.
+    """
+    try:
+        from bluesky_queueserver import is_re_worker_active
+    except ImportError:
+        is_re_worker_active = lambda: False  # noqa: E731
+
+    return is_re_worker_active()
