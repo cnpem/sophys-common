@@ -1,7 +1,7 @@
 Package organization
 ====================
 
-This document explains how the bluesky / ophyd packages are to be organized for beamline usage at LNLS. The proposed structure is intended to make things as simple to use and maintains as possible, while providing enough flexibility for the experiments needs.
+This document explains how the bluesky / ophyd packages are to be organized for beamline usage at LNLS. The proposed structure is intended to make things as simple to use and maintain as possible, while providing enough flexibility for the experiments needs.
 
 Below is a high-level schematic showing how the ``sophys-...`` packages are structured:
 
