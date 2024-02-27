@@ -20,7 +20,7 @@ The contents of this package can be summarized as the following:
 
 - Bluesky plans for common / general procedures in many beamlines.
 
-- Utilitary functionality not normally provided by other packages, but that are useful to have.
+- Utilitary functionality not normally provided by other packages, but that are useful to have when developing bluesky / ophyd related features. Examples include `logging facilities <http://sol.gitpages.cnpem.br/bluesky/sophys-common/utils.html#sophys.common.utils.set_debug_mode>`_, `RunEngine callback utils <http://sol.gitpages.cnpem.br/bluesky/sophys-common/utils.html#module-sophys.common.utils.callbacks>`_, or `custom Ophyd Signals <http://sol.gitpages.cnpem.br/bluesky/sophys-common/utils.html#module-sophys.common.utils.signals>`_, among other things.
 
 - Usage examples and documentation for helping out people using ophyd and bluesky at LNLS.
 
