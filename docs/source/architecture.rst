@@ -129,3 +129,12 @@ This function will then be called by someone to instantiate and register the dev
         # Get all devices
         from ophyd import Device
         all_devices = {k: v for k, v in globals().items() if isinstance(v, Device)}
+
+Namespace packages
+------------------
+
+All the sophys packages are structured in a special way, named a ``namespace package``. This is a standard feature of Python, that allows us to share the ``sophys.`` import prefix along many independent packages. So, we can have both ``sophys-common`` and ``sophys-xxx`` share the same ``from sophys.(...) import (...)``.
+
+This is why all the packages have a ``src`` folder, inside of which they have a ``sophys`` folder, **without a** ``__init__.py`` **file in it**, and inside of that goes the specific code for that package.
+
+You can read more about namespace packages in `the Packaging Python User Guide <https://packaging.python.org/en/latest/guides/packaging-namespace-packages/>`_, in `the PEP that introduced it <https://peps.python.org/pep-0420/>`_, and in `the setuptools user guide about it <https://setuptools.pypa.io/en/latest/userguide/package_discovery.html#finding-namespace-packages>`_, if you want to learn more. Overall, it's a neat little eye candy, and also helps us standarize the package organization across repositories!
