@@ -31,6 +31,15 @@ Signals
 
 ----
 
+Data access
+-----------
+
+.. automodule:: sophys.common.utils.data_access
+    :members:
+    :show-inheritance:
+
+----
+
 Misc.
 -----
 
