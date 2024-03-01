@@ -6,6 +6,12 @@ Sophys: Common is a collection of `Bluesky`_ and `Ophyd`_ utility code (plans, d
 Sophys stands for **S**\ irius **Oph**\ yd and Bluesk\ **y** utilitie\ **s**\ . As an old wise monk once said, nothing beats a cool-looking name.
 
 .. toctree::
+    :caption: Introduction
+
+    architecture
+
+.. toctree::
+    :caption: API Documentation
     :maxdepth: 2
 
     devices
