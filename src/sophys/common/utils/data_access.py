@@ -23,25 +23,91 @@ An example on how to use these is provided below:
     from sophys.common.utils.data_access import get_run_data, setup_databroker
 
 
-    def example_plan(detectors: DETECTORS_TYPE, *, md: MD_TYPE = None):
+    def example_plan(detectors: DETECTORS_TYPE, *, num=10, md: MD_TYPE = None):
         md = md or {}
         _md = {**md, "my_other_thing_key": "my_other_thing_value"}
 
-        uid = (yield from count(detectors, num=10, delay=0.1, md=_md))
+        uid = (yield from count(detectors, num=num, delay=0, md=_md))
 
         try:
             data_from_count = get_run_data(uid, _md)
         except Exception:
             pass
         else:
-            # Save the data to a CSV file locally
-            data_from_count.primary.read().to_dataframe().to_csv('my_count.csv', index=False)
+            # Do some (basic) stuff with our data!
+            data_from_count = data_from_count.primary.read()
+
+            data_med = float(sum(data_from_count.rand) / len(data_from_count.rand))
+            print("Median (n={}): {:.5f}".format(num, data_med))
+
+            if abs(data_med - 0.5) > 0.0025:
+                new_num = num * 2
+                print("Not enough data! Will retry with n={}".format(new_num))
+
+                yield from example_plan(detectors, num=new_num, md=md)
 
 
     if __name__ == "__main__":
         RE = RunEngine({})
 
-        # This may be ommited, and all it will do is not save the csv file at the end.
+        # This may be ommited, and all it will do is not do the calculation stuff at the end.
+        setup_databroker(RE)
+
+        rand = hw().rand
+        rand.kind = "hinted"     # Specific to the simulated random device
+        rand.start_simulation()  # Specific to the simulated random device
+
+        RE(example_plan([rand]))
+
+You can also setup the databroker on a single plan, from inside it, making it
+independent from the RunEngine's configuration, like so:
+
+.. code-block:: python
+
+    from bluesky import RunEngine
+    from bluesky.plans import count
+
+    from ophyd.sim import hw
+
+    from databroker.v2 import temp
+
+    from sophys.common.plans.annotated_default_plans import DETECTORS_TYPE, MD_TYPE
+    from sophys.common.utils.data_access import setup_databroker
+
+
+    def example_plan(detectors: DETECTORS_TYPE, *, num=10, md: MD_TYPE = None):
+        md = md or {}
+        _md = {**md, "my_other_thing_key": "my_other_thing_value"}
+
+        db = temp()
+
+        # Make all Bluesky events go to the databroker catalog
+        token = (yield from bps.subscribe("all", db.v1.insert))
+
+        uid = (yield from count(detectors, num=num, delay=0, md=_md))
+
+        # Remove the databroker catalog callback
+        yield from bps.unsubscribe(token)
+
+        data_from_count = db[uid]
+
+        # Do some (basic) stuff with our data!
+        data_from_count = data_from_count.primary.read()
+
+        data_med = float(sum(data_from_count.rand) / len(data_from_count.rand))
+        print("Median (n={}): {:.5f}".format(num, data_med))
+
+        if abs(data_med - 0.5) > 0.0025:
+            new_num = num * 2
+            print("Not enough data! Will retry with n={}".format(new_num))
+
+            yield from example_plan(detectors, num=new_num, md=md)
+
+
+    if __name__ == "__main__":
+        RE = RunEngine({})
+
+        # No need to call setup_databroker, but doing so won't break anything.
         setup_databroker(RE)
 
         rand = hw().rand
