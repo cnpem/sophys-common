@@ -55,6 +55,7 @@ class PimegaCam(CamBase):
 
     def __init__(self, prefix, name, **kwargs):
         super(PimegaCam, self).__init__(prefix, name=name, **kwargs)
+        self.acquire.connection_timeout = 10
 
 
 class PimegaDetector(DetectorBase):
