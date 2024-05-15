@@ -10,7 +10,7 @@ from ophyd import (
     Kind,
     SingleTrigger,
 )
-
+from ophyd.signal import EpicsSignalBase
 from ophyd.areadetector.cam import CamBase
 from ophyd.areadetector.detectors import DetectorBase
 
@@ -65,3 +65,4 @@ class PimegaDetector(DetectorBase):
 class Pimega(SingleTrigger, PimegaDetector):
     def __init__(self, name, prefix, **kwargs):
         super(Pimega, self).__init__(prefix, name=name, **kwargs)
+        EpicsSignalBase.set_defaults(timeout=5)
