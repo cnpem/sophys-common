@@ -64,4 +64,3 @@ class PimegaDetector(DetectorBase):
 class Pimega(SingleTrigger, PimegaDetector):
     def __init__(self, name, prefix, **kwargs):
         super(Pimega, self).__init__(prefix, name=name, **kwargs)
-        self.wait_for_connection(timeout=10)
