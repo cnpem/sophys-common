@@ -1,4 +1,5 @@
 from .c400 import C400, OldC400
+from .eras import ERAS
 from .mobipix import Mobipix, MobipixEnergyThresholdSetter
 from .motor import ControllableMotor
 from .pilatus_300k import Pilatus
