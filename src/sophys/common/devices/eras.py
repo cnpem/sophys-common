@@ -42,8 +42,14 @@ class ERAS(Device):
             self.scales = []
             self._sig_attrs = self.__class__._old_sig_attrs
 
-            self.num_scales.wait_for_connection()
-            for i in range(int(self.num_scales.get())):
+            n_scales = -1
+            try:
+                self.num_scales.wait_for_connection()
+                n_scales = int(self.num_scales.get())
+            except TimeoutError:
+                n_scales = 8
+
+            for i in range(n_scales):
                 s = Component(self.Scale, "SC{}:".format(i))
                 s_name = "scale_{}".format(i)
                 s.__set_name__(s, s_name)
