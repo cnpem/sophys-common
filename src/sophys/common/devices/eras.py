@@ -17,6 +17,7 @@ class ERAS(Device):
         You can use `scales[x]` or `scale_x` to access any scale at any time.
         """
 
+        channel_name = Component(EpicsSignal, "GetCdv", write_pv="SetCdv")
         selected_scale = Component(EpicsSignal, "GetRng", write_pv="SetRng")
         num_scales = Component(EpicsSignal, "GetNumScl", write_pv="SetNumScl")
 
