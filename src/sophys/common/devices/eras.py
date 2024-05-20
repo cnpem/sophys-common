@@ -28,9 +28,9 @@ class ERAS(Device):
 
         class Scale(Device):
             full_scale_label = Component(EpicsSignal, "GetFSLbl", write_pv="SetFSLbl")
-            full_scale = Component(EpicsSignal, "GetFS", write_pv="SetFS")
+            full_scale = Component(EpicsSignalRO, "GetFS")
             sensitivity_label = Component(EpicsSignal, "GetSTLbl", write_pv="SetSTLbl")
-            sensitivity = Component(EpicsSignal, "GetST", write_pv="SetST")
+            sensitivity = Component(EpicsSignalRO, "GetST")
 
         def __init__(self, *args, **kwargs):
             super().__init__(*args, **kwargs)
