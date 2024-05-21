@@ -2,6 +2,7 @@ import copy
 import typing
 
 from ophyd import Component, Device, EpicsSignal, EpicsSignalRO
+from ophyd.signal import DEFAULT_CONNECTION_TIMEOUT
 
 
 def add_components_to_device(
@@ -65,7 +66,9 @@ class ERAS(Device):
             sensitivity_label = Component(EpicsSignal, "GetSTLbl", write_pv="SetSTLbl")
             sensitivity = Component(EpicsSignalRO, "GetST")
 
-        def __init__(self, *args, **kwargs):
+        def __init__(
+            self, *args, connection_timeout=DEFAULT_CONNECTION_TIMEOUT, **kwargs
+        ):
             super().__init__(*args, **kwargs)
 
             if not hasattr(self.__class__, "_old_sig_attrs"):
@@ -76,7 +79,7 @@ class ERAS(Device):
 
             n_scales = -1
             try:
-                self.num_scales.wait_for_connection()
+                self.num_scales.wait_for_connection(connection_timeout)
                 n_scales = int(self.num_scales.get())
             except TimeoutError:
                 n_scales = 8
@@ -91,11 +94,17 @@ class ERAS(Device):
             )
             add_components_to_device(self, components, for_each_sig=for_each_sig)
 
-    def __init__(self, *args, **kwargs):
+    def __init__(self, *args, connection_timeout=DEFAULT_CONNECTION_TIMEOUT, **kwargs):
         super().__init__(*args, **kwargs)
 
         components = (
-            (f"channel_{i}", Component(self.Channel, f"CH{i}:")) for i in range(1, 5)
+            (
+                f"channel_{i}",
+                Component(
+                    self.Channel, f"CH{i}:", connection_timeout=connection_timeout
+                ),
+            )
+            for i in range(1, 5)
         )
         add_components_to_device(
             self, components, for_each_sig=lambda name, sig: setattr(self, name, sig)
