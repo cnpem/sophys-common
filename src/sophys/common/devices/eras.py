@@ -1,6 +1,38 @@
 import copy
+import typing
 
 from ophyd import Component, Device, EpicsSignal, EpicsSignalRO
+
+
+def add_components_to_device(
+    obj: Device,
+    components: typing.Iterable[tuple[str, Component]],
+    *,
+    for_each_sig: typing.Optional[typing.Callable] = None,
+):
+    """
+    Add a collection of components to a device, after it has been initialized.
+
+    Parameters
+    ----------
+    obj : Device
+        The device to which the components will be added.
+    components : iterable of (component name, component) tuples
+        The components that will be added to `obj`.
+    for_each_sig : callable, optional
+        Callback that is called on each signal addition, with signature (name: str, sig: Signal) -> Any.
+        By default, it does nothing.
+        One common usage is to call setattr of the signal to its parent.
+    """
+    for component_name, component in components:
+        component.__set_name__(component, component_name)
+
+        obj._sig_attrs[component_name] = component
+        obj._component_kinds[component_name] = component.kind
+        obj._instantiate_component(component_name)
+
+        if for_each_sig is not None:
+            for_each_sig(name=component_name, sig=obj._signals[component_name])
 
 
 class ERAS(Device):
@@ -49,19 +81,22 @@ class ERAS(Device):
             except TimeoutError:
                 n_scales = 8
 
-            for i in range(n_scales):
-                s = Component(self.Scale, "SC{}:".format(i))
-                s_name = "scale_{}".format(i)
-                s.__set_name__(s, s_name)
+            def for_each_sig(name, sig):
+                setattr(self, name, sig)
+                self.scales.append(sig)
 
-                self._sig_attrs[s_name] = s
-                self._component_kinds[s_name] = s.kind
-                self._instantiate_component(s_name)
+            components = (
+                (f"scale_{i}", Component(self.Scale, f"SC{i}:"))
+                for i in range(n_scales)
+            )
+            add_components_to_device(self, components, for_each_sig=for_each_sig)
 
-                setattr(self, s_name, self._signals[s_name])
-                self.scales.append(self._signals[s_name])
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
 
-    channel_1 = Component(Channel, "CH1:")
-    channel_2 = Component(Channel, "CH2:")
-    channel_3 = Component(Channel, "CH3:")
-    channel_4 = Component(Channel, "CH4:")
+        components = (
+            (f"channel_{i}", Component(self.Channel, f"CH{i}:")) for i in range(1, 5)
+        )
+        add_components_to_device(
+            self, components, for_each_sig=lambda name, sig: setattr(self, name, sig)
+        )
