@@ -25,6 +25,10 @@ def add_components_to_device(
         By default, it does nothing.
         One common usage is to call setattr of the signal to its parent.
     """
+    if not hasattr(obj.__class__, "_old_sig_attrs"):
+        obj.__class__._old_sig_attrs = copy.deepcopy(obj._sig_attrs)
+    obj._sig_attrs = obj.__class__._old_sig_attrs
+
     for component_name, component in components:
         component.__set_name__(component, component_name)
 
@@ -71,18 +75,14 @@ class ERAS(Device):
         ):
             super().__init__(*args, **kwargs)
 
-            if not hasattr(self.__class__, "_old_sig_attrs"):
-                self.__class__._old_sig_attrs = copy.deepcopy(self._sig_attrs)
-
-            self.scales = []
-            self._sig_attrs = self.__class__._old_sig_attrs
-
             n_scales = -1
             try:
                 self.num_scales.wait_for_connection(connection_timeout)
                 n_scales = int(self.num_scales.get())
             except TimeoutError:
                 n_scales = 8
+
+            self.scales = []
 
             def for_each_sig(name, sig):
                 setattr(self, name, sig)
