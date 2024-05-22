@@ -6,3 +6,4 @@ Ophyd devices
 
     devices_detectors
     devices_motors
+    devices_controllers
