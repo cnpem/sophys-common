@@ -3,7 +3,7 @@ import os
 import datetime
 from importlib import metadata
 
-from ophyd import Component
+from ophyd import Component, EpicsSignal, EpicsSignalRO
 
 # Configuration file for the Sphinx documentation builder.
 #
@@ -67,10 +67,17 @@ tags_badge_colors = {
 
 def custom_docstring_process(app, what, name, obj, options, lines):
     def pretty_print_component(obj: Component):
-        return "**{0}** --- Suffix = *{1}* | *Kind.{2}*".format(
-            obj.cls.__name__,
-            (obj.suffix or "None").replace(":", ""),
-            getattr(obj.kind, "name"),
+        name = f"**{obj.cls.__name__}**"
+        kind = f"*Kind.{getattr(obj.kind, 'name')}*"
+
+        _mro = obj.cls.mro()
+        if (EpicsSignal in _mro) and (EpicsSignalRO not in _mro):
+            _r = obj.kwargs.get("read_pv", obj.suffix)
+            _w = obj.kwargs.get("write_pv", obj.suffix)
+            if _r != _w:
+                return f"{name} --- Read = {_r} | Write = {_w} | {kind}"
+        return (
+            f"{name} --- Suffix = *{(obj.suffix or 'None').replace(':', '')}* | {kind}"
         )
 
     if what == "attribute" and isinstance(obj, Component):
@@ -80,8 +87,17 @@ def custom_docstring_process(app, what, name, obj, options, lines):
             lines[0] = pretty_print_component(obj)
 
 
+def custom_skip_member(app, what, name, obj, skip, options):
+    # https://www.sphinx-doc.org/en/master/usage/extensions/autodoc.html#event-autodoc-skip-member
+    if what in ("attribute", "property"):
+        if not isinstance(obj, Component):
+            return True
+    return skip
+
+
 def setup(app):
     app.connect("autodoc-process-docstring", custom_docstring_process, priority=-1)
+    app.connect("autodoc-skip-member", custom_skip_member, priority=-1)
 
 
 # -- Options for HTML output -------------------------------------------------
