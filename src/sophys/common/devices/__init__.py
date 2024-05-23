@@ -5,3 +5,5 @@ from .motor import ControllableMotor
 from .pilatus_300k import Pilatus
 from .pimega import Pimega
 from .vortex import Vortex
+
+from .storage_ring import StorageRing
