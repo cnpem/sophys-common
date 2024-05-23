@@ -3,7 +3,7 @@ from ophyd import Device, Component, EpicsSignalRO
 
 class StorageRing(Device):
     ring_current = Component(
-        EpicsSignalRO, "SI-Glob:AP-CurrInfo:Current-Mon", lazy=True
+        EpicsSignalRO, "SI-Glob:AP-CurrInfo:Current-Mon", lazy=True, kind="hinted"
     )
 
     _default_read_attrs = ["ring_current"]
