@@ -16,11 +16,11 @@ class ControllableMotor(EpicsMotor):
         super().unstage()
         self.control_enabled.set(0)
 
-def createVirtualControllableMotor(prefix, components, name):
+def VirtualControllableMotor(prefix, components, name, **kwargs):
     devClass = create_device_from_components(
         name="virtual_motor_class", base_class=EpicsMotor, **components)
     
-    class VirtualControllableMotor(devClass):
+    class VirtualControllableMotorClass(devClass):
         def __init__(self, attr_keys, **kwargs):
             super().__init__(**kwargs)
             self.attr_list = []
@@ -39,5 +39,5 @@ def createVirtualControllableMotor(prefix, components, name):
                 status = attr.set(0)
                 status.wait()
 
-    return VirtualControllableMotor(
-        name=name, prefix=prefix, attr_keys=components.keys())
+    return VirtualControllableMotorClass(
+        name=name, prefix=prefix, attr_keys=components.keys(), **kwargs)
