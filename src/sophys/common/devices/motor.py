@@ -1,4 +1,4 @@
-from ophyd import EpicsMotor, Component, EpicsSignal
+from ophyd import EpicsMotor, Component, EpicsSignal, FormattedComponent
 from ophyd.device import create_device_from_components
 
 
@@ -6,15 +6,15 @@ class ControllableMotor(EpicsMotor):
     """
         Custom EpicsMotor that enables control before a plan and disables it after.
     """
-    control_enabled = Component(EpicsSignal, ".CNEN", kind="config", auto_monitor=True)
+    enable_control = Component(EpicsSignal, ".CNEN", kind="config", auto_monitor=True)
 
     def stage(self):
         super().stage()
-        self.control_enabled.set(1)
+        self.enable_control.set(1)
 
     def unstage(self):
         super().unstage()
-        self.control_enabled.set(0)
+        self.enable_control.set(0)
 
 def VirtualControllableMotor(prefix, components, name, **kwargs):
     """
@@ -26,15 +26,18 @@ def VirtualControllableMotor(prefix, components, name, **kwargs):
 
         ```
             componentsDict = {
-                "cnen_top": FormattedComponent(EpicsSignal, suffix='SWC:MOTOR:m2.CNEN'),
-                "cnen_bottom": FormattedComponent(EpicsSignal, suffix='SWC:MOTOR:m3.CNEN')
+                "top": 'SWC:MOTOR:m2'),
+                "bottom": 'SWC:MOTOR:m3')
             }
             motor = VirtualControllableMotor("SWC:MOTOR:m1", componentsDict, "vertical_gap")
         ```
     """
+    formattedComponents = {}
+    for key, motorPv in components.items():
+        formattedComponents["cnen_"+key] = FormattedComponent(EpicsSignal, suffix=motorPv+".CNEN")
 
     devClass = create_device_from_components(
-        name="virtual_motor_class", base_class=EpicsMotor, **components)
+        name="virtual_motor_class", base_class=EpicsMotor, **formattedComponents)
     
     class VirtualControllableMotorClass(devClass):
 
@@ -47,14 +50,12 @@ def VirtualControllableMotor(prefix, components, name, **kwargs):
         def stage(self):
             super().stage()
             for attr in self.attr_list:
-                status = attr.set(1)
-                status.wait()
+                attr.set(1).wait()
 
         def unstage(self):
             super().unstage()
             for attr in self.attr_list:
-                status = attr.set(0)
-                status.wait()
+                attr.set(0).wait()
 
     return VirtualControllableMotorClass(
-        name=name, prefix=prefix, attr_keys=components.keys(), **kwargs)
+        name=name, prefix=prefix, attr_keys=formattedComponents.keys(), **kwargs)
