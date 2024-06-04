@@ -62,6 +62,7 @@ tags_intro_text = "Type:"
 tags_create_badges = True
 tags_badge_colors = {
     "AreaDetector": "info",
+    "Motor": "info",
 }
 
 
