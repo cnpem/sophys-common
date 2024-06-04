@@ -6,7 +6,7 @@ build-backend = "setuptools.build_meta"
 name = "sophys-common"
 authors = [
   { name="Hugo Campos", email="hugo.campos@lnls.br" },
-  { name="Thiago Ferreira", email="thiago.ferreira@lnls.br" },
+  { name="Sofia Ferreira", email="thiago.ferreira@lnls.br" },
 ]
 description = "Common bluesky and ophyd utilities from SIRIUS/LNLS"
 readme = "README.md"
