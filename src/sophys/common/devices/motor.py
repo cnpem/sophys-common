@@ -24,13 +24,15 @@ def VirtualControllableMotor(prefix, components, name, **kwargs):
         This is useful for virtual motors that depends on the control state of several
         real motors in order to work properly.
 
-        ```
-            componentsDict = {
-                "top": "SWC:MOTOR:m2"),
-                "bottom": "SWC:MOTOR:m3")
-            }
-            motor = VirtualControllableMotor("SWC:MOTOR:m1", componentsDict, "vertical_gap")
-        ```
+        .. admonition:: example
+        
+            .. code-block:: python
+
+                componentsDict = {
+                    "top": "SWC:MOTOR:m2"),
+                    "bottom": "SWC:MOTOR:m3")
+                }
+                motor = VirtualControllableMotor("SWC:MOTOR:m1", componentsDict, "vertical_gap")
     """
     formattedComponents = {}
     for key, motorPv in components.items():
