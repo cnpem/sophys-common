@@ -26,9 +26,24 @@ def __createAnalogIn(num: int) -> dict:
     return components
 
 
+__CRIO_9215_docstring = """
+An Ophyd device for the NI-9215 CompactRIO device, with 4 analog inputs.
+"""
+
+__CRIO_9220_docstring = """
+An Ophyd device for the NI-9220 CompactRIO device, with 16 analog inputs.
+"""
+
+
 CRIO_9215 = create_device_from_components(
-    "CRIO_9215", base_class=_BaseCRIO, **__createAnalogIn(4)
+    "CRIO_9215",
+    base_class=_BaseCRIO,
+    docstring=__CRIO_9215_docstring,
+    **__createAnalogIn(4),
 )
 CRIO_9220 = create_device_from_components(
-    "CRIO_9220", base_class=_BaseCRIO, **__createAnalogIn(16)
+    "CRIO_9220",
+    base_class=_BaseCRIO,
+    docstring=__CRIO_9220_docstring,
+    **__createAnalogIn(16),
 )
