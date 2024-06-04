@@ -26,8 +26,8 @@ def VirtualControllableMotor(prefix, components, name, **kwargs):
 
         ```
             componentsDict = {
-                "top": 'SWC:MOTOR:m2'),
-                "bottom": 'SWC:MOTOR:m3')
+                "top": "SWC:MOTOR:m2"),
+                "bottom": "SWC:MOTOR:m3")
             }
             motor = VirtualControllableMotor("SWC:MOTOR:m1", componentsDict, "vertical_gap")
         ```
