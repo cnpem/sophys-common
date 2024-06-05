@@ -51,10 +51,10 @@ def cumulative_rel_scan(detectors: DETECTORS_TYPE, *args, num:int=None, per_step
     _md.update(md)
     motors = [motor for motor, start, stop in partition(3, args)]
 
-    @bpp.reset_positions_decorator(motors)
     @bpp.relative_set_decorator(motors)
     def inner_rel_scan():
         return (yield from scan(detectors, *args, num=num,
                                 per_step=per_step, md=_md))
+
 
     return (yield from inner_rel_scan())
