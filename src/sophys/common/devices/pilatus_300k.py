@@ -23,6 +23,12 @@ class Pilatus(SingleTrigger, PilatusDetector):
         self.hdf5.write_path_template = write_path
 
 
+class PilatusWithoutHDF5(Pilatus):
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        del self.hdf5
+
+
 class Pilatus6ROIs(Device):
     roi1_rbv = Component(EpicsSignalRO, "ROIStat1:1:Net_RBV")
     roi2_rbv = Component(EpicsSignalRO, "ROIStat1:2:Net_RBV")
