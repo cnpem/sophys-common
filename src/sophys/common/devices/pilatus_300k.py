@@ -8,9 +8,15 @@ from ophyd.areadetector.plugins import (
 from ..utils import HDF5PluginWithFileStore
 
 
-class Pilatus(SingleTrigger, PilatusDetector):
+class PilatusWithoutHDF5(SingleTrigger, PilatusDetector):
     image = Component(ImagePlugin, "image1:")
     proc1 = Component(ProcessPlugin, "Proc1:")
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+
+
+class Pilatus(PilatusWithoutHDF5):
     hdf5 = Component(
         HDF5PluginWithFileStore,
         "HDF1:",
@@ -21,12 +27,6 @@ class Pilatus(SingleTrigger, PilatusDetector):
     def __init__(self, *args, write_path=None, **kwargs):
         super().__init__(*args, **kwargs)
         self.hdf5.write_path_template = write_path
-
-
-class PilatusWithoutHDF5(Pilatus):
-    def __init__(self, *args, **kwargs):
-        super().__init__(*args, **kwargs)
-        del self.hdf5
 
 
 class Pilatus6ROIs(Device):
