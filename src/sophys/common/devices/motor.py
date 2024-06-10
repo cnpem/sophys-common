@@ -10,11 +10,11 @@ class ControllableMotor(EpicsMotor):
 
     def stage(self):
         super().stage()
-        self.enable_control.set(1)
+        self.enable_control.set(1).wait()
 
     def unstage(self):
         super().unstage()
-        self.enable_control.set(0)
+        self.enable_control.set(0).wait()
 
 def VirtualControllableMotor(prefix, components, name, **kwargs):
     """
