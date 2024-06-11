@@ -11,7 +11,7 @@ except ImportError:
 def cumulative_rel_scan(detectors: DETECTORS_TYPE, *args, num:int=None, per_step:PER_STEP_TYPE=None, md:MD_TYPE=None):
     """
     Scan over one multi-motor trajectory relative to current position.
-    Without reseting the position after the end of
+    Without reseting the position after the end of the scan.
 
     Parameters
     ----------
