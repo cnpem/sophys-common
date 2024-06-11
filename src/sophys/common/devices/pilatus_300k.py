@@ -12,9 +12,6 @@ class PilatusWithoutHDF5(SingleTrigger, PilatusDetector):
     image = Component(ImagePlugin, "image1:")
     proc1 = Component(ProcessPlugin, "Proc1:")
 
-    def __init__(self, *args, **kwargs):
-        super().__init__(*args, **kwargs)
-
 
 class Pilatus(PilatusWithoutHDF5):
     hdf5 = Component(
