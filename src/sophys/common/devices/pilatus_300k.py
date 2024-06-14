@@ -8,9 +8,12 @@ from ophyd.areadetector.plugins import (
 from ..utils import HDF5PluginWithFileStore
 
 
-class Pilatus(SingleTrigger, PilatusDetector):
+class PilatusWithoutHDF5(SingleTrigger, PilatusDetector):
     image = Component(ImagePlugin, "image1:")
     proc1 = Component(ProcessPlugin, "Proc1:")
+
+
+class Pilatus(PilatusWithoutHDF5):
     hdf5 = Component(
         HDF5PluginWithFileStore,
         "HDF1:",
