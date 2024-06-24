@@ -20,6 +20,18 @@ class TatuBase(Device):
         "count": (EpicsSignalRO, ":IssuedMasterPulses", {"kind": "config"})
     })
 
+    fly_scan = DynamicDeviceComponent({
+        "time": (EpicsSignal, ":FlyScanTimePreset", {"kind": "config"}),
+        "trigger_count": (EpicsSignalRO, ":TriggerCounter"),
+        "file_path_1": (EpicsSignal, ":FlyScanFilePath", {"kind": "config"}),
+        "file_path_2": (EpicsSignal, ":FlyScanFilePath2", {"kind": "config"}),
+        "file_name": (EpicsSignal, ":FlyScanFileName", {"kind": "config"}),
+        "file_open": (EpicsSignalRO, ":FlyScanFileOpen", {"kind": "config"}),
+        "file_valid_path": (EpicsSignalRO, ":FlyScanFileValidPath", {"kind": "config"}),
+        "file_error_code": (EpicsSignalRO, ":FlyScanErrorCode", {"kind": "config"}),
+        "file_error_message": (EpicsSignalRO, ":FlyScanErrorMsg", {"kind": "config"})
+    })
+
 
     def stage(self):
         super().stage()
