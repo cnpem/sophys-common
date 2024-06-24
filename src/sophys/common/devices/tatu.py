@@ -17,6 +17,7 @@ class TatuInput(Device):
 
 class TatuOutputCondition(Device):
 
+    changed = FormattedComponent(EpicsSignal, "{prefix}IO{output_number}changed")
     condition = FormattedComponent(EpicsSignal, "{prefix}ConditionIO{output_number}:c{condition_number}")
     condition_combo = FormattedComponent(EpicsSignal, "{prefix}ConditionComboIO{output_number}:c{condition_number}")
     output = FormattedComponent(EpicsSignal, "OutputIO{output_number}:c{condition_number}")
