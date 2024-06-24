@@ -21,3 +21,13 @@ class TatuBase(Device):
         super().unstage()
         self.activate.set(0).wait()
 
+    def stop(self):
+        self.tatu_stop.set(1)
+
+    def pause(self):
+        self.master_mode_state = self.master_mode.get()
+        self.tatu_stop.set(1)
+
+    def resume(self):
+        self.master_mode.set(self.master_mode_state).wait()
+        self.activate.set(1).wait()
