@@ -12,6 +12,14 @@ class TatuBase(Device):
     reset_pulses = Component(EpicsSignal, ":Zeropulses", kind="config")
     record_readouts = Component(EpicsSignal, ":Record", kind="config")
 
+    master_pulse = DynamicDeviceComponent({
+        "number": (EpicsSignal, ":MasterPulseNumber", {"kind": "config"}),
+        "period": (EpicsSignal, ":MasterPulsePeriod", {"kind": "config"}),
+        "length": (EpicsSignal, ":MasterPulseLength", {"kind": "config"}),
+        "active": (EpicsSignalRO, ":MasterPulsing", {"kind": "config"}),
+        "count": (EpicsSignalRO, ":IssuedMasterPulses", {"kind": "config"})
+    })
+
 
     def stage(self):
         super().stage()
