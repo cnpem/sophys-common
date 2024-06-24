@@ -32,6 +32,19 @@ class TatuBase(Device):
         "file_error_message": (EpicsSignalRO, ":FlyScanErrorMsg", {"kind": "config"})
     })
 
+    tatu_input = DynamicDeviceComponent({
+        "p0": (EpicsSignalRO, ":P0"),
+        "p1": (EpicsSignalRO, ":P1"),
+        "p2": (EpicsSignalRO, ":P2"),
+        "p3": (EpicsSignalRO, ":P3")
+    })
+
+    tatu_output = DynamicDeviceComponent({
+        "io4": (EpicsSignalRO, ":IO4changed"),
+        "io5": (EpicsSignalRO, ":IO5changed"),
+        "io6": (EpicsSignalRO, ":IO6changed"),
+        "io7": (EpicsSignalRO, ":IO7changed")
+    })
 
     def stage(self):
         super().stage()
