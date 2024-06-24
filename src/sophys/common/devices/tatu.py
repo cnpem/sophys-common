@@ -2,6 +2,20 @@ from ophyd import Component, DynamicDeviceComponent, \
     Device, EpicsSignal, EpicsSignalRO
 
 
+class TatuInput(Device):
+    
+    current_value = FormattedComponent(EpicsSignalRO, "{prefix}:P{input_number}")
+    trigger_state = FormattedComponent(EpicsSignalRO, "{prefix}:InputTriggerIO{input_number}")
+    edges_number_to_trigger = FormattedComponent(EpicsSignalRO, "{prefix}:EdgestoTrigIO{input_number}")
+    readout_threshold = FormattedComponent(EpicsSignalRO, "{prefix}:AnalogThresholdIO{input_number}")
+    associated_trigger_channel = FormattedComponent(EpicsSignalRO, "{prefix}:AnalogAssocCh{input_number}")
+
+    def __ini__(self, input_number, **kwargs):
+        self.input_number = input_number
+        super().__init__(**kwargs)
+
+
+
 class TatuBase(Device):
 
     activate = Component(
@@ -33,10 +47,10 @@ class TatuBase(Device):
     })
 
     tatu_input = DynamicDeviceComponent({
-        "p0": (EpicsSignalRO, ":P0"),
-        "p1": (EpicsSignalRO, ":P1"),
-        "p2": (EpicsSignalRO, ":P2"),
-        "p3": (EpicsSignalRO, ":P3")
+        "p0": (TatuInput, "0"),
+        "p1": (TatuInput, "1"),
+        "p2": (TatuInput, "2"),
+        "p3": (TatuInput, "3")
     })
 
     tatu_output = DynamicDeviceComponent({
