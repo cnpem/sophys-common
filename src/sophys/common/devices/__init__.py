@@ -7,3 +7,4 @@ from .pilatus_300k import Pilatus, PilatusWithoutHDF5
 from .pimega import Pimega
 from .vortex import Vortex
 from .storage_ring import StorageRing
+from .tatu import Tatu9401, Tatu9403
