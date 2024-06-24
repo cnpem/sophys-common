@@ -1,4 +1,4 @@
-from ophyd import Component, DynamicDeviceComponent, \
+from ophyd import Component, FormattedComponent, DynamicDeviceComponent, \
     Device, EpicsSignal, EpicsSignalRO
 
 
@@ -105,3 +105,34 @@ class TatuBase(Device):
     def resume(self):
         self.master_mode.set(self.master_mode_state).wait()
         self.activate.set(1).wait()
+
+
+class Tatu3(TatuBase):
+
+    tatu_input2 = DynamicDeviceComponent({
+        "p8": (TatuInput, "8"),
+        "p9": (TatuInput, "9"),
+        "p10": (TatuInput, "10"),
+        "p11": (TatuInput, "11")
+    })
+
+    tatu_input3 = DynamicDeviceComponent({
+        "p16": (TatuInput, "16"),
+        "p17": (TatuInput, "17"),
+        "p18": (TatuInput, "18"),
+        "p19": (TatuInput, "19")
+    })
+
+    tatu_output2 = DynamicDeviceComponent({
+        "io12": (TatuOutput, "12"),
+        "io13": (TatuOutput, "13"),
+        "io14": (TatuOutput, "14"),
+        "io15": (TatuOutput, "15")
+    })
+
+    tatu_output3 = DynamicDeviceComponent({
+        "io20": (TatuOutput, "20"),
+        "io21": (TatuOutput, "21"),
+        "io22": (TatuOutput, "22"),
+        "io23": (TatuOutput, "23")
+    })
