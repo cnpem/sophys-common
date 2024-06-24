@@ -15,6 +15,33 @@ class TatuInput(Device):
         super().__init__(**kwargs)
 
 
+class TatuOutputCondition(Device):
+
+    condition = FormattedComponent(EpicsSignal, ":ConditionIO{output_number}:c{condition_number}")
+    condition_combo = FormattedComponent(EpicsSignal, ":ConditionComboIO{output_number}:c{condition_number}")
+    output = FormattedComponent(EpicsSignal, ":OutputIO{output_number}:c{condition_number}")
+    output_copy = FormattedComponent(EpicsSignal, ":OutputCOPYIO{output_number}:c{condition_number}")
+    delay = FormattedComponent(EpicsSignal, ":DelayIO{output_number}:c{condition_number}")
+    pulse = FormattedComponent(EpicsSignal, ":PulseIO{output_number}:c{condition_number}")
+
+    def __ini__(self, output_number, **kwargs):
+        self.output_number = output_number
+        super().__init__(**kwargs)
+
+
+class TatuOutput(Device):
+    
+    c1 = Component(
+        TatuOutputCondition, suffix="{prefix}", output_number="{output_number}", condition_number="c1")
+    c2 = Component(
+        TatuOutputCondition, suffix="{prefix}", output_number="{output_number}", condition_number="c2")
+    c3 = Component(
+        TatuOutputCondition, suffix="{prefix}", output_number="{output_number}", condition_number="c3")
+
+    def __ini__(self, output_number, **kwargs):
+        self.output_number = output_number
+        super().__init__(**kwargs)
+
 
 class TatuBase(Device):
 
@@ -54,10 +81,10 @@ class TatuBase(Device):
     })
 
     tatu_output = DynamicDeviceComponent({
-        "io4": (EpicsSignalRO, ":IO4changed"),
-        "io5": (EpicsSignalRO, ":IO5changed"),
-        "io6": (EpicsSignalRO, ":IO6changed"),
-        "io7": (EpicsSignalRO, ":IO7changed")
+        "io4": (TatuOutput, "4"),
+        "io5": (TatuOutput, "5"),
+        "io6": (TatuOutput, "6"),
+        "io7": (TatuOutput, "7")
     })
 
     def stage(self):
