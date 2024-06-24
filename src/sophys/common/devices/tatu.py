@@ -4,11 +4,11 @@ from ophyd import Component, FormattedComponent, DynamicDeviceComponent, \
 
 class TatuInput(Device):
     
-    current_value = FormattedComponent(EpicsSignalRO, "{prefix}P{input_number}")
-    trigger_value = FormattedComponent(EpicsSignalRO, "{prefix}InputTriggerIO{input_number}")
-    edges_to_trigger = FormattedComponent(EpicsSignalRO, "{prefix}EdgestoTrigIO{input_number}")
-    analog_threshold = FormattedComponent(EpicsSignalRO, "{prefix}AnalogThresholdIO{input_number}")
-    analog_assoc = FormattedComponent(EpicsSignalRO, "{prefix}AnalogAssocCh{input_number}")
+    current_value = FormattedComponent(EpicsSignal, "{prefix}P{input_number}")
+    trigger_value = FormattedComponent(EpicsSignal, "{prefix}InputTriggerIO{input_number}")
+    edges_to_trigger = FormattedComponent(EpicsSignal, "{prefix}EdgestoTrigIO{input_number}")
+    analog_threshold = FormattedComponent(EpicsSignal, "{prefix}AnalogThresholdIO{input_number}")
+    analog_assoc = FormattedComponent(EpicsSignal, "{prefix}AnalogAssocCh{input_number}")
 
     def __init__(self, prefix, input_number, **kwargs):
         self.input_number = input_number
