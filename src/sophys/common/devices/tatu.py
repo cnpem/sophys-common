@@ -3,6 +3,9 @@ from ophyd import Component, FormattedComponent, DynamicDeviceComponent, \
 
 
 class TatuInput(Device):
+    """
+        Base configuration and status PVs for a TATU Input port.
+    """
     
     current_value = FormattedComponent(EpicsSignal, "{prefix}P{input_number}")
     trigger_value = FormattedComponent(EpicsSignal, "{prefix}InputTriggerIO{input_number}")
@@ -16,6 +19,9 @@ class TatuInput(Device):
 
 
 class TatuOutputCondition(Device):
+    """
+        Base configuration and status PVs for a TATU Output port condition.
+    """
 
     changed = FormattedComponent(EpicsSignal, "{prefix}IO{output_number}changed")
     condition = FormattedComponent(EpicsSignal, "{prefix}ConditionIO{output_number}:c{condition_number}")
@@ -33,6 +39,9 @@ class TatuOutputCondition(Device):
 
 
 class TatuOutput(Device):
+    """
+        All the conditions PVs for a TATU Output port.
+    """
     
     c1 = FormattedComponent(
         TatuOutputCondition, "{prefix}/{output_number}", condition_number="1")
@@ -47,6 +56,12 @@ class TatuOutput(Device):
 
 
 class TatuBase(Device):
+    """
+        Base Device for the Tatu software, which produces or a distribute digital signals 
+        to coordinate events and actions to achieve a synchronized operation at a beamline.
+        
+        Documentation: http://bit.ly/tatu-sirius
+    """
 
     activate = Component(
         EpicsSignal, "TatuActive", write_pv="Activate")
