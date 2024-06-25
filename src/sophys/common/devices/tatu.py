@@ -115,7 +115,8 @@ class TatuBase(Device):
 
 class Tatu9401(TatuBase):
     """
-
+        Tatu Device adapted to work with the C-Series module 9401. This module consists of 
+        four high-speed TTL channels as an input and the other four high-speed TTL channels as an output.
     """
 
     def __init__(self, prefix, **kwargs):
@@ -124,7 +125,10 @@ class Tatu9401(TatuBase):
 
 class Tatu9403(TatuBase):
     """
-
+        Tatu Device adapted to work with the C-Series module 9403. This module consists of 
+        four high-speed TTL channels as an input and the other four high-speed TTL channels as an output,
+        this same sequence is repeated for the other channels in the sequence, 
+        four inputs, four outputs, for the first 24 IO ports.
     """
 
     input2 = DynamicDeviceComponent({
