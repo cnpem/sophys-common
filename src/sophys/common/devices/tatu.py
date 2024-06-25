@@ -136,7 +136,7 @@ class Tatu9401(TatuBase):
 
     def __init__(self, prefix, **kwargs):
         self.prefix = prefix
-        super().__init__(prefix="9401H:" + prefix, **kwargs)
+        super().__init__(prefix=prefix+"9401H:", **kwargs)
 
 class Tatu9403(TatuBase):
     """
@@ -176,4 +176,4 @@ class Tatu9403(TatuBase):
 
     def __init__(self, prefix, **kwargs):
         self.prefix = prefix
-        super().__init__(prefix="9403H:" + prefix, **kwargs)
+        super().__init__(prefix=prefix+"9403H:", **kwargs)
