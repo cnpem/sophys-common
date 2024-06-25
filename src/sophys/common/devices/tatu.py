@@ -118,6 +118,10 @@ class Tatu9401(TatuBase):
 
     """
 
+    def __init__(self, prefix, **kwargs):
+        self.prefix = prefix
+        super().__init__(prefix="9401H:" + prefix, **kwargs)
+
 class Tatu9403(TatuBase):
     """
 
@@ -150,3 +154,7 @@ class Tatu9403(TatuBase):
         "io22": (TatuOutput, "", {"output_number": "22"}),
         "io23": (TatuOutput, "", {"output_number": "23"})
     })
+
+    def __init__(self, prefix, **kwargs):
+        self.prefix = prefix
+        super().__init__(prefix="9403H:" + prefix, **kwargs)
