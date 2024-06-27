@@ -23,6 +23,6 @@ class Picolo(Device):
     continuous_mode = DynamicDeviceComponent({
         "ch1": (PicoloChannel, "Current1:"),
         "ch2": (PicoloChannel, "Current2:"),
-        "ch3": (PicoloChannel, "Current1:"),
-        "ch4": (PicoloChannel, "Current2:")
+        "ch3": (PicoloChannel, "Current3:"),
+        "ch4": (PicoloChannel, "Current4:")
     })
