@@ -10,7 +10,7 @@ class TatuInput(Device):
     current_value = FormattedComponent(EpicsSignal, "{prefix}P{input_number}")
     trigger_value = FormattedComponent(EpicsSignal, "{prefix}InputTriggerIO{input_number}")
     edges_to_trigger = FormattedComponent(EpicsSignal, "{prefix}EdgestoTrigIO{input_number}")
-    analog_threshold = FormattedComponent(EpicsSignal, "{prefix}AnalogThresholdIO{input_number}")
+    analog_threshold = FormattedComponent(EpicsSignal, "{prefix}AnalogThresholdCh{input_number}")
     analog_assoc = FormattedComponent(EpicsSignal, "{prefix}AnalogAssocCh{input_number}")
 
     def __init__(self, prefix, input_number, **kwargs):
@@ -26,10 +26,10 @@ class TatuOutputCondition(Device):
     changed = FormattedComponent(EpicsSignal, "{prefix}IO{output_number}changed")
     condition = FormattedComponent(EpicsSignal, "{prefix}ConditionIO{output_number}:c{condition_number}")
     condition_combo = FormattedComponent(EpicsSignal, "{prefix}ConditionComboIO{output_number}:c{condition_number}")
-    output = FormattedComponent(EpicsSignal, "OutputIO{output_number}:c{condition_number}")
-    output_copy = FormattedComponent(EpicsSignal, "OutputCOPYIO{output_number}:c{condition_number}")
-    delay = FormattedComponent(EpicsSignal, "DelayIO{output_number}:c{condition_number}")
-    pulse = FormattedComponent(EpicsSignal, "PulseIO{output_number}:c{condition_number}")
+    output = FormattedComponent(EpicsSignal, "{prefix}OutputIO{output_number}:c{condition_number}")
+    output_copy = FormattedComponent(EpicsSignal, "{prefix}OutputCOPYIO{output_number}:c{condition_number}")
+    delay = FormattedComponent(EpicsSignal, "{prefix}DelayIO{output_number}:c{condition_number}")
+    pulse = FormattedComponent(EpicsSignal, "{prefix}PulseIO{output_number}:c{condition_number}")
 
     def __init__(self, prefix, condition_number, **kwargs):
         split_prefix = prefix.split("/")
@@ -44,11 +44,11 @@ class TatuOutput(Device):
     """
     
     c1 = FormattedComponent(
-        TatuOutputCondition, "{prefix}/{output_number}", condition_number="1")
+        TatuOutputCondition, "{prefix}/{output_number}", condition_number="0")
     c2 = FormattedComponent(
-        TatuOutputCondition, "{prefix}/{output_number}", condition_number="2")
+        TatuOutputCondition, "{prefix}/{output_number}", condition_number="1")
     c3 = FormattedComponent(
-        TatuOutputCondition, "{prefix}/{output_number}", condition_number="3")
+        TatuOutputCondition, "{prefix}/{output_number}", condition_number="2")
 
     def __init__(self, prefix, output_number, **kwargs):
         self.output_number = output_number
@@ -67,9 +67,9 @@ class TatuBase(Device):
         EpicsSignal, "TatuActive", write_pv="Activate")
     master_mode = Component(EpicsSignal, "MasterMode", kind="config")
     tatu_stop = Component(EpicsSignal, "Stop", kind="config")
-    fly_scan_trigger = Component(EpicsSignal, "FlyScan", kind="config")
+    # trigger = Component(EpicsSignal, "Trigger", kind="config")
     reset_pulses = Component(EpicsSignal, "Zeropulses", kind="config")
-    record_readouts = Component(EpicsSignal, "Record", kind="config")
+    record_readouts = Component(EpicsSignal, "AnalogSaving2File", kind="config")
 
     master_pulse = DynamicDeviceComponent({
         "number": (EpicsSignal, "MasterPulseNumber", {"kind": "config"}),
@@ -79,17 +79,16 @@ class TatuBase(Device):
         "count": (EpicsSignalRO, "IssuedMasterPulses", {"kind": "config"})
     })
 
-    fly_scan = DynamicDeviceComponent({
-        "time": (EpicsSignal, "FlyScanTimePreset", {"kind": "config"}),
-        "trigger_count": (EpicsSignalRO, "TriggerCounter", {"kind": "config"}),
-        "file_path_1": (EpicsSignal, "FlyScanFilePath", {"kind": "config"}),
-        "file_path_2": (EpicsSignal, "FlyScanFilePath2", {"kind": "config"}),
-        "file_name": (EpicsSignal, "FlyScanFileName", {"kind": "config"}),
-        "file_open": (EpicsSignalRO, "FlyScanFileOpen", {"kind": "config"}),
-        "file_valid_path": (EpicsSignalRO, "FlyScanFileValidPath", {"kind": "config"}),
-        "file_error_code": (EpicsSignalRO, "FlyScanErrorCode", {"kind": "config"}),
-        "file_error_message": (EpicsSignalRO, "FlyScanErrorMsg", {"kind": "config"})
-    })
+    #fly_scan = DynamicDeviceComponent({
+    #     "time": (EpicsSignal, "FlyScanTimePreset", {"kind": "config"}),
+    #     "trigger_count": (EpicsSignalRO, "TriggerCounter", {"kind": "config"}),
+    #     "file_path": (EpicsSignal, "FilePath", {"kind": "config"}),
+    #     "file_name": (EpicsSignal, "FileName", {"kind": "config"}),
+    #     "file_open": (EpicsSignalRO, "FlyScanFileOpen", {"kind": "config"}),
+    #     "file_valid_path": (EpicsSignalRO, "FlyScanFileValidPath", {"kind": "config"}),
+    #     "file_error_code": (EpicsSignalRO, "FlyScanErrorCode", {"kind": "config"}),
+    #     "file_error_message": (EpicsSignalRO, "FlyScanErrorMsg", {"kind": "config"})
+    #})
 
     input = DynamicDeviceComponent({
         "p0": (TatuInput, "", {"input_number": "0"}),
