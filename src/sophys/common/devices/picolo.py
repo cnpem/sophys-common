@@ -21,8 +21,11 @@ class Picolo(Device):
     sample_rate = Component(EpicsSignalWithRBV, "SampleRate")
     acquire_mode = Component(EpicsSignal, "AcquireMode")
     continuous_mode = DynamicDeviceComponent({
-        "ch1": (PicoloChannel, "Current1:", {}),
-        "ch2": (PicoloChannel, "Current2:", {}),
-        "ch3": (PicoloChannel, "Current3:", {}),
-        "ch4": (PicoloChannel, "Current4:", {})
+        "start": (EpicsSignal, "Start", {}),
+        "stop": (EpicsSignal, "Stop", {})
     })
+
+    ch1 = Component(PicoloChannel, "Current1:")
+    ch2 = Component(PicoloChannel, "Current2:")
+    ch3 = Component(PicoloChannel, "Current3:")
+    ch4 = Component(PicoloChannel, "Current4:")
