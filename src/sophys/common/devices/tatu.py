@@ -67,7 +67,6 @@ class TatuBase(Device):
         EpicsSignal, "TatuActive", write_pv="Activate")
     master_mode = Component(EpicsSignal, "MasterMode", kind="config")
     tatu_stop = Component(EpicsSignal, "Stop", kind="config")
-    # trigger = Component(EpicsSignal, "Trigger", kind="config")
     reset_pulses = Component(EpicsSignal, "Zeropulses", kind="config")
     record_readouts = Component(EpicsSignal, "AnalogSaving2File", kind="config")
 
@@ -78,17 +77,6 @@ class TatuBase(Device):
         "active": (EpicsSignalRO, "MasterPulsing", {"kind": "config"}),
         "count": (EpicsSignalRO, "IssuedMasterPulses", {"kind": "config"})
     })
-
-    #fly_scan = DynamicDeviceComponent({
-    #     "time": (EpicsSignal, "FlyScanTimePreset", {"kind": "config"}),
-    #     "trigger_count": (EpicsSignalRO, "TriggerCounter", {"kind": "config"}),
-    #     "file_path": (EpicsSignal, "FilePath", {"kind": "config"}),
-    #     "file_name": (EpicsSignal, "FileName", {"kind": "config"}),
-    #     "file_open": (EpicsSignalRO, "FlyScanFileOpen", {"kind": "config"}),
-    #     "file_valid_path": (EpicsSignalRO, "FlyScanFileValidPath", {"kind": "config"}),
-    #     "file_error_code": (EpicsSignalRO, "FlyScanErrorCode", {"kind": "config"}),
-    #     "file_error_message": (EpicsSignalRO, "FlyScanErrorMsg", {"kind": "config"})
-    #})
 
     input = DynamicDeviceComponent({
         "p0": (TatuInput, "", {"input_number": "0"}),
