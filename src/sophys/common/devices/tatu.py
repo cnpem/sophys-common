@@ -68,7 +68,6 @@ class TatuBase(Device):
     master_mode = Component(EpicsSignal, "MasterMode", kind="config")
     tatu_stop = Component(EpicsSignal, "Stop", kind="config")
     reset_pulses = Component(EpicsSignal, "Zeropulses", kind="config")
-    record_readouts = Component(EpicsSignal, "AnalogSaving2File", kind="config")
 
     master_pulse = DynamicDeviceComponent({
         "number": (EpicsSignal, "MasterPulseNumber", {"kind": "config"}),
