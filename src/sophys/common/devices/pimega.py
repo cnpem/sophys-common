@@ -35,11 +35,25 @@ class Digital2AnalogConverter(Device):
     tpref_b = ADComponent(EpicsSignalWithRBV, "TPRefB")
 
 
+class PimageAcquire(Device):
+
+    acquire = ADComponent(EpicsSignalWithRBV, "Acquire")
+    capture = ADComponent(EpicsSignalWithRBV, "Capture")
+
+    def start(self):
+        self.capture.set(1).wait()
+        self.acquire.set(1).wait()
+
+    def stop(self):
+        self.acquire.set(0).wait()
+        self.capture.set(0).wait()
+
+
 class PimegaCam(CamBase):
 
     magic_start = ADComponent(EpicsSignal, "MagicStart")
-    acquire_capture = ADComponent(EpicsSignal, "AcquireCapture")
     trigger_mode = ADComponent(EpicsSignalWithRBV, "TriggerMode")
+    acquire = ADComponent(PimageAcquire, "")
     num_capture = ADComponent(EpicsSignalWithRBV, "NumCapture")
     num_exposures = ADComponent(EpicsSignalWithRBV, "NumExposures")
     
