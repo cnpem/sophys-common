@@ -39,7 +39,7 @@ class PimegaCam(CamBase):
 
     magic_start = ADComponent(EpicsSignal, "MagicStart")
     acquire_capture = ADComponent(EpicsSignal, "AcquireCapture")
-    acquire_time = ADComponent(EpicsSignalWithRBV, "TriggerMode")
+    trigger_mode = ADComponent(EpicsSignalWithRBV, "TriggerMode")
     num_capture = ADComponent(EpicsSignalWithRBV, "NumCapture")
     num_exposures = ADComponent(EpicsSignalWithRBV, "NumExposures")
     
