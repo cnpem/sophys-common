@@ -2,16 +2,37 @@
 
 from ophyd import (
     ADComponent,
-    Device,
     EpicsSignal,
     EpicsSignalRO,
     EpicsSignalWithRBV,
-    EpicsSignalNoValidation,
-    Kind,
     SingleTrigger,
+    Device
 )
 from ophyd.areadetector.cam import CamBase
 from ophyd.areadetector.detectors import DetectorBase
+
+
+class Digital2AnalogConverter(Device):
+
+    cas = ADComponent(EpicsSignalWithRBV, "CAS")
+    delay = ADComponent(EpicsSignalWithRBV, "Delay")
+    disc = ADComponent(EpicsSignalWithRBV, "Disc")
+    disch = ADComponent(EpicsSignalWithRBV, "DiscH")
+    discl = ADComponent(EpicsSignalWithRBV, "DiscL")
+    discls = ADComponent(EpicsSignalWithRBV, "DiscLS")
+    fbk = ADComponent(EpicsSignalWithRBV, "FBK")
+    gnd = ADComponent(EpicsSignalWithRBV, "GND")
+    ikrum = ADComponent(EpicsSignalWithRBV, "IKrum")
+    preamp = ADComponent(EpicsSignalWithRBV, "Preamp")
+    RPZ = ADComponent(EpicsSignalWithRBV, "RPZ")
+    shaper = ADComponent(EpicsSignalWithRBV, "Shaper")
+    threshold0 = ADComponent(EpicsSignalWithRBV, "ThresholdEnergy0")
+    threshold1 = ADComponent(EpicsSignalWithRBV, "ThresholdEnergy1")
+    tp_buffer_in = ADComponent(EpicsSignalWithRBV, "TPBufferIn")
+    tp_buffer_out = ADComponent(EpicsSignalWithRBV, "TPBufferOut")
+    tpref = ADComponent(EpicsSignalWithRBV, "TPRef")
+    tpref_a = ADComponent(EpicsSignalWithRBV, "TPRefA")
+    tpref_b = ADComponent(EpicsSignalWithRBV, "TPRefB")
 
 
 class PimegaCam(CamBase):
@@ -25,26 +46,9 @@ class PimegaCam(CamBase):
     detector_state = ADComponent(EpicsSignalRO, "DetectorState_RBV")
     processed_acquisition_counter = ADComponent(EpicsSignalRO, "ProcessedAcquisitionCounter_RBV")
     num_captured = ADComponent(EpicsSignalRO, "NumCaptured_RBV")
+    
+    dac = ADComponent(Digital2AnalogConverter, "DAC_")
 
-    dac_cas = ADComponent(EpicsSignalWithRBV, "DAC_CAS")
-    dac_delay = ADComponent(EpicsSignalWithRBV, "DAC_Delay")
-    dac_disc = ADComponent(EpicsSignalWithRBV, "DAC_Disc")
-    dac_disch = ADComponent(EpicsSignalWithRBV, "DAC_DiscH")
-    dac_discl = ADComponent(EpicsSignalWithRBV, "DAC_DiscL")
-    dac_discls = ADComponent(EpicsSignalWithRBV, "DAC_DiscLS")
-    dac_fbk = ADComponent(EpicsSignalWithRBV, "DAC_FBK")
-    dac_gnd = ADComponent(EpicsSignalWithRBV, "DAC_GND")
-    dac_ikrum = ADComponent(EpicsSignalWithRBV, "DAC_IKrum")
-    dac_preamp = ADComponent(EpicsSignalWithRBV, "DAC_Preamp")
-    dac_RPZ = ADComponent(EpicsSignalWithRBV, "DAC_RPZ")
-    dac_shaper = ADComponent(EpicsSignalWithRBV, "DAC_Shaper")
-    dac_threshold0 = ADComponent(EpicsSignalWithRBV, "DAC_ThresholdEnergy0")
-    dac_threshold1 = ADComponent(EpicsSignalWithRBV, "DAC_ThresholdEnergy1")
-    dac_tp_buffer_in = ADComponent(EpicsSignalWithRBV, "DAC_TPBufferIn")
-    dac_tp_buffer_out = ADComponent(EpicsSignalWithRBV, "DAC_TPBufferOut")
-    dac_tpref = ADComponent(EpicsSignalWithRBV, "DAC_TPRef")
-    dac_tpref_a = ADComponent(EpicsSignalWithRBV, "DAC_TPRefA")
-    dac_tpref_b = ADComponent(EpicsSignalWithRBV, "DAC_TPRefB")
 
     file_name = ADComponent(EpicsSignalWithRBV, "FileName")
     file_path = ADComponent(EpicsSignalWithRBV, "FilePath")
