@@ -40,6 +40,10 @@ class PimegaCam(CamBase):
     magic_start = ADComponent(EpicsSignal, "MagicStart")
     acquire_capture = ADComponent(EpicsSignal, "AcquireCapture")
     num_capture = ADComponent(EpicsSignalWithRBV, "NumCapture")
+    num_exposures = ADComponent(EpicsSignalWithRBV, "NumExposures")
+    
+    acquire_time = ADComponent(EpicsSignalWithRBV, "AcquireTime")
+    acquire_period = ADComponent(EpicsSignalWithRBV, "AcquirePeriod")
 
     medipix_mode = ADComponent(EpicsSignalWithRBV, "MedipixMode")
 
@@ -48,7 +52,6 @@ class PimegaCam(CamBase):
     num_captured = ADComponent(EpicsSignalRO, "NumCaptured_RBV")
     
     dac = ADComponent(Digital2AnalogConverter, "DAC_")
-
 
     file_name = ADComponent(EpicsSignalWithRBV, "FileName")
     file_path = ADComponent(EpicsSignalWithRBV, "FilePath")
