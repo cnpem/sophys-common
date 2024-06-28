@@ -20,6 +20,8 @@ class Picolo(Device):
     acquisition_time = Component(EpicsSignalWithRBV, "AcquisitionTime")
     sample_rate = Component(EpicsSignalWithRBV, "SampleRate")
     acquire_mode = Component(EpicsSignal, "AcquireMode")
+    samples_per_trigger = Component(EpicsSignalWithRBV, "NumAcquire")
+    
     continuous_mode = DynamicDeviceComponent({
         "start_acq": (EpicsSignal, "Start", {}),
         "stop_acq": (EpicsSignal, "Stop", {})
