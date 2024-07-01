@@ -1,26 +1,27 @@
-from ophyd import Device, FormattedComponent
+from ophyd import FormattedComponent
+from ophyd.device import create_device_from_components
 from .motor import ControllableMotor, VirtualControllableMotor
 
 
-class VerticalSlit(Device):
+def VerticalSlit(prefix, top, bottom, vertical_gap, vertical_offset, name, **kwargs):
 
-    top = FormattedComponent(ControllableMotor, "{prefix}{motor_top}")
-    bottom = FormattedComponent(ControllableMotor, "{prefix}{motor_bottom}")
+    verticalSlitComponents = {
+        "top": FormattedComponent(ControllableMotor, f"{prefix}{top}"),
+        "bottom": FormattedComponent(ControllableMotor, f"{prefix}{bottom}"),
+        "gap": FormattedComponent(
+            VirtualControllableMotor, f"{prefix}{vertical_gap}", components={
+                "top": f"{prefix}{top}",
+                "bottom": f"{prefix}{bottom}"
+            }),
+        "offset": FormattedComponent(
+            VirtualControllableMotor, f"{prefix}{vertical_offset}", components={
+                "top": f"{prefix}{top}",
+                "bottom": f"{prefix}{bottom}"
+            })
+    }
 
-    vertical_gap = FormattedComponent(
-        VirtualControllableMotor, "{prefix}{vertical_gap}", components={
-            "cnen_top": "{prefix}{motor_top}",
-            "cnen_bottom": "{prefix}{motor_bottom}"
-        })
-    vertical_offset = FormattedComponent(
-        VirtualControllableMotor, "{prefix}{vertical_offset}", components={
-            "cnen_top": "{prefix}{motor_top}",
-            "cnen_bottom": "{prefix}{motor_bottom}"
-        })
+    VerticalSlit = create_device_from_components(
+        name="slit", **verticalSlitComponents)
+
+    return VerticalSlit(prefix=prefix, name=name, **kwargs)
     
-    def __init__(self, prefix, motor_top, motor_bottom, vertical_gap, vertical_offset, **kwargs):
-        self.motor_top = motor_top
-        self.motor_bottom = motor_bottom
-        self.vertical_gap = vertical_gap
-        self.vertical_offset = vertical_offset
-        super().__init__(prefix=prefix, **kwargs)
