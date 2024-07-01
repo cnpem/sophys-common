@@ -1,5 +1,6 @@
-from ophyd import Component, FormattedComponent, DynamicDeviceComponent, \
+from ophyd import Component, FormattedComponent, \
     Device, EpicsSignal, EpicsSignalRO, PVPositionerIsClose
+from .motor import ControllableMotor
 
 
 class Goniometer(PVPositionerIsClose):
@@ -33,50 +34,13 @@ class DcmLite(Device):
     pitch = Component(ShortStroke, "Rx") 
     roll = Component(ShortStroke, "Rz")
 
+    leveler1 = Component(ControllableMotor, "PB01:m1")
+    leveler2 = Component(ControllableMotor, "PB01:m2")
+    leveler3 = Component(ControllableMotor, "PB01:m3")
+    u_x = Component(ControllableMotor, "PB01:m4")
 
-dcm_suffixes = {
-    "motors": {
-        "leveler1": "PB01:m1",
-        "leveler2": "PB01:m2",
-        "leveler3": "PB01:m3",
-        "u_x": "PB01:m4",
-        "spindle_x_plus": "PB01:m5",
-        "spindle_x_minus": "PB01:m6",
-        "granite_x": "PB01:CS2:m7",
-        "granite_y": "PB01:CS1:m8"
-    }
-}
-
-# Get device class
-def _getDeviceInstance(device):
-    if device == "motors":
-        return ControllableMotor
-    elif "actuator" in device:
-        return createDCMTriggerDevice
-
-def _formatPvname(tempKwags, suffix):
-    tempKwags["name"] = f"dcm_{key}"
-    if isinstance(suffix, list):
-        tempKwags["prefix"] = dcm_prefix + suffix[0]
-        tempKwags["device"] = suffix[1]
-        tempKwags["isGonio"] = "gonio" in key
-    else:  
-        tempKwags["prefix"] = suffix 
-    return tempKwags
-
-# Create Motors or Actuator Devices for every element of the DCM
-dcmDevices = {}
-componentsDict = {}
-for device, elements in dcm_suffixes.items():
-    kwargs = {}
-    deviceClass = _getDeviceInstance(device)
-    for key, suffix in elements.items():
-        tempKwags = _formatPvname(kwargs.copy(), suffix)
-
-        dcmDevices[tempKwags["name"]] = deviceClass(**tempKwags)
-        componentsDict[key] = Component(deviceClass, **tempKwags)
-
-
-dcmDeviceClass = create_device_from_components(name="dcm", **componentsDict)
-dcmDevices["dcm"] = dcmDeviceClass(name="dcm")
-
+    spindle_x_plus = Component(ControllableMotor, "PB01:m5")
+    spindle_x_minus = Component(ControllableMotor, "PB01:m6")
+    
+    granite_x = Component(ControllableMotor, "PB01:CS2:m7")
+    granite_y = Component(ControllableMotor, "PB01:CS1:m8")
