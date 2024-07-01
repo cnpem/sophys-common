@@ -3,25 +3,48 @@ from ophyd.device import create_device_from_components
 from .motor import ControllableMotor, VirtualControllableMotor
 
 
-def VerticalSlit(prefix, top, bottom, vertical_gap, vertical_offset, name, **kwargs):
+def VerticalSlit(prefix, top, bottom, gap, offset, name, **kwargs):
 
     verticalSlitComponents = {
         "top": FormattedComponent(ControllableMotor, f"{prefix}{top}"),
         "bottom": FormattedComponent(ControllableMotor, f"{prefix}{bottom}"),
         "gap": FormattedComponent(
-            VirtualControllableMotor, f"{prefix}{vertical_gap}", components={
+            VirtualControllableMotor, f"{prefix}{gap}", components={
                 "top": f"{prefix}{top}",
                 "bottom": f"{prefix}{bottom}"
             }),
         "offset": FormattedComponent(
-            VirtualControllableMotor, f"{prefix}{vertical_offset}", components={
+            VirtualControllableMotor, f"{prefix}{offset}", components={
                 "top": f"{prefix}{top}",
                 "bottom": f"{prefix}{bottom}"
             })
     }
 
     VerticalSlit = create_device_from_components(
-        name="slit", **verticalSlitComponents)
+        name="vertical_slit", **verticalSlitComponents)
 
     return VerticalSlit(prefix=prefix, name=name, **kwargs)
+
+
+def HorizontalSlit(prefix, left, right, gap, offset, name, **kwargs):
+
+    horizontalSlitComponents = {
+        "left": FormattedComponent(ControllableMotor, f"{prefix}{left}"),
+        "right": FormattedComponent(ControllableMotor, f"{prefix}{right}"),
+        "gap": FormattedComponent(
+            VirtualControllableMotor, f"{prefix}{gap}", components={
+                "left": f"{prefix}{left}",
+                "right": f"{prefix}{right}"
+            }),
+        "offset": FormattedComponent(
+            VirtualControllableMotor, f"{prefix}{offset}", components={
+                "left": f"{prefix}{left}",
+                "right": f"{prefix}{right}"
+            })
+    }
+
+    HorizontalSlit = create_device_from_components(
+        name="horizontal_slit", **horizontalSlitComponents)
+
+    return HorizontalSlit(prefix=prefix, name=name, **kwargs)
     
