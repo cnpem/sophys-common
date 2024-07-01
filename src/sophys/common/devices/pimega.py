@@ -41,11 +41,15 @@ class PimageAcquire(Device):
     capture = ADComponent(EpicsSignalWithRBV, "Capture")
 
     def start(self):
-        self.capture.set(1).wait()
+        # Start backend
+        self.capture.set(1)
+        # Send start signal to chips. This also checks that the Capture one has finished.
         self.acquire.set(1).wait()
 
     def stop(self):
-        self.acquire.set(0).wait()
+        # Stop both the backend and the detector
+        self.acquire.set(0).wait(timeout=30.0)
+        # In practice, this does nothing. But it doesn't hurt anyone :-)
         self.capture.set(0).wait()
 
 
