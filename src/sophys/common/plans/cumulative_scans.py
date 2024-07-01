@@ -7,6 +7,10 @@ try:
 except ImportError:
     from toolz import partition
 
+__all__ = [
+    "cumulative_rel_scan",
+]
+
 
 def cumulative_rel_scan(detectors: DETECTORS_TYPE, *args, num:int=None, per_step:PER_STEP_TYPE=None, md:MD_TYPE=None):
     """
