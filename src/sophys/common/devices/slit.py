@@ -1,4 +1,4 @@
-from ophyd import FormattedComponent
+from ophyd import FormattedComponent, Component
 from ophyd.device import create_device_from_components
 from .motor import ControllableMotor, VirtualControllableMotor
 
@@ -26,25 +26,29 @@ def VerticalSlit(prefix, top, bottom, gap, offset, name, **kwargs):
     return VerticalSlit(prefix=prefix, name=name, **kwargs)
 
 
-def HorizontalSlit(prefix, left, right, gap, offset, name, **kwargs):
+def _create_horizontal_components(prefix, left, right, gap, offset):
+
+    virtualMotorComponents = {
+        "left": f"{prefix}{left}",
+        "right": f"{prefix}{right}"
+    }
 
     horizontalSlitComponents = {
-        "left": FormattedComponent(ControllableMotor, f"{prefix}{left}"),
-        "right": FormattedComponent(ControllableMotor, f"{prefix}{right}"),
-        "gap": FormattedComponent(
-            VirtualControllableMotor, f"{prefix}{gap}", components={
-                "left": f"{prefix}{left}",
-                "right": f"{prefix}{right}"
-            }),
-        "offset": FormattedComponent(
-            VirtualControllableMotor, f"{prefix}{offset}", components={
-                "left": f"{prefix}{left}",
-                "right": f"{prefix}{right}"
-            })
+        "left": Component(ControllableMotor, f"{left}"),
+        "right": Component(ControllableMotor, f"{right}"),
+        "gap": Component(
+            VirtualControllableMotor, f"{gap}", components=virtualMotorComponents),
+        "offset": Component(
+            VirtualControllableMotor, f"{offset}", components=virtualMotorComponents)
     }
+
+    return horizontalSlitComponents
+
+def HorizontalSlit(prefix, left, right, gap, offset, **kwargs):
+
+    horizontalSlitComponents = _create_horizontal_components(prefix, left, right, gap, offset)
 
     HorizontalSlit = create_device_from_components(
         name="horizontal_slit", **horizontalSlitComponents)
 
-    return HorizontalSlit(prefix=prefix, name=name, **kwargs)
-    
+    return HorizontalSlit(prefix=prefix, **kwargs)
