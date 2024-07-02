@@ -43,6 +43,8 @@ class TatuOutput(Device):
         All the conditions PVs for a TATU Output port.
     """
     
+    value = FormattedComponent(
+        EpicsSignal, "{prefix}bo{output_number}")
     c1 = FormattedComponent(
         TatuOutputCondition, "{prefix}/{output_number}", condition_number="0")
     c2 = FormattedComponent(
