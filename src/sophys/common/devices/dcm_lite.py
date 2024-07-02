@@ -4,7 +4,9 @@ from .motor import ControllableMotor
 
 
 class Goniometer(PVPositionerIsClose):
-
+    """
+        Device for controlling one Goniometer of the DCM Lite.
+    """
     readback = FormattedComponent(EpicsSignal, "{prefix}DCM01:GonRx{device_number}_SP_RBV", kind="hinted")
     setpoint = FormattedComponent(EpicsSignalRO, "{prefix}DCM01:GonRx{device_number}_SP", kind="config")
     actuate = Component(EpicsSignal, "DCM01:GonRxUpdate_SP", kind="omitted")
@@ -15,6 +17,9 @@ class Goniometer(PVPositionerIsClose):
 
 
 class ShortStroke(PVPositionerIsClose):
+    """
+        Device for controlling one axis of the Short Stroke of the DCM Lite.
+    """
 
     readback = FormattedComponent(EpicsSignal, "{prefix}DCM01:Shs{shs_axis}_S_RBV", kind="hinted")
     setpoint = FormattedComponent(EpicsSignalRO, "{prefix}DCM01:Shs{shs_axis}_SP", kind="config")
@@ -26,6 +31,9 @@ class ShortStroke(PVPositionerIsClose):
 
 
 class DcmLite(Device):
+    """
+        Device for controlling the DCM Lite monochromator.
+    """
 
     gonio1 = Component(Goniometer, "", device_number="1")
     gonio2 = Component(Goniometer, "", device_number="2")
