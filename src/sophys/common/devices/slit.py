@@ -25,10 +25,10 @@ def VerticalSlit(prefix, top, bottom, gap, offset, **kwargs):
 
     verticalSlitComponents = _create_vertical_components(prefix, top, bottom, gap, offset)
 
-    VerticalSlit = create_device_from_components(
+    verticalSlitClass = create_device_from_components(
         name="vertical_slit", **verticalSlitComponents)
 
-    return VerticalSlit(prefix=prefix, **kwargs)
+    return verticalSlitClass(prefix=prefix, **kwargs)
 
 
 def _create_horizontal_components(prefix, left, right, gap, offset):
@@ -53,7 +53,22 @@ def HorizontalSlit(prefix, left, right, gap, offset, **kwargs):
 
     horizontalSlitComponents = _create_horizontal_components(prefix, left, right, gap, offset)
 
-    HorizontalSlit = create_device_from_components(
+    horizontalSlitClass = create_device_from_components(
         name="horizontal_slit", **horizontalSlitComponents)
 
-    return HorizontalSlit(prefix=prefix, **kwargs)
+    return horizontalSlitClass(prefix=prefix, **kwargs)
+
+
+def Slit(prefix, top, bottom, v_gap, v_offset, left, right, h_gap, h_offset, **kwargs):
+
+    slitComponents = {}
+
+    horizontalSlitComponents = _create_horizontal_components(prefix, left, right, h_gap, h_offset)
+    slitComponents.update(horizontalSlitComponents)
+    verticalSlitComponents = _create_vertical_components(prefix, top, bottom, v_gap, v_offset)
+    slitComponents.update(verticalSlitComponents)
+
+    slitClass = create_device_from_components(
+        name="horizontal_slit", **slitComponents)
+
+    return slitClass(prefix=prefix, **kwargs)
