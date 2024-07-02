@@ -3,6 +3,9 @@ from ophyd import Device, Component, EpicsSignal, EpicsSignalWithRBV, \
 
 
 class PicoloChannel(Device):
+    """
+        Device for one of the channels in the Picolo picoamperimeter.
+    """
 
     enable = Component(EpicsSignal, "Enable")
     value = Component(EpicsSignal, "EngValue", kind="hinted")
@@ -14,6 +17,9 @@ class PicoloChannel(Device):
 
 
 class Picolo(Device):
+    """
+        Device for the 4 channel Picolo picoamperimeter.
+    """
 
     range = Component(EpicsSignal, "Range")
     auto_range = Component(EpicsSignal, "AutoRange")
