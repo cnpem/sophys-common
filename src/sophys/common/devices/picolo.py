@@ -29,6 +29,7 @@ class Picolo(Device):
     acquire_mode = Component(EpicsSignal, "AcquireMode")
     samples_per_trigger = Component(EpicsSignalWithRBV, "NumAcquire")
     data_reset = Component(EpicsSignal, "DataReset")
+    data_acquired = Component(EpicsSignalWithRBV, "DataAcquired")
     
     continuous_mode = DynamicDeviceComponent({
         "start_acq": (EpicsSignal, "Start", {}),
