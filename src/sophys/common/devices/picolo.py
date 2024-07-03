@@ -7,6 +7,7 @@ class PicoloChannel(Device):
         Device for one of the channels in the Picolo picoamperimeter.
     """
 
+    data = Component(EpicsSignalRO, "Data")
     enable = Component(EpicsSignal, "Enable")
     value = Component(EpicsSignal, "EngValue", kind="hinted")
     saturated = Component(EpicsSignal, "Saturated")
@@ -27,6 +28,7 @@ class Picolo(Device):
     sample_rate = Component(EpicsSignalWithRBV, "SampleRate")
     acquire_mode = Component(EpicsSignal, "AcquireMode")
     samples_per_trigger = Component(EpicsSignalWithRBV, "NumAcquire")
+    data_reset = Component(EpicsSignal, "DataReset")
     
     continuous_mode = DynamicDeviceComponent({
         "start_acq": (EpicsSignal, "Start", {}),
@@ -37,3 +39,12 @@ class Picolo(Device):
     ch2 = Component(PicoloChannel, "Current2:")
     ch3 = Component(PicoloChannel, "Current3:")
     ch4 = Component(PicoloChannel, "Current4:")
+
+    def reset_data(self):
+        past_acquire_mode = self.acquire_mode.get() # Set continuous mode
+        
+        self.acquire_mode.set(0).wait() # Set continuous mode
+        
+        self.data_reset.set(1).wait()
+
+        self.acquire_mode.set(past_acquire_mode).wait()
