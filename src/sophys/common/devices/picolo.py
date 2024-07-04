@@ -44,10 +44,8 @@ class Picolo(Device):
     def set_acquisition_time(self, acquisiton_time: float):
         enums = self.acquisition_time.metadata['enum_strs']
         enums_float = [(float(item.replace(" ms", ""))/1000) for item in enums]
-        print(enums_float)
         try:
             selected_enum = enums_float.index(acquisiton_time)
-            print(selected_enum)
             self.acquisition_time.set(selected_enum).wait()
         except Exception:
             print("Acquisition time not found")
