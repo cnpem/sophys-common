@@ -29,7 +29,7 @@ class Picolo(Device):
     acquire_mode = Component(EpicsSignal, "AcquireMode")
     samples_per_trigger = Component(EpicsSignalWithRBV, "NumAcquire")
     data_reset = Component(EpicsSignal, "DataReset")
-    data_acquired = Component(EpicsSignalWithRBV, "DataAcquired")
+    data_acquired = Component(EpicsSignal, "DataAcquired")
     
     continuous_mode = DynamicDeviceComponent({
         "start_acq": (EpicsSignal, "Start", {}),
@@ -40,6 +40,17 @@ class Picolo(Device):
     ch2 = Component(PicoloChannel, "Current2:")
     ch3 = Component(PicoloChannel, "Current3:")
     ch4 = Component(PicoloChannel, "Current4:")
+
+    def set_acquisition_time(self, acquisiton_time: float):
+        enums = self.acquisition_time.metadata['enum_strs']
+        enums_float = [float(item.replace(" ms", "")) for item in enums]
+        
+        try:
+            selected_enum = enums_float.index(acquisiton_time)
+            self.acquisition_time.set(selected_enum).wait()
+        except Exception:
+            print("Acquisition time not found")
+        return -1
 
     def reset_data(self):
         past_acquire_mode = self.acquire_mode.get() # Set continuous mode
