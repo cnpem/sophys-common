@@ -56,7 +56,7 @@ class PimageAcquire(Device):
 class PimegaCam(CamBase):
 
     magic_start = ADComponent(EpicsSignal, "MagicStart")
-    trigger_mode = ADComponent(EpicsSignalWithRBV, "TriggerMode")
+    trigger_mode = ADComponent(EpicsSignalWithRBV, "TriggerMode", string=True)
     acquire = ADComponent(PimageAcquire, "")
     num_capture = ADComponent(EpicsSignalWithRBV, "NumCapture")
     num_exposures = ADComponent(EpicsSignalWithRBV, "NumExposures")
@@ -72,12 +72,13 @@ class PimegaCam(CamBase):
     
     dac = ADComponent(Digital2AnalogConverter, "DAC_")
 
-    file_name = ADComponent(EpicsSignalWithRBV, "FileName")
-    file_path = ADComponent(EpicsSignalWithRBV, "FilePath")
+    file_name = ADComponent(EpicsSignalWithRBV, "FileName", string=True)
+    file_path = ADComponent(EpicsSignalWithRBV, "FilePath", string=True)
+    file_path_exists = ADComponent(EpicsSignalRO, "FilePathExists_RBV", string=True)
     file_number = ADComponent(EpicsSignalWithRBV, "FileNumber")
-    file_template = ADComponent(EpicsSignalWithRBV, "FileTemplate")
-    auto_increment = ADComponent(EpicsSignalWithRBV, "AutoIncrement")
-    auto_save = ADComponent(EpicsSignalWithRBV, "AutoSave")
+    file_template = ADComponent(EpicsSignalWithRBV, "FileTemplate", string=True)
+    auto_increment = ADComponent(EpicsSignalWithRBV, "AutoIncrement", string=True)
+    auto_save = ADComponent(EpicsSignalWithRBV, "AutoSave", string=True)
 
     def __init__(self, prefix, name, **kwargs):
         super(PimegaCam, self).__init__(prefix, name=name, **kwargs)
