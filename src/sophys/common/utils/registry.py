@@ -44,7 +44,7 @@ def create_named_registry(registry_name: str):
     try:
         from ophydregistry import Registry
     except ImportError:
-        logging.error("Package 'ophydregistry' is missing.")
+        logging.error("Package 'ophyd-registry' is missing.")
         return
 
     global __global_registries
@@ -94,10 +94,12 @@ def get_all_devices(as_dict: bool = False):
         If True, return a dictionary, as per :func:`to_variable_dict`.
         Otherwise, return a list of all devices. Defaults to False.
     """
-    global __global_registries
-    return list(
-        chain.from_iterable(v.root_devices for v in __global_registries.values())
-    )
+    registries = get_all_registries()
+
+    if as_dict:
+        return to_variable_dict(registries)
+
+    return list(chain.from_iterable(v.root_devices for v in registries))
 
 
 def find_all(
@@ -105,7 +107,7 @@ def find_all(
     *,
     label: typing.Optional[str] = None,
     name: typing.Optional[str] = None,
-    allow_none: typing.Optional[bool] = False
+    allow_none: typing.Optional[bool] = False,
 ):
     res = list(
         chain.from_iterable(
@@ -156,7 +158,7 @@ def register_devices(registry_name: str):
     __auto_register.val = None
 
 
-def to_variable_dict(self, *registries):
+def to_variable_dict(registries: typing.Iterable):
     """
     Turns a registry (or set of registries) into a dictionary, intended of being used as such:
 
