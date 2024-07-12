@@ -1,6 +1,7 @@
 from itertools import chain
 import logging
 from contextlib import contextmanager
+import functools
 import re
 import threading
 import typing
@@ -168,8 +169,12 @@ def to_variable_dict(registries: typing.Iterable):
 
     def process_name(registry, name: str):
         pattern = re.compile("[^a-zA-Z1-9_]")
-        device_name = re.sub(pattern, "_", name)
-        return "_{}_{}".format(get_registry_name(registry), device_name)
+        clear_name = functools.partial(re.sub, pattern, "_")
+
+        device_name = clear_name(name)
+        registry_name = clear_name(get_registry_name(registry))
+
+        return "_{}_{}".format(registry_name, device_name)
 
     ret = {}
     for registry in registries:
