@@ -174,7 +174,7 @@ def to_variable_dict(registries: typing.Iterable):
         device_name = clear_name(name)
         registry_name = clear_name(get_registry_name(registry))
 
-        return "_{}_{}".format(registry_name, device_name)
+        return "{}_{}".format(registry_name, device_name)
 
     ret = {}
     for registry in registries:
