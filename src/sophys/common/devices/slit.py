@@ -1,12 +1,13 @@
-from ophyd import FormattedComponent, Component
+from ophyd import Component
 from ophyd.device import create_device_from_components
+
 from .motor import ControllableMotor, VirtualControllableMotor
 
 
 def _create_vertical_components(prefix, top, bottom, gap, offset):
     """
-        Create all the components belonging to the vertical slit device and 
-        return them in a dictionary.
+    Create all the components belonging to the vertical slit device and
+    return them in a dictionary.
     """
 
     virtualMotorComponents = {
@@ -25,10 +26,9 @@ def _create_vertical_components(prefix, top, bottom, gap, offset):
 
     return verticalSlitComponents
 
+
 def VerticalSlit(prefix, top, bottom, gap, offset, **kwargs):
-    """
-        Create a slit device that can only be moved vertically.
-    """
+    """Create a slit device that can only be moved vertically."""
 
     verticalSlitComponents = _create_vertical_components(prefix, top, bottom, gap, offset)
 
@@ -40,8 +40,8 @@ def VerticalSlit(prefix, top, bottom, gap, offset, **kwargs):
 
 def _create_horizontal_components(prefix, left, right, gap, offset):
     """
-        Create all the components belonging to the horizontal slit device and 
-        return them in a dictionary.
+    Create all the components belonging to the horizontal slit device and
+    return them in a dictionary.
     """
 
     virtualMotorComponents = {
@@ -60,10 +60,9 @@ def _create_horizontal_components(prefix, left, right, gap, offset):
 
     return horizontalSlitComponents
 
+
 def HorizontalSlit(prefix, left, right, gap, offset, **kwargs):
-    """
-        Create a slit device that can only be moved horizontally.
-    """
+    """Create a slit device that can only be moved horizontally."""
 
     horizontalSlitComponents = _create_horizontal_components(prefix, left, right, gap, offset)
 
@@ -74,9 +73,7 @@ def HorizontalSlit(prefix, left, right, gap, offset, **kwargs):
 
 
 def Slit(prefix, top, bottom, v_gap, v_offset, left, right, h_gap, h_offset, **kwargs):
-    """
-        Create a slit device that can be moved vertically and horizontally.
-    """
+    """Create a slit device that can be moved vertically and horizontally."""
     slitComponents = {}
 
     horizontalSlitComponents = _create_horizontal_components(prefix, left, right, h_gap, h_offset)
@@ -85,6 +82,6 @@ def Slit(prefix, top, bottom, v_gap, v_offset, left, right, h_gap, h_offset, **k
     slitComponents.update(verticalSlitComponents)
 
     slitClass = create_device_from_components(
-        name="horizontal_slit", **slitComponents)
+        name="slit", **slitComponents)
 
     return slitClass(prefix=prefix, **kwargs)
