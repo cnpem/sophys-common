@@ -4,7 +4,7 @@ from ophyd import Device, Component, EpicsSignal, EpicsSignalWithRBV, \
 
 class PicoloChannel(Device):
     """
-        Device for one of the channels in the Picolo picoamperimeter.
+    Device for one of the channels in the Picolo picoammeter.
     """
 
     data = Component(EpicsSignalRO, "Data")
