@@ -19,7 +19,7 @@ class PicoloChannel(Device):
 
 class Picolo(Device):
     """
-        Device for the 4 channel Picolo picoamperimeter.
+    Device for the 4 channel Picolo picoammeter.
     """
 
     range = Component(EpicsSignal, "Range")
