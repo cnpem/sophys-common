@@ -53,7 +53,7 @@ def create_named_registry(registry_name: str):
     if len(__global_registries) == 0:
 
         def instantiation_callback(obj):
-            if __auto_register.val is not None:
+            if hasattr(__auto_register, "val") and __auto_register.val is not None:
                 get_named_registry(__auto_register.val).register(obj)
 
         from ophyd import ophydobj
