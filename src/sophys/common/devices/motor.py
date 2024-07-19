@@ -3,18 +3,14 @@ from ophyd.device import create_device_from_components
 
 
 class ControllableMotor(EpicsMotor):
-    """
-        Custom EpicsMotor that enables control before a plan and disables it after.
-    """
+    """Custom EpicsMotor that enables control before a plan and disables it after."""
+
     enable_control = Component(EpicsSignal, ".CNEN", kind="config", auto_monitor=True)
 
-    def stage(self):
-        super().stage()
-        self.enable_control.set(1).wait()
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
 
-    def unstage(self):
-        super().unstage()
-        self.enable_control.set(0).wait()
+        self.stage_sigs["enable_control"] = 1
 
 
 def VirtualControllableMotor(prefix, components, name, **kwargs):
