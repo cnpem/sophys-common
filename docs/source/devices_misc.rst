@@ -46,26 +46,31 @@ Storage Ring
 DCM Lite
 --------
 
+.. container:: hidden
+
+    .. autosummary::
+        :toctree: _generated
+        :template: device_attr_list_embed.rst
+
+        sophys.common.devices.dcm_lite.DcmLite
+        sophys.common.devices.dcm_lite.Goniometer
+        sophys.common.devices.dcm_lite.ShortStroke
+
 DcmLite
 ~~~~~~~
-.. automodule:: sophys.common.devices.dcm_lite
-    :members: DcmLite
-    :show-inheritance:
+
+.. include:: _generated/sophys.common.devices.dcm_lite.DcmLite.rst
 
 Goniometer
 ~~~~~~~~~~
 
 .. tags:: Motor
 
-.. automodule:: sophys.common.devices.dcm_lite
-    :members: Goniometer
-    :show-inheritance:
+.. include:: _generated/sophys.common.devices.dcm_lite.Goniometer.rst
 
 ShortStroke
 ~~~~~~~~~~~
 
 .. tags:: Motor
 
-.. automodule:: sophys.common.devices.dcm_lite
-    :members: ShortStroke
-    :show-inheritance:
+.. include:: _generated/sophys.common.devices.dcm_lite.ShortStroke.rst
