@@ -8,4 +8,4 @@ from .pimega import Pimega
 from .vortex import Vortex
 from .storage_ring import StorageRing
 from .tatu import Tatu9401, Tatu9403
-from .dcm_lite import DcmLite
+from .slit import VerticalSlit, HorizontalSlit, Slit

@@ -18,3 +18,12 @@ VirtualControllableMotor
 .. automodule:: sophys.common.devices.motor
     :members: VirtualControllableMotor
     :show-inheritance:
+
+Slits
+-----
+
+.. tags:: Motor
+
+.. automodule:: sophys.common.devices.slit
+    :members: HorizontalSlit, VerticalSlit, Slit
+    :show-inheritance:
