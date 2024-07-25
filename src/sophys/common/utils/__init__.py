@@ -145,8 +145,8 @@ class DebugOptions:
 
 def set_debug_mode(
     run_engine: RunEngine,
-    bluesky_debug: DebugOptions = DebugOptions(),
-    ophyd_debug: DebugOptions = DebugOptions(),
+    bluesky_debug: Union[bool, DebugOptions, None] = None,
+    ophyd_debug: Union[bool, DebugOptions, None] = None,
     mock_commands: bool = True,
     print_documents: bool = False,
 ) -> dict:
@@ -158,10 +158,12 @@ def set_debug_mode(
     run_engine : RunEngine
         The RunEngine on which to set the debug options.
         Note that the bluesky and ophyd debug options are global, so they affect all RunEngines.
-    bluesky_debug : DebugOptions, optional
-        Options to pass to bluesky's logging configuration. Passing None will leave the configurations unchanged.
-    ophyd_debug : DebugOptions, optional
-        Options to pass to ophyd's logging configuration. Passing None will leave the configurations unchanged.
+    bluesky_debug : DebugOptions or bool, optional
+        Whether to enable / disable debug logging, or options to pass to bluesky's logging configuration.
+        Passing None will leave the configurations unchanged.
+    ophyd_debug : DebugOptions or bool, optional
+        Whether to enable / disable debug logging, options to pass to ophyd's logging configuration.
+        Passing None will leave the configurations unchanged.
     mock_commands : bool, optional
         Whether to mock all of 'run_engine's commands, replacing the default commands for dummy ones
         that only print to stdout what it would have done. Defaults to True.
@@ -179,8 +181,19 @@ def set_debug_mode(
     from ophyd.log import config_ophyd_logging
 
     if bluesky_debug is not None:
+        if bluesky_debug is True:
+            bluesky_debug = DebugOptions()
+        elif bluesky_debug is False:
+            bluesky_debug = DebugOptions.no_debug()
+
         config_bluesky_logging(**bluesky_debug.asdict())
+
     if ophyd_debug is not None:
+        if ophyd_debug is True:
+            ophyd_debug = DebugOptions()
+        elif ophyd_debug is False:
+            ophyd_debug = DebugOptions.no_debug()
+
         config_ophyd_logging(**ophyd_debug.asdict())
 
     if mock_commands:
