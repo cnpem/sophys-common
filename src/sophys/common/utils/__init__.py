@@ -124,9 +124,13 @@ class HDF5PluginWithFileStore(HDF5Plugin, FileStoreHDF5IterativeWrite):
 @dataclass
 class DebugOptions:
     file: Union[IOBase, str, None] = sys.stdout
+    """Where to save the log."""
     datefmt: str = "%H:%M:%S"
+    """What formatting to use for the date of an event."""
     color: bool = True
+    """Whether to use colored output in the logs."""
     level: Union[str, int] = "DEBUG"
+    """What is the minimum level of logging that will be processed."""
 
     def asdict(self):
         # https://docs.python.org/3/library/dataclasses.html#dataclasses.asdict
@@ -135,6 +139,7 @@ class DebugOptions:
 
     @staticmethod
     def no_debug():
+        """Create a `DebugOptions` object with no `DEBUG` messages processed."""
         return DebugOptions(level="INFO")
 
 
