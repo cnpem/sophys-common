@@ -17,14 +17,31 @@ class PicoloChannel(Device):
     state = Component(EpicsSignalRO, "State")
 
 
+class PicoloAcquisitionTime(EpicsSignalWithRBV):
+    """
+        Device that handles set enum acquisition time using a float in milliseconds.
+    """
+
+    def set(self, acquisiton_time: float):
+        enums = self.metadata['enum_strs']
+        enums_float = [(float(item.replace(" ms", ""))/1000) for item in enums]
+        try:
+            enums_float.index(acquisiton_time)
+            print(acquisiton_time, enums_float)
+            print(f"{int(acquisiton_time*1000)} ms")
+            super().set(f"{int(acquisiton_time*1000)} ms").wait()
+        except Exception:
+            print("Acquisition time not found")
+
+
 class Picolo(Device):
     """
     Device for the 4 channel Picolo picoammeter.
     """
 
     range = Component(EpicsSignal, "Range")
-    auto_range = Component(EpicsSignal, "AutoRange")
-    acquisition_time = Component(EpicsSignalWithRBV, "AcquisitionTime")
+    auto_range = Component(EpicsSignal, "AutoRange", string=True)
+    acquisition_time = Component(PicoloAcquisitionTime, "AcquisitionTime", string=True)
     sample_rate = Component(EpicsSignalWithRBV, "SampleRate")
     acquire_mode = Component(EpicsSignal, "AcquireMode")
     samples_per_trigger = Component(EpicsSignalWithRBV, "NumAcquire")
@@ -41,16 +58,6 @@ class Picolo(Device):
     ch3 = Component(PicoloChannel, "Current3:")
     ch4 = Component(PicoloChannel, "Current4:")
 
-    def set_acquisition_time(self, acquisiton_time: float):
-        enums = self.acquisition_time.metadata['enum_strs']
-        enums_float = [(float(item.replace(" ms", ""))/1000) for item in enums]
-        try:
-            selected_enum = enums_float.index(acquisiton_time)
-            self.acquisition_time.set(selected_enum).wait()
-        except Exception:
-            print("Acquisition time not found")
-            return False
-        return True
 
     def reset_data(self):
         past_acquire_mode = self.acquire_mode.get() # Set continuous mode
