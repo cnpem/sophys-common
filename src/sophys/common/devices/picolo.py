@@ -22,16 +22,14 @@ class PicoloAcquisitionTime(EpicsSignalWithRBV):
         Device that handles set enum acquisition time using a float in milliseconds.
     """
 
-    def set(self, acquisiton_time: float):
+    def set_value(self, acquisiton_time: float):
         enums = self.metadata['enum_strs']
         enums_float = [(float(item.replace(" ms", ""))/1000) for item in enums]
-        try:
-            enums_float.index(acquisiton_time)
-            print(acquisiton_time, enums_float)
-            print(f"{int(acquisiton_time*1000)} ms")
-            super().set(f"{int(acquisiton_time*1000)} ms").wait()
-        except Exception:
+        if acquisiton_time not in enums_float:
             print("Acquisition time not found")
+            return
+        
+        super().set(f"{int(acquisiton_time*1000)} ms").wait()    
 
 
 class Picolo(Device):
