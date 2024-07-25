@@ -4,9 +4,9 @@ from ophyd import Component, FormattedComponent, DynamicDeviceComponent, \
 
 class TatuInput(Device):
     """
-        Base configuration and status PVs for a TATU Input port.
+    Base configuration and status PVs for a TATU Input port.
     """
-    
+
     current_value = FormattedComponent(EpicsSignal, "{prefix}P{input_number}")
     trigger_value = FormattedComponent(EpicsSignal, "{prefix}InputTriggerIO{input_number}")
     edges_to_trigger = FormattedComponent(EpicsSignal, "{prefix}EdgestoTrigIO{input_number}")
@@ -20,7 +20,7 @@ class TatuInput(Device):
 
 class TatuOutputCondition(Device):
     """
-        Base configuration and status PVs for a TATU Output port condition.
+    Base configuration and status PVs for a TATU Output port condition.
     """
 
     changed = FormattedComponent(EpicsSignal, "{prefix}IO{output_number}changed")
@@ -40,11 +40,9 @@ class TatuOutputCondition(Device):
 
 class TatuOutput(Device):
     """
-        All the conditions PVs for a TATU Output port.
+    All the conditions PVs for a TATU Output port.
     """
-    
-    value = FormattedComponent(
-        EpicsSignal, "{prefix}bo{output_number}")
+
     c1 = FormattedComponent(
         TatuOutputCondition, "{prefix}/{output_number}", condition_number="0")
     c2 = FormattedComponent(
@@ -59,10 +57,10 @@ class TatuOutput(Device):
 
 class TatuBase(Device):
     """
-        Base Device for the Tatu software, which produces or a distribute digital signals 
-        to coordinate events and actions to achieve a synchronized operation at a beamline.
-        
-        Documentation: http://bit.ly/tatu-sirius
+    Base device for the TATU software, which produces or a distribute digital
+    signals to coordinate events and actions to achieve a synchronized operation at a beamline.
+
+    Documentation: http://bit.ly/tatu-sirius
     """
 
     activate = Component(
@@ -116,22 +114,26 @@ class TatuBase(Device):
         self.master_mode.set(self.master_mode_state).wait()
         self.activate.set(1).wait()
 
+
 class Tatu9401(TatuBase):
     """
-        Tatu Device adapted to work with the C-Series module 9401. This module consists of 
-        four high-speed TTL channels as an input and the other four high-speed TTL channels as an output.
+    TATU device adapted to work with the C-Series module 9401.
+
+    This module consists of four high-speed TTL channels as an input and the other four high-speed TTL channels as an output.
     """
 
     def __init__(self, prefix, **kwargs):
         self.prefix = prefix
         super().__init__(prefix=prefix+"9401H:", **kwargs)
 
+
 class Tatu9403(TatuBase):
     """
-        Tatu Device adapted to work with the C-Series module 9403. This module consists of 
-        four high-speed TTL channels as an input and the other four high-speed TTL channels as an output,
-        this same sequence is repeated for the other channels in the sequence, 
-        four inputs, four outputs, for the first 24 IO ports.
+    TATU device adapted to work with the C-Series module 9403.
+
+    This module consists of four high-speed TTL channels as an input and the other four high-speed TTL channels as an output,
+
+    This same sequence is repeated for the other channels in the sequence, four inputs, four outputs, for the first 24 IO ports.
     """
 
     input2 = DynamicDeviceComponent({
