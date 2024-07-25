@@ -1,6 +1,33 @@
 Miscellaneous devices
 =====================
 
+DCM Lite
+--------
+
+DcmLite
+~~~~~~~
+.. automodule:: sophys.common.devices.dcm_lite
+    :members: DcmLite
+    :show-inheritance:
+
+Goniometer
+~~~~~~~~~~
+
+.. tags:: Motor
+    
+.. automodule:: sophys.common.devices.dcm_lite
+    :members: Goniometer
+    :show-inheritance:
+    
+ShortStroke
+~~~~~~~~~~~
+
+.. tags:: Motor
+    
+.. automodule:: sophys.common.devices.dcm_lite
+    :members: ShortStroke
+    :show-inheritance:
+
 CompactRIO
 ----------
 
