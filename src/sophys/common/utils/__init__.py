@@ -138,7 +138,7 @@ class DebugOptions:
         return dict((field.name, getattr(self, field.name)) for field in fields(self))
 
     @staticmethod
-    def no_debug():
+    def info_level():
         """Create a `DebugOptions` object with no `DEBUG` messages processed."""
         return DebugOptions(level="INFO")
 
@@ -184,7 +184,7 @@ def set_debug_mode(
         if bluesky_debug is True:
             bluesky_debug = DebugOptions()
         elif bluesky_debug is False:
-            bluesky_debug = DebugOptions.no_debug()
+            bluesky_debug = DebugOptions.info_level()
 
         config_bluesky_logging(**bluesky_debug.asdict())
 
@@ -192,7 +192,7 @@ def set_debug_mode(
         if ophyd_debug is True:
             ophyd_debug = DebugOptions()
         elif ophyd_debug is False:
-            ophyd_debug = DebugOptions.no_debug()
+            ophyd_debug = DebugOptions.info_level()
 
         config_ophyd_logging(**ophyd_debug.asdict())
 
