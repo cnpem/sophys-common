@@ -53,6 +53,8 @@ sphinx_remove_toctrees.setup = __patched_setup  # noqa
 # fmt: on
 
 
+autoclass_content = "both"
+
 templates_path = ["_templates"]
 exclude_patterns = []
 
