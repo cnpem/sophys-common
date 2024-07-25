@@ -14,7 +14,61 @@ from .signals import *  # noqa: F403
 
 
 class HDF5PluginWithFileStore(HDF5Plugin, FileStoreHDF5IterativeWrite):
-    pass
+    def __init__(
+        self,
+        prefix: str,
+        *,
+        override_path: bool = False,
+        write_path_template="/tmp",
+        read_attrs=[],
+        **kwargs,
+    ):
+        """
+        A simple HDF5 plugin class, with some additional behavior (see Parameters).
+
+        Parameters
+        ----------
+        prefix : str
+            Prefix of this plugin (e.g. 'HDF1:')
+        override_path : bool, optional
+            Whether to use the common override logic of HDF5 ophyd plugins.
+            By default, it is disabled (the currently configured PV values will be used)
+        write_path_template : str, optional
+            Used when `override_path` is `True`. By default it is `/tmp`.
+        """
+        super().__init__(
+            prefix,
+            write_path_template=write_path_template,
+            read_attrs=read_attrs,
+            **kwargs,
+        )
+
+        self._override_path = override_path
+
+    def stage(self):
+        if not self._override_path:
+            # stage_sigs will be ran after the override takes place.
+            self.stage_sigs["file_path"] = self.hdf.file_path.get()
+            self.stage_sigs["file_name"] = self.hdf.file_name.get()
+            self.stage_sigs["file_number"] = self.hdf.file_number.get()
+
+        super().stage()
+
+    def unstage(self):
+        if not self._override_path:
+            # The super().unstage call will override our values to
+            # the dumb defaults. Before that, however, we have the
+            # updated values.
+            file_path = self.file_path.get()
+            file_name = self.file_name.get()
+            file_number = self.file_number.get()
+
+        super().unstage()
+
+        if not self._override_path:
+            self.file_path.set(file_path).wait()
+            self.file_name.set(file_name).wait()
+            self.file_number.set(file_number).wait()
 
 
 @dataclass
