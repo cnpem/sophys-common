@@ -14,6 +14,10 @@ from .signals import *  # noqa: F403
 
 
 class HDF5PluginWithFileStore(HDF5Plugin, FileStoreHDF5IterativeWrite):
+    warmup_acquire_time: float = 1.0
+    warmup_acquire_period: float = 1.0
+    warmup_signal_timeout: float = 5.0
+
     def __init__(
         self,
         prefix: str,
@@ -24,7 +28,7 @@ class HDF5PluginWithFileStore(HDF5Plugin, FileStoreHDF5IterativeWrite):
         **kwargs,
     ):
         """
-        A simple HDF5 plugin class, with some additional behavior (see Parameters).
+        A simple HDF5 plugin class, with some additional behavior (see Parameters and Attributes below).
 
         Parameters
         ----------
@@ -35,6 +39,15 @@ class HDF5PluginWithFileStore(HDF5Plugin, FileStoreHDF5IterativeWrite):
             By default, it is disabled (the currently configured PV values will be used)
         write_path_template : str, optional
             Used when `override_path` is `True`. By default it is `/tmp`.
+
+        Attributes
+        ----------
+        warmup_acquire_time : float
+            The value to set AcquireTime when doing a warmup. Defaults to 1.0.
+        warmup_acquire_period : float
+            The value to set AcquirePeriod when doing a warmup. Defaults to 1.0.
+        warmup_signal_timeout : float
+            The timeout to pass to each set().wait() call in the warmup. Defaults to 5.0.
         """
         super().__init__(
             prefix,
@@ -44,6 +57,43 @@ class HDF5PluginWithFileStore(HDF5Plugin, FileStoreHDF5IterativeWrite):
         )
 
         self._override_path = override_path
+
+    def warmup(self):
+        """
+        A convenience method for 'priming' the plugin.
+
+        The plugin has to 'see' one acquisition before it is ready to capture.
+        This sets the array size, etc.
+
+        This method is an override of the similar-named method in HDF5Plugin.
+        """
+        self.enable.set(1).wait()
+
+        from collections import OrderedDict
+
+        sigs = OrderedDict(
+            [
+                (self.parent.cam.array_callbacks, 1),
+                (self.parent.cam.image_mode, "Single"),
+                (self.parent.cam.trigger_mode, "Internal"),
+                (self.parent.cam.acquire_time, self.warmup_acquire_time),
+                (self.parent.cam.acquire_period, self.warmup_acquire_period),
+                (self.parent.cam.acquire, 1),
+            ]
+        )
+
+        original_vals = {sig: sig.get() for sig in sigs}
+
+        for sig, val in sigs.items():
+            sig.set(val).wait(timeout=self.warmup_signal_timeout)
+
+        import time
+
+        while self.parent.cam.acquire.get() != 0:
+            time.sleep(0.01)
+
+        for sig, val in reversed(list(original_vals.items())):
+            sig.set(val).wait(timeout=self.warmup_signal_timeout)
 
     def stage(self):
         if not self._override_path:
