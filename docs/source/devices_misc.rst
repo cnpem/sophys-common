@@ -1,33 +1,6 @@
 Miscellaneous devices
 =====================
 
-DCM Lite
---------
-
-DcmLite
-~~~~~~~
-.. automodule:: sophys.common.devices.dcm_lite
-    :members: DcmLite
-    :show-inheritance:
-
-Goniometer
-~~~~~~~~~~
-
-.. tags:: Motor
-    
-.. automodule:: sophys.common.devices.dcm_lite
-    :members: Goniometer
-    :show-inheritance:
-    
-ShortStroke
-~~~~~~~~~~~
-
-.. tags:: Motor
-    
-.. automodule:: sophys.common.devices.dcm_lite
-    :members: ShortStroke
-    :show-inheritance:
-
 CompactRIO
 ----------
 
@@ -69,3 +42,35 @@ Storage Ring
         sophys.common.devices.storage_ring.StorageRing
 
 .. include:: _generated/sophys.common.devices.storage_ring.StorageRing.rst
+
+DCM Lite
+--------
+
+.. container:: hidden
+
+    .. autosummary::
+        :toctree: _generated
+        :template: device_attr_list_embed.rst
+
+        sophys.common.devices.dcm_lite.DcmLite
+        sophys.common.devices.dcm_lite.Goniometer
+        sophys.common.devices.dcm_lite.ShortStroke
+
+DcmLite
+~~~~~~~
+
+.. include:: _generated/sophys.common.devices.dcm_lite.DcmLite.rst
+
+Goniometer
+~~~~~~~~~~
+
+.. tags:: Motor
+
+.. include:: _generated/sophys.common.devices.dcm_lite.Goniometer.rst
+
+ShortStroke
+~~~~~~~~~~~
+
+.. tags:: Motor
+
+.. include:: _generated/sophys.common.devices.dcm_lite.ShortStroke.rst
