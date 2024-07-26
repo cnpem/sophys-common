@@ -35,7 +35,10 @@ class Digital2AnalogConverter(Device):
     tpref_b = ADComponent(EpicsSignalWithRBV, "TPRefB")
 
 
-class PimageAcquire(Device):
+class PimegaAcquire(Device):
+    """
+        Handle the necessary PVs to start and stop the pimega acquisition.
+    """
 
     acquire = ADComponent(EpicsSignalWithRBV, "Acquire")
     capture = ADComponent(EpicsSignalWithRBV, "Capture")
@@ -53,11 +56,23 @@ class PimageAcquire(Device):
         self.capture.set(0).wait()
 
 
+class PimegaFilePath(EpicsSignalWithRBV):
+    """
+        Add '/' at the end of the file path if it isn't already specified.
+    """
+
+    def set(self, value: str, **kwargs):
+        if len(value) > 0:
+            if value[-1] != '/':
+                value += '/'
+        return super().set(value, **kwargs)
+
+
 class PimegaCam(CamBase):
 
     magic_start = ADComponent(EpicsSignal, "MagicStart")
     trigger_mode = ADComponent(EpicsSignalWithRBV, "TriggerMode", string=True)
-    acquire = ADComponent(PimageAcquire, "")
+    acquire = ADComponent(PimegaAcquire, "")
     num_capture = ADComponent(EpicsSignalWithRBV, "NumCapture")
     num_exposures = ADComponent(EpicsSignalWithRBV, "NumExposures")
     
@@ -73,7 +88,7 @@ class PimegaCam(CamBase):
     dac = ADComponent(Digital2AnalogConverter, "DAC_")
 
     file_name = ADComponent(EpicsSignalWithRBV, "FileName", string=True)
-    file_path = ADComponent(EpicsSignalWithRBV, "FilePath", string=True)
+    file_path = ADComponent(PimegaFilePath, "FilePath", string=True)
     file_path_exists = ADComponent(EpicsSignalRO, "FilePathExists_RBV", string=True)
     file_number = ADComponent(EpicsSignalWithRBV, "FileNumber")
     file_template = ADComponent(EpicsSignalWithRBV, "FileTemplate", string=True)
