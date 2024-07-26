@@ -62,8 +62,9 @@ class PimegaFilePath(EpicsSignalWithRBV):
     """
 
     def set(self, value: str, **kwargs):
-        if value[-1] != '/':
-            value += '/'
+        if len(value) > 0:
+            if value[-1] != '/':
+                value += '/'
         return super().set(value, **kwargs)
 
 
