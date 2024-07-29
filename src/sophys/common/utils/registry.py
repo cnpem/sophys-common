@@ -117,11 +117,12 @@ def get_all_devices(as_dict: bool = False):
     devices = root_devices.copy()
 
     for key, dev in root_devices.items():
-        for child_name, child in dev.walk_subdevices(include_lazy=True):
-            pattern = re.compile("[^a-zA-Z1-9_]")
-            clear_name = functools.partial(re.sub, pattern, "_")
+        if hasattr(dev, 'walk_subdevices'):
+            for child_name, child in dev.walk_subdevices(include_lazy=True):
+                pattern = re.compile("[^a-zA-Z1-9_]")
+                clear_name = functools.partial(re.sub, pattern, "_")
 
-            devices[key + "_" + clear_name(child_name)] = child
+                devices[key + "_" + clear_name(child_name)] = child
 
     if not as_dict:
         return list(chain.from_iterable(devices.values()))
