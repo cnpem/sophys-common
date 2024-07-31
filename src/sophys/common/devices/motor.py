@@ -75,10 +75,11 @@ def VirtualControllableMotor(prefix, components, name, **kwargs):
         name=name, prefix=prefix, attr_keys=formattedComponents.keys(), **kwargs)
 
 
-def instantiate_several_motors(prefix, motor_suffixes, global_key):
+def MotorGroup(motor_suffixes, global_key):
     """
         Function to instantiate several motor devices.
     """
+    components = {}
     for key, suffix in motor_suffixes.items():
         kwargs = {}
         deviceClass = ControllableMotor
@@ -87,5 +88,6 @@ def instantiate_several_motors(prefix, motor_suffixes, global_key):
             suffix = suffix[0]
             deviceClass = VirtualControllableMotor
 
-        deviceKey = global_key + "_" + key
-        deviceClass(prefix + suffix, name=deviceKey, **kwargs)
+        components[key] = Component(deviceClass, suffix=suffix, **kwargs)
+    
+    return create_device_from_components(name=global_key, **components)
