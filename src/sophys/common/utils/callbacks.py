@@ -2,7 +2,9 @@ import typing
 
 
 def make_kafka_callback(
-    topic_names: typing.Union[str, typing.List[str]],
+    topic_names: typing.Optional[
+        typing.Union[str, typing.List[str]]
+    ] = "test_bluesky_raw_docs",
     bootstrap_servers: typing.Optional[
         typing.Union[str, typing.List[str]]
     ] = "localhost:9092",
@@ -14,8 +16,8 @@ def make_kafka_callback(
 
     Parameters
     ----------
-    topic_names : list of str
-        A list of topic names to send the data to.
+    topic_names : list of str, optional
+        A list of topic names to send the data to. Defaults to ``test_bluesky_raw_docs``.
     bootstrap_servers : list of str, optional
         A list of IPs / hosts to check for the specified topics. Defaults to ``localhost:9092``.
     backoff_times : list of float, optional
