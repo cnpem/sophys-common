@@ -9,14 +9,14 @@ from ophyd import (
     Kind,
     SingleTrigger,
 )
-from ophyd.areadetector.cam import CamBase
 from ophyd.areadetector.detectors import DetectorBase
 from ophyd.areadetector.plugins import ImagePlugin
 
 from ..utils import HDF5PluginWithFileStore
+from .cam import CamBase_V33
 
 
-class C400Cam(CamBase):
+class C400Cam(CamBase_V33):
     burst_size = Component(
         EpicsSignalWithRBV, "BURST_SIZE", lazy=True, kind=Kind.config
     )

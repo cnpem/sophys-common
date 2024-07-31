@@ -10,7 +10,6 @@ from ophyd import (
     Kind,
     SingleTrigger,
 )
-from ophyd.areadetector.cam import CamBase
 from ophyd.areadetector.detectors import DetectorBase
 from ophyd.areadetector.plugins import (
     TransformPlugin_V34 as TransformPlugin,
@@ -22,6 +21,7 @@ from ophyd.signal import InternalSignal
 from ophyd.utils.errors import WaitTimeoutError
 
 from ..utils import HDF5PluginWithFileStore, EpicsSignalWithCustomReadoutRBV
+from .cam import CamBase_V33
 
 
 class MobipixError(Exception):
@@ -32,7 +32,7 @@ class MobipixMissingConfigurationError(MobipixError):
     ...
 
 
-class MobipixCam(CamBase):
+class MobipixCam(CamBase_V33):
     ...
 
 

@@ -8,8 +8,8 @@ from ophyd import (
     SingleTrigger,
     Device
 )
-from ophyd.areadetector.cam import CamBase
 from ophyd.areadetector.detectors import DetectorBase
+from .cam import CamBase_V33
 
 
 class Digital2AnalogConverter(Device):
@@ -68,7 +68,7 @@ class PimegaFilePath(EpicsSignalWithRBV):
         return super().set(value, **kwargs)
 
 
-class PimegaCam(CamBase):
+class PimegaCam(CamBase_V33):
 
     magic_start = ADComponent(EpicsSignal, "MagicStart")
     trigger_mode = ADComponent(EpicsSignalWithRBV, "TriggerMode", string=True)
