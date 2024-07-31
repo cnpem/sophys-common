@@ -28,7 +28,7 @@ def _create_vertical_components(
     if gap is not None:
         verticalSlitComponents.update(
             {
-                "gap": Component(
+                "vertical_gap": Component(
                     VirtualControllableMotor,
                     f"{gap}",
                     components=virtualMotorComponents,
@@ -39,7 +39,7 @@ def _create_vertical_components(
     if offset is not None:
         verticalSlitComponents.update(
             {
-                "offset": Component(
+                "vertical_offset": Component(
                     VirtualControllableMotor,
                     f"{offset}",
                     components=virtualMotorComponents,
@@ -93,7 +93,7 @@ def _create_horizontal_components(
     if gap is not None:
         horizontalSlitComponents.update(
             {
-                "gap": Component(
+                "horizontal_gap": Component(
                     VirtualControllableMotor,
                     f"{gap}",
                     components=virtualMotorComponents,
@@ -104,7 +104,7 @@ def _create_horizontal_components(
     if offset is not None:
         horizontalSlitComponents.update(
             {
-                "offset": Component(
+                "horizontal_offset": Component(
                     VirtualControllableMotor,
                     f"{offset}",
                     components=virtualMotorComponents,
