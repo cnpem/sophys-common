@@ -98,7 +98,7 @@ class UndulatorKymaAPU(Device):
     interface = Component(EpicsSignalMon, "Interface", lazy=True, kind=Kind.omitted)
 
     home_axis = Component(
-        EpicsSignal, write_pv="HomeAxis-Sel", lazy=True, kind=Kind.omitted
+        EpicsSignal, "HomeAxis-Sel", lazy=True, kind=Kind.omitted
     )
 
     phase = Component(
