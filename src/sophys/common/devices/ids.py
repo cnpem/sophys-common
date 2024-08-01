@@ -77,8 +77,7 @@ class UndulatorKymaAPU(Device):
 
     command = Component(
         EpicsSignal,
-        read_pv="LastDevCtrlCmd-Mon",
-        write_pv="DevCtrl-Cmd",
+        "DevCtrl-Cmd",
         lazy=True,
         kind=Kind.omitted,
     )
