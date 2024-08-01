@@ -17,16 +17,7 @@ class EpicsSignalMon(EpicsSignalRO):
 
 class EpicsSignalIDs(PVPositionerIsClose):
     setpoint = Component(EpicsSignal, "-SP")
-    readback = Component(EpicsSignalRO, "-Mon")
-
-class Apu22(Device):
-    kx = Component(EpicsSignalIDs, "Kx")
-    phase = Component(EpicsSignalIDs, "Phase")
-    phase_speed = Component(EpicsSignalIDs, "PhaseSpeed")
-    control = Component(EpicsSignalRO, "DevCtrl-Cmd", string=True)
-    moving = Component(EpicsSignalRO, "Moving-Mon")
-    enabled = Component(EpicsSignalRO, "MotorsEnbld-Mon")
-
+    readback = Component(EpicsSignalMon, "")
 
 # Reference:
 # https://cnpemcamp.sharepoint.com/:x:/s/Comissionamento/Eabdu5JQhm1Oh8xjo25QNkEBeA8lLoRFrrTI0nVYT6t9aw?e=JnWNx9
@@ -110,22 +101,16 @@ class UndulatorKymaAPU(Device):
         EpicsSignal, write_pv="HomeAxis-Sel", lazy=True, kind=Kind.omitted
     )
 
-    # Motion
-    class _Phase(PVPositionerIsClose):
-        setpoint = Component(EpicsSignal, "Phase-SP")
-        readback = Component(EpicsSignalRO, "Phase-Mon")
-
     phase = Component(
-        _Phase,
-        "",
+        EpicsSignalIDs,
+        "Phase",
         lazy=True,
         kind=Kind.hinted,
     )
 
     phase_speed = Component(
-        EpicsSignal,
-        read_pv="PhaseSpeed-Mon",
-        write_pv="PhaseSpeed-SP",
+        EpicsSignalIDs,
+        "PhaseSpeed",
         lazy=True,
         kind=Kind.config,
     )
