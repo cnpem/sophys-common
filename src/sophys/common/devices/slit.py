@@ -174,7 +174,8 @@ def _create_kinematic_vertical_components(
 ) -> dict:
     """
     Create all the components belonging to the vertical slit device 
-    that can be moved through a gap and an offset and return them in a dictionary.
+    that can be moved through a gap and an offset and return them in a dictionary,
+    using them as real motors, while the individual directions are virtual motors.
     """
 
     virtualMotorComponents = {"vertical_gap": f"{prefix}{gap}", "vertical_offset": f"{prefix}{offset}"}
@@ -218,7 +219,8 @@ def _create_kinematic_horizontal_components(
 ) -> dict:
     """
     Create all the components belonging to the horizontal slit device 
-    that can be moved through a gap and an offset and return them in a dictionary.
+    that can be moved through a gap and an offset and return them in a dictionary,
+    using them as real motors, while the individual directions are virtual motors.
     """
 
     virtualMotorComponents = {"horizontal_gap": f"{prefix}{gap}", "horizontal_offset": f"{prefix}{offset}"}
@@ -265,7 +267,10 @@ def KinematicSlit(
     h_offset: typing.Optional[str] = None,
     **kwargs,
 ) -> Device:
-    """Create a slit device that can be moved with a gap or an offset horizontally and vertically."""
+    """
+    Create a slit device that can be moved with a gap or an offset horizontally and vertically,
+    using them as real motors, while the individual directions are virtual motors.
+    """
     slitComponents = {}
 
     horizontalSlitComponents = _create_kinematic_horizontal_components(
