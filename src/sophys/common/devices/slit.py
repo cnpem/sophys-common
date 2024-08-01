@@ -257,14 +257,14 @@ def _create_kinematic_horizontal_components(
 
 def KinematicSlit(
     prefix: str,
-    top: str,
-    bottom: str,
-    left: str,
-    right: str,
-    v_gap: typing.Optional[str] = None,
-    v_offset: typing.Optional[str] = None,
-    h_gap: typing.Optional[str] = None,
-    h_offset: typing.Optional[str] = None,
+    v_gap: str,
+    v_offset: str,
+    h_gap: str,
+    h_offset: str,
+    top: typing.Optional[str] = None,
+    bottom: typing.Optional[str] = None,
+    left: typing.Optional[str] = None,
+    right: typing.Optional[str] = None,
     **kwargs,
 ) -> Device:
     """
