@@ -12,3 +12,4 @@ from .dcm_lite import DcmLite
 from .picolo import Picolo
 from .slit import VerticalSlit, HorizontalSlit, Slit
 from .cam import CamBase_V33
+from .ocean import OceanOpticsSpectrometer
