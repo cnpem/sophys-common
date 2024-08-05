@@ -11,4 +11,4 @@ from .tatu import Tatu9401, Tatu9403
 from .dcm_lite import DcmLite
 from .picolo import Picolo
 from .slit import VerticalSlit, HorizontalSlit, Slit
-from .cam import CamBase_V33
+from .cam import CamBase_V33, Xspress3DetectorCamV33
