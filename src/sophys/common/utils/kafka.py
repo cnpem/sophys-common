@@ -1,13 +1,19 @@
 import typing
 
 
+def default_topic_names():
+    return ["test_bluesky_raw_docs"]
+
+
+def default_bootstrap_servers():
+    return ["localhost:9092"]
+
+
 def make_kafka_callback(
-    topic_names: typing.Optional[
-        typing.Union[str, typing.List[str]]
-    ] = "test_bluesky_raw_docs",
-    bootstrap_servers: typing.Optional[
-        typing.Union[str, typing.List[str]]
-    ] = "localhost:9092",
+    topic_names: typing.Union[str, typing.List[str], callable] = default_topic_names,
+    bootstrap_servers: typing.Union[
+        str, typing.List[str], callable
+    ] = default_bootstrap_servers,
     backoff_times: typing.Optional[typing.List[float]] = [0.1, 1.0, 5.0, 20.0, 60.0],
 ):
     """
@@ -16,9 +22,9 @@ def make_kafka_callback(
 
     Parameters
     ----------
-    topic_names : list of str, optional
+    topic_names : list of str, or a callable that returns a list of str
         A list of topic names to send the data to. Defaults to ``test_bluesky_raw_docs``.
-    bootstrap_servers : list of str, optional
+    bootstrap_servers : list of str, or a callable that returns a list of str
         A list of IPs / hosts to check for the specified topics. Defaults to ``localhost:9092``.
     backoff_times : list of float, optional
         A list of times, in seconds, to delay each successive attempt at connecting to a Kafka broker.
@@ -28,6 +34,11 @@ def make_kafka_callback(
 
         Defaults to ``[0.1, 1.0, 5.0, 20.0, 60.0]``.
     """
+    if callable(topic_names):
+        topic_names = topic_names()
+    if callable(bootstrap_servers):
+        bootstrap_servers = bootstrap_servers()
+
     if not isinstance(topic_names, list):
         topic_names = [topic_names]
     if not isinstance(bootstrap_servers, list):
