@@ -58,7 +58,7 @@ class OceanOpticsSpectrometer(Device):
     region5 = Component(OceanInterestRegion, "Region5", lazy=True)
 
 
-    index = Component(OceanIntegrationTime, "IntegrationTime:", lazy=True)
+    integration_time = Component(OceanIntegrationTime, "IntegrationTime:", lazy=True)
 
 
     external_trigger = Component(EpicsSignal, "ExternalTrigger", lazy=True, string=True)
