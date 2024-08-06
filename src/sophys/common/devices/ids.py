@@ -1,6 +1,4 @@
-
 from enum import IntEnum
-
 from ophyd import (
     Device,
     Component,
@@ -11,9 +9,8 @@ from ophyd import (
 )
 
 class EpicsSignalMon(EpicsSignalRO):
-    
     def __init__(self, prefix, **kwargs):
-        super().__init__(prefix+"-Mon", **kwargs)
+        super().__init__(prefix + "-Mon", **kwargs)
 
 class EpicsSignalIDs(PVPositionerIsClose):
     setpoint = Component(EpicsSignal, "-SP")
