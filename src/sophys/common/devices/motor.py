@@ -81,24 +81,24 @@ def MotorGroup(prefix, motors_suffixes, name, **kwargs):
     
     .. admonition:: Usage example
 
-    .. code-block:: python
-        
-        real_motors = {
-            "x": "SWC:MOTOR:m1",
-            "y": "SWC:MOTOR:m2",
-            "z": "SWC:MOTOR:m3"
-        }
-        motors_suffixes = {
-            "x": "m1",
-            "y": "m2",
-            "z": "m3",
-            "kin_x": ("CS1:m1", real_motors),
-            "kin_y": ("CS1:m2", real_motors),
-            "kin_z": ("CS1:m3", real_motors)
-        }
+        .. code-block:: python
+            
+            real_motors = {
+                "x": "SWC:MOTOR:m1",
+                "y": "SWC:MOTOR:m2",
+                "z": "SWC:MOTOR:m3"
+            }
+            motors_suffixes = {
+                "x": "m1",
+                "y": "m2",
+                "z": "m3",
+                "kin_x": ("CS1:m1", real_motors),
+                "kin_y": ("CS1:m2", real_motors),
+                "kin_z": ("CS1:m3", real_motors)
+            }
 
-        motor_group = MotorGroup(
-            prefix="SWC:MOTOR:", motors_suffixes=motors_suffixes, name="motor_group")
+            motor_group = MotorGroup(
+                prefix="SWC:MOTOR:", motors_suffixes=motors_suffixes, name="motor_group")
 
     Parameters
     ----------
