@@ -19,11 +19,20 @@ VirtualControllableMotor
     :members: VirtualControllableMotor
     :show-inheritance:
 
+MotorGroup
+------------------------
+
+.. tags:: Motor
+
+.. automodule:: sophys.common.devices.motor
+    :members: MotorGroup
+    :show-inheritance:
+
 Slits
 -----
 
 .. tags:: Motor
 
 .. automodule:: sophys.common.devices.slit
-    :members: HorizontalSlit, VerticalSlit, Slit
+    :members: HorizontalSlit, VerticalSlit, Slit, KinematicSlit
     :show-inheritance:
