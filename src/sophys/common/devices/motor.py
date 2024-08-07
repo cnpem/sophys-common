@@ -26,7 +26,7 @@ def VirtualControllableMotor(prefix, components, name, **kwargs):
     move that virtual motor, you first have to enable movement of every
     single real motor it is composed of.
 
-    .. admonition:: Example usage - A vertical slit gap
+    .. admonition:: Usage example - A vertical slit gap
 
         .. code-block:: python
 
@@ -73,3 +73,53 @@ def VirtualControllableMotor(prefix, components, name, **kwargs):
 
     return VirtualControllableMotorClass(
         name=name, prefix=prefix, attr_keys=formattedComponents.keys(), **kwargs)
+
+
+def MotorGroup(prefix, motors_suffixes, name, **kwargs):
+    """
+    Function to instantiate several motor devices.
+    
+    .. admonition:: Usage example
+
+        .. code-block:: python
+            
+            real_motors = {
+                "x": "SWC:MOTOR:m1",
+                "y": "SWC:MOTOR:m2",
+                "z": "SWC:MOTOR:m3"
+            }
+            motors_suffixes = {
+                "x": "m1",
+                "y": "m2",
+                "z": "m3",
+                "kin_x": ("CS1:m1", real_motors),
+                "kin_y": ("CS1:m2", real_motors),
+                "kin_z": ("CS1:m3", real_motors)
+            }
+
+            motor_group = MotorGroup(
+                prefix="SWC:MOTOR:", motors_suffixes=motors_suffixes, name="motor_group")
+
+    Parameters
+    ----------
+    prefix : str
+        The prefix of the motor group.
+    motors_suffixes : dict of (string, string)
+        The real motors that constitute this motor group, in the form of .
+    name : str
+        Name of the created motor group.
+    """
+    components = {}
+    for key, suffix in motors_suffixes.items():
+        args = {}
+        deviceClass = ControllableMotor
+        if isinstance(suffix, tuple):
+            args["components"] = suffix[1]
+            suffix = suffix[0]
+            deviceClass = VirtualControllableMotor
+
+        components[key] = Component(deviceClass, suffix=suffix, **args)
+    
+    devClass = create_device_from_components(name="motor_group", **components)
+
+    return devClass(prefix=prefix, name=name, **kwargs)
