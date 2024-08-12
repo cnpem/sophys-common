@@ -117,6 +117,8 @@ def get_all_devices(as_dict: bool = False):
     devices = root_devices.copy()
 
     for key, dev in root_devices.items():
+        devices[key] = dev
+
         if hasattr(dev, 'signal_names'):
             for child_name, child in dev._signals.items():
                 pattern = re.compile("[^a-zA-Z1-9_]")
