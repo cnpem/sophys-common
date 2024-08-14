@@ -29,7 +29,7 @@ def add_components_to_device(
     """
     if not hasattr(obj.__class__, "_old_sig_attrs"):
         obj.__class__._old_sig_attrs = copy.deepcopy(obj._sig_attrs)
-    obj._sig_attrs = obj.__class__._old_sig_attrs
+    obj._sig_attrs = copy.deepcopy(obj.__class__._old_sig_attrs)
 
     for component_name, component in components:
         component.__set_name__(component, component_name)
