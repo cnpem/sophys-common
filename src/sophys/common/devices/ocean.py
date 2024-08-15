@@ -1,9 +1,7 @@
 from ophyd import Component, Device, EpicsSignal, EpicsSignalRO, \
     PVPositionerIsClose
 
-
 class OceanInterestRegion(Device):
-
     waveform = Component(EpicsSignal, "", lazy=True)
     luminescence = Component(EpicsSignal, ":Luminescence", lazy=True)
     upper_limit = Component(EpicsSignal, ":UpperLimit", lazy=True)
@@ -11,7 +9,6 @@ class OceanInterestRegion(Device):
 
 
 class OceanIntegrationTime(Device):
-
     resolution = Component(EpicsSignal, "Resolution", lazy=True, string=True)
     driver_low = Component(EpicsSignal, "Value:DRVL", lazy=True)
     driver_high = Component(EpicsSignal, "Value:DRVH", lazy=True)
@@ -20,14 +17,12 @@ class OceanIntegrationTime(Device):
 
 
 class OceanDetectorTemperature(PVPositionerIsClose):
-    
     readback = Component(EpicsSignalRO, "", lazy=True)
     setpoint = Component(EpicsSignal, ":SetPoint", lazy=True)
     actuate_value = Component(EpicsSignalRO, ":SetPoint:fbk", lazy=True)
 
 
 class OceanOpticsSpectrometer(Device):
-
     index = Component(EpicsSignal, "SetIndex", lazy=True)
     channel = Component(EpicsSignal, "SetChannel", lazy=True)
     integration = Component(EpicsSignal, "SetIntegration", lazy=True)
@@ -57,9 +52,7 @@ class OceanOpticsSpectrometer(Device):
     region4 = Component(OceanInterestRegion, "Region4", lazy=True)
     region5 = Component(OceanInterestRegion, "Region5", lazy=True)
 
-
     integration_time = Component(OceanIntegrationTime, "IntegrationTime:", lazy=True)
-
 
     external_trigger = Component(EpicsSignal, "ExternalTrigger", lazy=True, string=True)
     external_trigger_invert = Component(EpicsSignal, "ExternalTrigger:Invert", lazy=True)
