@@ -33,7 +33,7 @@ import inspect
 import typing
 
 import cycler
-from bluesky import plans, protocols, Msg
+from bluesky import plans, plan_stubs, protocols, Msg
 
 
 __all__ = [
@@ -60,6 +60,7 @@ __all__ = [
     "tune_centroid",
     "tweak",
     "fly",
+    "mv"
 ]
 
 
@@ -907,3 +908,20 @@ def tweak(
 @wraps(plans.fly)
 def fly(flyers: FLYERS_TYPE, *, md: MD_TYPE = None):
     return (yield from plans.fly(flyers=flyers, md=md))
+
+
+@parameter_annotation_decorator(
+    {
+        "parameters": {
+            "args": {
+                "description": """
+device1,value1,device2,value2, ... 
+-.-device,value;device to be moved,value to be setted;__MOVABLE__,typing.Any-.-
+"""
+            }
+        }
+    }
+)
+@wraps(plan_stubs.mv)
+def mv(*args, group: typing.Any=None, **kwargs: typing.Optional[dict]):
+    return (yield from plan_stubs.mv(*args, group=group, **kwargs))
