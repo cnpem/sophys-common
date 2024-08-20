@@ -1,6 +1,6 @@
 import logging
 import json
-from functools import wraps
+from functools import wraps, partial
 from pathlib import Path
 
 from threading import Thread
@@ -45,6 +45,28 @@ class DocumentDictionary(dict):
 
         self.__subscritions = []
 
+    def subscribe(self, fn: callable):
+        """
+        Subscribe `fn` to be notified (called) whenever a new entry is added.
+
+        Parameters
+        ----------
+        fn : callable
+            The function to be called, with signature (event_name: str, uuid: str) -> None.
+        """
+        self.__subscritions.append(fn)
+
+        if self.start_document is not None:
+            fn("start", self.identifier)
+
+    def clear_subscriptions(self):
+        """Clear all subscriptions to this object."""
+        self.__subscritions = []
+
+    def _run_subscriptions(self, event_name: str, event_uuid: str):
+        for fn in self.__subscritions:
+            fn(event_name, event_uuid)
+
     def append(self, event_name: str, event_data: dict):
         """
         Add a new Document entry to this Dictionary.
@@ -76,6 +98,8 @@ class DocumentDictionary(dict):
         elif event_name == "stop":
             # TODO: Validate the stop document's descriptor_document's uid is what we think it is.
             self.__stop_document_uid = uid
+
+        self._run_subscriptions(event_name, uid)
 
     def __repr__(self):
         return "DocumentDictionary ({})".format(self.identifier)
@@ -260,6 +284,26 @@ class MonitorBase(KafkaConsumer):
 
         self.__subscritions = []
 
+    def subscribe(self, fn: callable):
+        """
+        Subscribe `fn` to be notified (called) whenever a new entry is added to a DocumentDictionary.
+
+        Parameters
+        ----------
+        fn : callable
+            The function to be called, with signature (event_name: str, event_data: dict) -> None.
+        """
+        self.__subscritions.append(fn)
+
+    def clear_subscriptions(self):
+        """Clear all subscriptions to this object."""
+        self.__subscritions = []
+
+    def _run_subscriptions(self, run_uid: str, event_name: str, event_uuid: str):
+        event_data = self.__documents.get_by_identifier(run_uid)[event_uuid]
+        for fn in self.__subscritions:
+            fn(event_name, event_data)
+
     def __repr__(self):
         return "Monitor ({})".format(self.topic())
 
@@ -299,6 +343,10 @@ class MonitorBase(KafkaConsumer):
                 new_run_uid = self.__documents[data].identifier
                 self.__incomplete_documents.append(new_run_uid)
 
+                self.__documents[data].subscribe(
+                    partial(self._run_subscriptions, new_run_uid)
+                )
+
                 return
 
             if len(self.__documents[data]) == 0:
@@ -314,6 +362,8 @@ class MonitorBase(KafkaConsumer):
                         self.__documents[data].identifier
                     )
                 )
+
+                self.__documents[data].clear_subscriptions()
 
                 # TODO: Validate number of saved entries via the stop document's num_events
                 # TODO: Validate successful run via the stop document's exit_status
