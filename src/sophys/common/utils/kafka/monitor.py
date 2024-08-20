@@ -2,6 +2,7 @@ import logging
 import json
 from functools import wraps, partial
 from pathlib import Path
+from typing import Optional
 
 from threading import Thread
 from queue import Full as QueueFullException, Queue
@@ -248,7 +249,7 @@ class MultipleDocumentDictionary(dict):
 class MonitorBase(KafkaConsumer):
     def __init__(
         self,
-        save_queue: Queue,
+        save_queue: Optional[Queue],
         incomplete_documents: list,
         topic_name: str,
         logger_name: str,
@@ -259,8 +260,9 @@ class MonitorBase(KafkaConsumer):
 
         Parameters
         ----------
-        save_queue : queue.Queue
+        save_queue : queue.Queue, optional
             The queue in which to put complete DocumentDictionary items for saving.
+            If None, all runs will be immediately discarted upon completion.
         incomplete_documents : list
             A list of all the incomplete (not submitted to the save queue) runs.
         topic_name : str
@@ -367,6 +369,9 @@ class MonitorBase(KafkaConsumer):
 
                 # TODO: Validate number of saved entries via the stop document's num_events
                 # TODO: Validate successful run via the stop document's exit_status
+
+                if self.__save_queue is None:
+                    return
 
                 # Save documents not yet saved.
                 _completed_documents = list()
