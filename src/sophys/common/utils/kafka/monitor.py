@@ -255,14 +255,14 @@ class MonitorBase(KafkaConsumer):
         **configs,
     ):
         """
-        A KafkaConsumer that runs in a separate thread, and handles specifically Bluesky documents in msgpack.
-
-        To start monitoring, call the `start` method.
+        A KafkaConsumer that handles specifically Bluesky documents in msgpack format.
 
         Parameters
         ----------
         save_queue : queue.Queue
             The queue in which to put complete DocumentDictionary items for saving.
+        incomplete_documents : list
+            A list of all the incomplete (not submitted to the save queue) runs.
         topic_name : str
             The Kafka topic to monitor.
         logger_name : str, optional
@@ -393,7 +393,7 @@ class MonitorBase(KafkaConsumer):
             self._logger.exception(e)
 
     def run(self):
-        """Start monitoring the Kafka topic in a separate process."""
+        """Start monitoring the Kafka topic."""
         while not self._closed:
             try:
                 for event in self:
@@ -414,6 +414,28 @@ class MonitorBase(KafkaConsumer):
 
 
 class ThreadedMonitor(MonitorBase, Thread):
-    def __init__(self, *args, **kwargs):
-        Thread.__init__(self, daemon=True)
+    def __init__(self, *args, daemon=True, **kwargs):
+        """
+        A threaded KafkaConsumer that handles specifically Bluesky documents in msgpack format.
+
+        To start it, run the `start` method.
+
+        Parameters
+        ----------
+        save_queue : queue.Queue
+            The queue in which to put complete DocumentDictionary items for saving.
+        incomplete_documents : list
+            A list of all the incomplete (not submitted to the save queue) runs.
+        topic_name : str
+            The Kafka topic to monitor.
+        logger_name : str, optional
+            Name of the logger to use for info / debug during the monitor processing.
+        daemon : bool, optional
+            If True, start the thread as a daemon (will exit when the main programs does).
+            Defaults to True.
+        **configs : dict or keyword arguments
+            Extra arguments to pass to the KafkaConsumer's constructor.
+        """
+
+        Thread.__init__(self, daemon=daemon)
         MonitorBase.__init__(self, *args, **kwargs)
