@@ -44,7 +44,7 @@ class DocumentDictionary(dict):
         self.__descriptor_documents_uids: list[str] = []
         self.__stop_document_uid: str = None
 
-        self.__subscritions = []
+        self.__subscriptions = []
 
     def subscribe(self, fn: callable):
         """
@@ -55,17 +55,17 @@ class DocumentDictionary(dict):
         fn : callable
             The function to be called, with signature (event_name: str, uuid: str) -> None.
         """
-        self.__subscritions.append(fn)
+        self.__subscriptions.append(fn)
 
         if self.start_document is not None:
             fn("start", self.identifier)
 
     def clear_subscriptions(self):
         """Clear all subscriptions to this object."""
-        self.__subscritions = []
+        self.__subscriptions = []
 
     def _run_subscriptions(self, event_name: str, event_uuid: str):
-        for fn in self.__subscritions:
+        for fn in self.__subscriptions:
             fn(event_name, event_uuid)
 
     def append(self, event_name: str, event_data: dict):
@@ -284,7 +284,7 @@ class MonitorBase(KafkaConsumer):
 
         self._logger = logging.getLogger(logger_name)
 
-        self.__subscritions = []
+        self.__subscriptions = []
 
     def subscribe(self, fn: callable):
         """
@@ -295,15 +295,15 @@ class MonitorBase(KafkaConsumer):
         fn : callable
             The function to be called, with signature (event_name: str, event_data: dict) -> None.
         """
-        self.__subscritions.append(fn)
+        self.__subscriptions.append(fn)
 
     def clear_subscriptions(self):
         """Clear all subscriptions to this object."""
-        self.__subscritions = []
+        self.__subscriptions = []
 
     def _run_subscriptions(self, run_uid: str, event_name: str, event_uuid: str):
         event_data = self.__documents.get_by_identifier(run_uid)[event_uuid]
-        for fn in self.__subscritions:
+        for fn in self.__subscriptions:
             fn(event_name, event_data)
 
     def __repr__(self):
