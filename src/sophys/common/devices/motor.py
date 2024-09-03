@@ -2,6 +2,31 @@ from ophyd import EpicsMotor, Component, EpicsSignal, FormattedComponent
 from ophyd.device import create_device_from_components
 
 
+class MotorMixinResolution:
+    motor_step_size = Component(EpicsSignal, ".MRES", kind="config", auto_monitor=True)
+
+    steps_per_revolution = Component(EpicsSignal, ".SREV", kind="omitted")
+    units_per_revolution = Component(EpicsSignal, ".UREV", kind="omitted")
+
+
+class MotorMixinMiscellaneous:
+    display_precision = Component(
+        EpicsSignal, ".PREC", kind="config", auto_monitor=True
+    )
+    code_version = Component(EpicsSignal, ".VERS", kind="config")
+
+
+class MotorMixinMotion:
+    max_velocity = Component(EpicsSignal, ".VMAX", kind="config")
+    base_velocity = Component(EpicsSignal, ".VBAS", kind="config")
+
+
+class ExtendedEpicsMotor(
+    EpicsMotor, MotorMixinResolution, MotorMixinMiscellaneous, MotorMixinMotion
+):
+    pass
+
+
 class ControllableMotor(EpicsMotor):
     """Custom EpicsMotor that enables control before a plan and disables it after."""
 
