@@ -1,6 +1,40 @@
 Controller devices
 ==================
 
+CompactERAS - CRIO + ERAS coupled devices
+-----------------------------------------
+
+.. container:: hidden
+
+    .. autosummary::
+        :toctree: _generated
+        :template: device_attr_list_embed.rst
+
+        sophys.common.devices.compacteras.CompactERAS
+
+    .. autosummary::
+        :toctree: _generated
+        :template: device_attr_list_embed.rst
+
+        sophys.common.devices.compacteras.Channel
+
+    .. autosummary::
+        :toctree: _generated
+        :template: device_attr_list_embed.rst
+
+        sophys.common.devices.compacteras.Scale
+
+.. include:: _generated/sophys.common.devices.compacteras.CompactERAS.rst
+
+Channels are accessible via `self.CH{x}`, for `x` in {1, 2, 3, 4}.
+
+    .. include:: _generated/sophys.common.devices.compacteras.Channel.rst
+
+    Each channel has `8` scales, hardcoded at the time of writing. These are
+    accessible via `self.SC{x}`, for `x` in {0..7}.
+
+        .. include:: _generated/sophys.common.devices.compacteras.Scale.rst
+
 ERAS - Ethernet Range Selector
 ------------------------------
 
