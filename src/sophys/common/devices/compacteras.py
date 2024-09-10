@@ -4,7 +4,9 @@ import typing
 from os import environ
 
 from ophyd import Device, Component as Cpt, EpicsSignal, EpicsSignalRO, Kind
-from ophyd.signal import ConnectionTimeoutError
+from ophyd.signal import ConnectionTimeoutError, DEFAULT_CONNECTION_TIMEOUT
+
+from ..utils.signals import add_components_to_device
 
 
 class Scale(Device):
@@ -33,14 +35,19 @@ class Channel(Device):
         EpicsSignalRO, "AssociatedVoltageChannel", kind=Kind.omitted
     )
 
-    SC0 = Cpt(Scale, "SC0:", lazy=True, kind=Kind.omitted)
-    SC1 = Cpt(Scale, "SC1:", lazy=True, kind=Kind.omitted)
-    SC2 = Cpt(Scale, "SC2:", lazy=True, kind=Kind.omitted)
-    SC3 = Cpt(Scale, "SC3:", lazy=True, kind=Kind.omitted)
-    SC4 = Cpt(Scale, "SC4:", lazy=True, kind=Kind.omitted)
-    SC5 = Cpt(Scale, "SC5:", lazy=True, kind=Kind.omitted)
-    SC6 = Cpt(Scale, "SC6:", lazy=True, kind=Kind.omitted)
-    SC7 = Cpt(Scale, "SC7:", lazy=True, kind=Kind.omitted)
+    def __init__(self, *args, connection_timeout=DEFAULT_CONNECTION_TIMEOUT, **kwargs):
+        super().__init__(*args, **kwargs)
+
+        components = (
+            (
+                f"SC{i}",
+                Cpt(Scale, f"SC{i}:", lazy=True, kind=Kind.omitted),
+            )
+            for i in range(8)
+        )
+        add_components_to_device(
+            self, components, for_each_sig=lambda name, sig: setattr(self, name, sig)
+        )
 
     def getScale(self, scale: int):
         return getattr(self, f"SC{scale}")
@@ -63,10 +70,19 @@ class CompactERAS(Device):
     permanent_device_card = Cpt(EpicsSignalRO, "VoltageCard", string=True)
     variable_device_prefix = Cpt(EpicsSignalRO, "ScaleSwitcherPrefix", string=True)
 
-    CH1 = Cpt(Channel, "CH1:", lazy=True)
-    CH2 = Cpt(Channel, "CH2:", lazy=True)
-    CH3 = Cpt(Channel, "CH3:", lazy=True)
-    CH4 = Cpt(Channel, "CH4:", lazy=True)
+    def __init__(self, *args, connection_timeout=DEFAULT_CONNECTION_TIMEOUT, **kwargs):
+        super().__init__(*args, **kwargs)
+
+        components = (
+            (
+                f"CH{i}",
+                Cpt(Channel, f"CH{i}:", connection_timeout=connection_timeout),
+            )
+            for i in range(1, 5)
+        )
+        add_components_to_device(
+            self, components, for_each_sig=lambda name, sig: setattr(self, name, sig)
+        )
 
     def verifyVersion(
         self,
