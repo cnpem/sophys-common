@@ -28,6 +28,38 @@ def add_components_to_device(
         By default, it does nothing.
 
         One common usage is to call setattr of the signal to its parent.
+
+    Examples
+    --------
+    Add four signals named ``channel_{x}`` to ``obj``, each with prefix ``CH{x}``:
+
+    .. code-block:: python
+
+        components = (
+            (
+                f"channel_{i}",
+                Component(EpicsSignal, f"CH{i}:"),
+            )
+            for i in range(1, 5)
+        )
+        add_components_to_device(
+            obj, components, for_each_sig=lambda name, sig: setattr(self, name, sig)
+        )
+
+    Add an arbitrary number of signals named ``scale_{x}`` to ``obj``,
+    each with prefix ``SC{x}``, while also adding them to a list ``scales``:
+
+    .. code-block:: python
+
+        def for_each_sig(name, sig):
+            setattr(self, name, sig)
+            self.scales.append(sig)
+
+        n_scales = 8
+        components = (
+            (f"scale_{i}", Component(Scale, f"SC{i}:")) for i in range(n_scales)
+        )
+        add_components_to_device(self, components, for_each_sig=for_each_sig)
     """
     if not hasattr(obj.__class__, "_old_sig_attrs"):
         obj.__class__._old_sig_attrs = copy.deepcopy(obj._sig_attrs)
