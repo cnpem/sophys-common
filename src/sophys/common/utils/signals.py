@@ -1,7 +1,47 @@
+import copy
+import typing
+
 import numpy as np
 
-from ophyd import EpicsSignal
+from ophyd import Device, Component, EpicsSignal
 from ophyd.utils.epics_pvs import _wait_for_value
+
+
+def add_components_to_device(
+    obj: Device,
+    components: typing.Iterable[tuple[str, Component]],
+    *,
+    for_each_sig: typing.Optional[typing.Callable] = None,
+):
+    """
+    Add a collection of components to a device, after it has been initialized.
+
+    Parameters
+    ----------
+    obj : Device
+        The device to which the components will be added.
+    components : iterable of (component name, component) tuples
+        The components that will be added to `obj`.
+    for_each_sig : callable, optional
+        Callback that is called on each signal addition, with signature (name: str, sig: Signal) -> Any.
+
+        By default, it does nothing.
+
+        One common usage is to call setattr of the signal to its parent.
+    """
+    if not hasattr(obj.__class__, "_old_sig_attrs"):
+        obj.__class__._old_sig_attrs = copy.deepcopy(obj._sig_attrs)
+    obj._sig_attrs = copy.deepcopy(obj.__class__._old_sig_attrs)
+
+    for component_name, component in components:
+        component.__set_name__(component, component_name)
+
+        obj._sig_attrs[component_name] = component
+        obj._component_kinds[component_name] = component.kind
+        obj._instantiate_component(component_name)
+
+        if for_each_sig is not None:
+            for_each_sig(name=component_name, sig=obj._signals[component_name])
 
 
 class EpicsSignalWithCustomReadout(EpicsSignal):
@@ -179,4 +219,3 @@ class _LooseComparator:
         ret = self.__inner_cls()
         ret._value = arg
         return ret
-
