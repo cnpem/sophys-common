@@ -61,7 +61,6 @@ Below is an example of such:
     from databroker.v2 import temp as db_temp
 
     from sophys.common.plans.annotated_default_plans import DETECTORS_TYPE, MD_TYPE
-    from sophys.common.utils.data_access import setup_databroker
 
 
     def example_plan(detectors: DETECTORS_TYPE, *, num=10, md: MD_TYPE = None):
@@ -95,9 +94,6 @@ Below is an example of such:
 
     if __name__ == "__main__":
         RE = RunEngine({})
-
-        # No need to call setup_databroker, but doing so won't break anything.
-        setup_databroker(RE)
 
         rand = hw().rand
         rand.kind = "hinted"     # Specific to the simulated random device
