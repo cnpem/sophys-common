@@ -5,6 +5,9 @@ from .motor import ControllableMotor
 
 
 class DcmGranite(Device):
+    """
+        Device for controlling the DCM Granite
+    """
 
     leveler1 = Component(ControllableMotor, "m1")
     leveler2 = Component(ControllableMotor, "m2")
