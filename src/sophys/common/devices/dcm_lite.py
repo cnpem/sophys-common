@@ -6,7 +6,7 @@ from .motor import ControllableMotor
 
 class DcmGranite(Device):
     """
-        Device for controlling the DCM Granite
+        Device for controlling the DCM Granite.
     """
 
     leveler1 = Component(ControllableMotor, "m1")
@@ -35,9 +35,9 @@ class Goniometer(PVPositionerIsClose):
     setpoint = FormattedComponent(EpicsSignalRO, "{prefix}DCM01:GonRx{device_number}_SP", kind="config")
     actuate = Component(EpicsSignal, "DCM01:GonRxUpdate_SP", kind="omitted")
 
-    stopped = FormattedComponent(EpicsSignalRO, "{prefix}DCM01:GonRx{device_number}DesVelZero_RBV", kind="omitted")
-    low_limit  = FormattedComponent(EpicsSignalRO, "{prefix}DCM01:GonRx{device_number}MinusLimit_RBV", kind="omitted")
-    high_limit = FormattedComponent(EpicsSignalRO, "{prefix}DCM01:GonRx{device_number}PlusLimit_RBV", kind="omitted")
+    stopped = FormattedComponent(EpicsSignalRO, "{prefix}DCM01:GonRx{device_number}_DesVelZero_RBV", kind="omitted")
+    low_limit  = FormattedComponent(EpicsSignalRO, "{prefix}DCM01:GonRx{device_number}_MinusLimit_RBV", kind="omitted")
+    high_limit = FormattedComponent(EpicsSignalRO, "{prefix}DCM01:GonRx{device_number}_PlusLimit_RBV", kind="omitted")
 
     def __init__(self, prefix, device_number, **kwargs):
         self.device_number = device_number
@@ -58,6 +58,14 @@ class ShortStroke(PVPositionerIsClose):
         super().__init__(prefix=prefix, **kwargs)
 
 
+class DcmEnergy(PVPositionerIsClose):
+    """
+        Device for controlling the DCM Energy.
+    """
+    setpoint = Component(EpicsSignalRO, "_SP", kind="config")
+    actuate = Component(EpicsSignal, "Update_SP", kind="omitted")
+
+
 class DcmLite(Device):
     """
         Device for controlling the DCM Lite monochromator.
@@ -71,4 +79,6 @@ class DcmLite(Device):
     roll = Component(ShortStroke, "", shs_axis="Rz")
 
     granite = DcmGranite("PB01:", name="granite")
+
+    energy = Component("Energy", name="energy")
 
