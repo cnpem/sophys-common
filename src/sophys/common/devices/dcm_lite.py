@@ -1,6 +1,6 @@
 from ophyd import Component, FormattedComponent, \
     Device, EpicsSignal, EpicsSignalRO, PVPositionerIsClose, \
-    EpicsMotor
+    PVPositionerPC, EpicsMotor
 from .motor import ControllableMotor
 
 
@@ -31,13 +31,13 @@ class Goniometer(PVPositionerIsClose):
     """
         Device for controlling one Goniometer of the DCM Lite.
     """
-    readback = FormattedComponent(EpicsSignal, "{prefix}DCM01:GonRx{device_number}_SP_RBV", kind="hinted")
-    setpoint = FormattedComponent(EpicsSignalRO, "{prefix}DCM01:GonRx{device_number}_SP", kind="config")
-    actuate = Component(EpicsSignal, "DCM01:GonRxUpdate_SP", kind="omitted")
+    readback = FormattedComponent(EpicsSignal, "{prefix}GonRx{device_number}_SP_RBV", kind="hinted")
+    setpoint = FormattedComponent(EpicsSignalRO, "{prefix}GonRx{device_number}_SP", kind="config")
+    actuate = Component(EpicsSignal, "GonRxUpdate_SP", kind="omitted")
 
-    stopped = FormattedComponent(EpicsSignalRO, "{prefix}DCM01:GonRx{device_number}_DesVelZero_RBV", kind="omitted")
-    low_limit  = FormattedComponent(EpicsSignalRO, "{prefix}DCM01:GonRx{device_number}_MinusLimit_RBV", kind="omitted")
-    high_limit = FormattedComponent(EpicsSignalRO, "{prefix}DCM01:GonRx{device_number}_PlusLimit_RBV", kind="omitted")
+    stopped = FormattedComponent(EpicsSignalRO, "{prefix}GonRx{device_number}_DesVelZero_RBV", kind="omitted")
+    low_limit  = FormattedComponent(EpicsSignalRO, "{prefix}GonRx{device_number}_MinusLimit_RBV", kind="omitted")
+    high_limit = FormattedComponent(EpicsSignalRO, "{prefix}GonRx{device_number}_PlusLimit_RBV", kind="omitted")
 
     def __init__(self, prefix, device_number, **kwargs):
         self.device_number = device_number
@@ -49,9 +49,9 @@ class UncoupledShortStroke(PVPositionerIsClose):
         Device for controlling one axis of the Short Stroke of the DCM Lite.
     """
 
-    readback = FormattedComponent(EpicsSignal, "{prefix}DCM01:Shs{shs_axis}_S_RBV", kind="hinted")
-    setpoint = FormattedComponent(EpicsSignalRO, "{prefix}DCM01:Shs{shs_axis}_SP", kind="config")
-    actuate = FormattedComponent(EpicsSignal, "{prefix}DCM01:ShsUpdate_{shs_axis}_SP", kind="omitted")
+    readback = FormattedComponent(EpicsSignal, "{prefix}Shs{shs_axis}_S_RBV", kind="hinted")
+    setpoint = FormattedComponent(EpicsSignalRO, "{prefix}Shs{shs_axis}_SP", kind="config")
+    actuate = FormattedComponent(EpicsSignal, "{prefix}ShsUpdate_{shs_axis}_SP", kind="omitted")
 
     def __init__(self, prefix, shs_axis, **kwargs):
         self.shs_axis = shs_axis
@@ -63,16 +63,33 @@ class CoupledShortStroke(PVPositionerIsClose):
         Device for controlling one axis of the Short Stroke of the DCM Lite.
     """
 
-    readback = FormattedComponent(EpicsSignal, "{prefix}DCM01:Shs{shs_axis}_Offset_RBV", kind="hinted")
-    setpoint = FormattedComponent(EpicsSignalRO, "{prefix}DCM01:Shs{shs_axis}_Offset", kind="config")
-    actuate = FormattedComponent(EpicsSignal, "{prefix}DCM01:ShsUpdate_{shs_axis}_SP", kind="omitted")
+    readback = FormattedComponent(EpicsSignal, "{prefix}Shs{shs_axis}_Offset_RBV", kind="hinted")
+    setpoint = FormattedComponent(EpicsSignalRO, "{prefix}Shs{shs_axis}_Offset", kind="config")
+    actuate = FormattedComponent(EpicsSignal, "{prefix}ShsUpdate_{shs_axis}_SP", kind="omitted")
 
     def __init__(self, prefix, shs_axis, **kwargs):
         self.shs_axis = shs_axis
         super().__init__(prefix=prefix, **kwargs)
 
 
-class DcmEnergy(PVPositionerIsClose):
+class ShortStrokeMotion(Device):
+    
+    coupled = FormattedComponent(CoupledShortStroke, "", shs_axis=shs_axis)
+    uncoupled = FormattedComponent(UncoupledShortStroke, "", shs_axis=shs_axis)
+
+    def __init__(self, prefix, shs_axis, **kwargs):
+        self.shs_axis = shs_axis
+        super().__init__(prefix=prefix,**kwargs)
+
+
+class ShortStroke(Device):
+
+    gap = Component(ShortStrokeMotion, "", shs_axis="Uy")
+    pitch = Component(ShortStrokeMotion, "", shs_axis="Rx") 
+    roll = Component(ShortStrokeMotion, "", shs_axis="Rz")
+
+
+class DcmEnergy(PVPositionerPC):
     """
         Device for controlling the DCM Energy.
     """
@@ -85,9 +102,11 @@ class DcmLite(Device):
         Device for controlling the DCM Lite monochromator.
     """
 
-    gonio1 = Component(Goniometer, "", device_number="1")
-    gonio2 = Component(Goniometer, "", device_number="2")
+    gonio1 = Component(Goniometer, "DCM01:", device_number="1")
+    gonio2 = Component(Goniometer, "DCM01:", device_number="2")
+    short_stroke = Component(ShortStroke, "DCM01:")
+
     granite = Component(DcmGranite, "PB01:")
 
-    energy = Component(DcmEnergy, "Energy")
+    energy = Component(DcmEnergy, "DCM01:Energy")
 
