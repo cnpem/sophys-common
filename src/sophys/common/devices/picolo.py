@@ -7,14 +7,19 @@ class PicoloChannel(Device):
     Device for one of the channels in the Picolo picoammeter.
     """
 
-    data = Component(EpicsSignalRO, "Data")
-    enable = Component(EpicsSignal, "Enable")
+    data = Component(EpicsSignalRO, "Data", kind="hinted")
+    enable = Component(EpicsSignal, "Enable", kind="config")
     value = Component(EpicsSignal, "EngValue", kind="hinted")
-    saturated = Component(EpicsSignal, "Saturated")
-    range = Component(EpicsSignalWithRBV, "Range")
-    auto_range = Component(EpicsSignal, "AutoRange")
-    acquire_mode = Component(EpicsSignalWithRBV, "AcquireMode")
-    state = Component(EpicsSignalRO, "State")
+    saturated = Component(EpicsSignal, "Saturated", kind="config")
+    range = Component(EpicsSignalWithRBV, "Range", string=True, kind="config")
+    auto_range = Component(EpicsSignal, "AutoRange", kind="omitted")
+    acquire_mode = Component(EpicsSignalWithRBV, "AcquireMode", string=True, kind="config")
+    state = Component(EpicsSignalRO, "State", string=True, kind="config")
+    analog_bw = Component(EpicsSignalRO, "AnalogBW_RBV", kind="omitted")
+    
+    user_offset = Component(EpicsSignalWithRBV, "UserOffset", kind="config")
+    exp_offset = Component(EpicsSignalWithRBV, "ExpOffset", kind="config")
+    set_zero = Component(EpicsSignal, "SetZero", kind="omitted")
 
 
 class PicoloAcquisitionTime(EpicsSignalWithRBV):
