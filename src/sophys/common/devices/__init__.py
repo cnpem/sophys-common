@@ -14,3 +14,4 @@ from .picolo import Picolo
 from .slit import VerticalSlit, HorizontalSlit, Slit, KinematicSlit
 from .cam import CamBase_V33, Xspress3DetectorCamV33
 from .ocean import OceanOpticsSpectrometer
+from .pgm import Pgm

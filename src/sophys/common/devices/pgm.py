@@ -9,7 +9,7 @@ class PmacEpicsSignal(PVPositionerIsClose):
     sync = Component(EpicsSignal, "SYNC")
 
 
-class PGM(Device):
+class Pgm(Device):
     """
         Device for controlling the PGM Monochromator.
     """
