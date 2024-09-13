@@ -1,6 +1,27 @@
 from ophyd import Component, FormattedComponent, \
-    Device, EpicsSignal, EpicsSignalRO, PVPositionerIsClose
+    Device, EpicsSignal, EpicsSignalRO, PVPositionerIsClose, \
+    EpicsMotor
 from .motor import ControllableMotor
+
+
+class DcmGranite(Device):
+
+    leveler1 = Component(ControllableMotor, "m1")
+    leveler2 = Component(ControllableMotor, "m2")
+    leveler3 = Component(ControllableMotor, "m3")
+
+    u_x = Component(ControllableMotor, "m4")
+
+    spindle_x_plus = Component(ControllableMotor, "m5")
+    spindle_x_minus = Component(ControllableMotor, "m6")
+
+    granite_ux = Component(EpicsMotor, "CS2:m7")
+    granite_ry = Component(EpicsMotor, "CS2:m2")
+    granite_uz = Component(EpicsMotor, "CS2:m9")
+
+    leveler_rx = Component(EpicsMotor, "CS1:m1")
+    leveler_rz = Component(EpicsMotor, "CS1:m3")
+    leveler_uy = Component(EpicsMotor, "CS1:m8")
 
 
 class Goniometer(PVPositionerIsClose):
@@ -42,13 +63,5 @@ class DcmLite(Device):
     pitch = Component(ShortStroke, "", shs_axis="Rx") 
     roll = Component(ShortStroke, "", shs_axis="Rz")
 
-    leveler1 = Component(ControllableMotor, "PB01:m1")
-    leveler2 = Component(ControllableMotor, "PB01:m2")
-    leveler3 = Component(ControllableMotor, "PB01:m3")
-    u_x = Component(ControllableMotor, "PB01:m4")
+    granite = DcmGranite("PB01:", name="granite")
 
-    spindle_x_plus = Component(ControllableMotor, "PB01:m5")
-    spindle_x_minus = Component(ControllableMotor, "PB01:m6")
-
-    granite_x = Component(ControllableMotor, "PB01:CS2:m7")
-    granite_y = Component(ControllableMotor, "PB01:CS1:m8")
