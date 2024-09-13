@@ -87,12 +87,7 @@ class DcmLite(Device):
 
     gonio1 = Component(Goniometer, "", device_number="1")
     gonio2 = Component(Goniometer, "", device_number="2")
-    
-    gap = Component(UncoupledShortStroke, "", shs_axis="Uy")
-    pitch = Component(UncoupledShortStroke, "", shs_axis="Rx") 
-    roll = Component(UncoupledShortStroke, "", shs_axis="Rz")
+    granite = Component(DcmGranite, "PB01:")
 
-    granite = DcmGranite("PB01:", name="granite")
-
-    energy = Component("Energy", name="energy")
+    energy = Component(DcmEnergy, "Energy")
 
