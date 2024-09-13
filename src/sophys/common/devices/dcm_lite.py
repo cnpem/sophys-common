@@ -44,13 +44,27 @@ class Goniometer(PVPositionerIsClose):
         super().__init__(prefix=prefix, **kwargs)
 
 
-class ShortStroke(PVPositionerIsClose):
+class UncoupledShortStroke(PVPositionerIsClose):
     """
         Device for controlling one axis of the Short Stroke of the DCM Lite.
     """
 
     readback = FormattedComponent(EpicsSignal, "{prefix}DCM01:Shs{shs_axis}_S_RBV", kind="hinted")
     setpoint = FormattedComponent(EpicsSignalRO, "{prefix}DCM01:Shs{shs_axis}_SP", kind="config")
+    actuate = FormattedComponent(EpicsSignal, "{prefix}DCM01:ShsUpdate_{shs_axis}_SP", kind="omitted")
+
+    def __init__(self, prefix, shs_axis, **kwargs):
+        self.shs_axis = shs_axis
+        super().__init__(prefix=prefix, **kwargs)
+
+
+class CoupledShortStroke(PVPositionerIsClose):
+    """
+        Device for controlling one axis of the Short Stroke of the DCM Lite.
+    """
+
+    readback = FormattedComponent(EpicsSignal, "{prefix}DCM01:Shs{shs_axis}_Offset_RBV", kind="hinted")
+    setpoint = FormattedComponent(EpicsSignalRO, "{prefix}DCM01:Shs{shs_axis}_Offset", kind="config")
     actuate = FormattedComponent(EpicsSignal, "{prefix}DCM01:ShsUpdate_{shs_axis}_SP", kind="omitted")
 
     def __init__(self, prefix, shs_axis, **kwargs):
@@ -74,9 +88,9 @@ class DcmLite(Device):
     gonio1 = Component(Goniometer, "", device_number="1")
     gonio2 = Component(Goniometer, "", device_number="2")
     
-    gap = Component(ShortStroke, "", shs_axis="Uy")
-    pitch = Component(ShortStroke, "", shs_axis="Rx") 
-    roll = Component(ShortStroke, "", shs_axis="Rz")
+    gap = Component(UncoupledShortStroke, "", shs_axis="Uy")
+    pitch = Component(UncoupledShortStroke, "", shs_axis="Rx") 
+    roll = Component(UncoupledShortStroke, "", shs_axis="Rz")
 
     granite = DcmGranite("PB01:", name="granite")
 
