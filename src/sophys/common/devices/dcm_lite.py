@@ -32,6 +32,10 @@ class Goniometer(PVPositionerIsClose):
     setpoint = FormattedComponent(EpicsSignalRO, "{prefix}DCM01:GonRx{device_number}_SP", kind="config")
     actuate = Component(EpicsSignal, "DCM01:GonRxUpdate_SP", kind="omitted")
 
+    stopped = FormattedComponent(EpicsSignalRO, "{prefix}DCM01:GonRx{device_number}DesVelZero_RBV", kind="omitted")
+    low_limit  = FormattedComponent(EpicsSignalRO, "{prefix}DCM01:GonRx{device_number}MinusLimit_RBV", kind="omitted")
+    high_limit = FormattedComponent(EpicsSignalRO, "{prefix}DCM01:GonRx{device_number}PlusLimit_RBV", kind="omitted")
+
     def __init__(self, prefix, device_number, **kwargs):
         self.device_number = device_number
         super().__init__(prefix=prefix, **kwargs)
