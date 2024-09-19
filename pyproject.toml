@@ -30,7 +30,8 @@ dev = [
 ]
 kafka = [
   "kafka-python",
-  "msgpack"
+  "msgpack",
+  "msgpack-numpy"
 ]
 registry = [
   "ophyd-registry"

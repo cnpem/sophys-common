@@ -12,6 +12,11 @@ __global_registry_names = dict()
 __auto_register = threading.local()
 
 
+def in_autoregister_context() -> bool:
+    """Returns whether the current execution context is auto registering new devices to a registry."""
+    return hasattr(__auto_register, "val") and __auto_register.val is not None
+
+
 def get_named_registry(registry_name: str, create_if_missing: bool = False):
     """
     Get the instance of ophyd-registry's Registry associated with ``register_name``.
@@ -53,7 +58,7 @@ def create_named_registry(registry_name: str):
     if len(__global_registries) == 0:
 
         def instantiation_callback(obj):
-            if hasattr(__auto_register, "val") and __auto_register.val is not None:
+            if in_autoregister_context():
                 get_named_registry(__auto_register.val).register(obj)
 
         from ophyd import ophydobj
@@ -154,6 +159,17 @@ def find_all(
         )
 
     return res
+
+
+def remove_all_named(name: str):
+    """Remove all devices with a given name from all registries."""
+    registries = get_all_registries()
+
+    for reg in registries:
+        devs = reg.findall(name=name, allow_none=True)
+
+        for dev in devs:
+            reg.pop(dev)
 
 
 @contextmanager
