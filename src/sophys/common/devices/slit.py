@@ -165,17 +165,18 @@ def Slit(
     v_offset: typing.Optional[str] = None,
     h_gap: typing.Optional[str] = None,
     h_offset: typing.Optional[str] = None,
+    has_kinematic: bool = True,
     **kwargs,
 ) -> Device:
     """Create a slit device that can be moved vertically and horizontally."""
     slitComponents = {}
 
     horizontalSlitComponents = _create_horizontal_components(
-        prefix, left, right, h_gap, h_offset
+        prefix, left, right, h_gap, h_offset, has_kinematic
     )
     slitComponents.update(horizontalSlitComponents)
     verticalSlitComponents = _create_vertical_components(
-        prefix, top, bottom, v_gap, v_offset
+        prefix, top, bottom, v_gap, v_offset, has_kinematic
     )
     slitComponents.update(verticalSlitComponents)
 
