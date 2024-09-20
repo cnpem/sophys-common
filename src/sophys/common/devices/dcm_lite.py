@@ -72,21 +72,16 @@ class CoupledShortStroke(PVPositionerIsClose):
         super().__init__(prefix=prefix, **kwargs)
 
 
-class ShortStrokeMotion(Device):
-    
-    coupled = FormattedComponent(CoupledShortStroke, "", shs_axis=shs_axis)
-    uncoupled = FormattedComponent(UncoupledShortStroke, "", shs_axis=shs_axis)
-
-    def __init__(self, prefix, shs_axis, **kwargs):
-        self.shs_axis = shs_axis
-        super().__init__(prefix=prefix,**kwargs)
-
-
 class ShortStroke(Device):
 
-    gap = Component(ShortStrokeMotion, "", shs_axis="Uy")
-    pitch = Component(ShortStrokeMotion, "", shs_axis="Rx") 
-    roll = Component(ShortStrokeMotion, "", shs_axis="Rz")
+    gap_coupled = Component(CoupledShortStroke, "", shs_axis="Uy", lazy=True)
+    gap_uncoupled = Component(UncoupledShortStroke, "", shs_axis="Uy")
+
+    pitch_coupled = Component(CoupledShortStroke, "", shs_axis="Rx", lazy=True)
+    pitch_uncoupled = Component(UncoupledShortStroke, "", shs_axis="Rx")
+
+    roll_coupled = Component(CoupledShortStroke, "", shs_axis="Rz", lazy=True)
+    roll_uncoupled = Component(UncoupledShortStroke, "", shs_axis="Rz")
 
 
 class DcmEnergy(PVPositionerPC):
