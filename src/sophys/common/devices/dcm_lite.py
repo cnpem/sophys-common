@@ -1,6 +1,6 @@
 from ophyd import Component, FormattedComponent, \
     Device, EpicsSignal, EpicsSignalRO, PVPositionerIsClose, \
-    PVPositionerPC, EpicsMotor
+    PVPositionerPC, EpicsMotor, EpicsSignalWithRBV
 from .motor import ControllableMotor
 
 
@@ -74,13 +74,13 @@ class CoupledShortStroke(PVPositionerIsClose):
 
 class ShortStroke(Device):
 
-    gap_coupled = Component(CoupledShortStroke, "", shs_axis="Uy", lazy=True)
+    # gap_coupled = Component(CoupledShortStroke, "", shs_axis="Uy", lazy=True)
     gap_uncoupled = Component(UncoupledShortStroke, "", shs_axis="Uy")
 
-    pitch_coupled = Component(CoupledShortStroke, "", shs_axis="Rx", lazy=True)
+    # pitch_coupled = Component(CoupledShortStroke, "", shs_axis="Rx", lazy=True)
     pitch_uncoupled = Component(UncoupledShortStroke, "", shs_axis="Rx")
 
-    roll_coupled = Component(CoupledShortStroke, "", shs_axis="Rz", lazy=True)
+    # roll_coupled = Component(CoupledShortStroke, "", shs_axis="Rz", lazy=True)
     roll_uncoupled = Component(UncoupledShortStroke, "", shs_axis="Rz")
 
 
@@ -90,6 +90,18 @@ class DcmEnergy(PVPositionerPC):
     """
     setpoint = Component(EpicsSignalRO, "_SP", kind="config")
     actuate = Component(EpicsSignal, "Update_SP", kind="omitted")
+
+
+class DcmScan(Device):
+    
+    start = Component(EpicsSignal, "Start")
+    active = Component(EpicsSignalRO, "Active_RBV")
+    
+    time_mode = Component(EpicsSignalWithRBV, "PeriodMode", string=True)
+    frequency = Component(EpicsSignalWithRBV, "Frequency")
+    amplitude = Component(EpicsSignalWithRBV, "Amplitude")
+    periods_tukey = Component(EpicsSignalWithRBV, "TukeyPeriods")
+    periods_scan = Component(EpicsSignalWithRBV, "Periods")
 
 
 class DcmLite(Device):
@@ -104,4 +116,5 @@ class DcmLite(Device):
     granite = Component(DcmGranite, "PB01:")
 
     energy = Component(DcmEnergy, "DCM01:Energy")
+    scan = Component(DcmScan, "DCM01:Scan_")
 
