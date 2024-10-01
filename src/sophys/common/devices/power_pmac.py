@@ -3,7 +3,10 @@ from ophyd import Component, Device, EpicsSignal, EpicsSignalRO
 
 
 class PmacEpicsSignal(PVPositionerIsClose):
-
+    """
+        Common attributes for every pmac PV, the sync attribute is not
+        related to the PVPositionerIsClose device.
+    """
     readback = Component(EpicsSignal, ":SET")
     setpoint = Component(EpicsSignalRO, ":RBV")
     sync = Component(EpicsSignal, ":SYNC")
