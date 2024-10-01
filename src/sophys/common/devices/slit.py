@@ -6,12 +6,30 @@ from ophyd.device import create_device_from_components
 from .motor import ControllableMotor, VirtualControllableMotor
 
 
+def _get_optional_kinematic_component(
+    suffix: str,
+    has_kinematic: bool,
+    virtual_motor_components: dict
+):
+    if has_kinematic:
+        return Component(
+            VirtualControllableMotor,
+            str(suffix),
+            components=virtual_motor_components
+        )
+    return Component(
+        ControllableMotor,
+        str(suffix)
+    )
+
+
 def _create_vertical_components(
     prefix: str,
     top: str,
     bottom: str,
     gap: typing.Optional[str] = None,
     offset: typing.Optional[str] = None,
+    has_kinematic: bool = True
 ) -> dict:
     """
     Create all the components belonging to the vertical slit device and
@@ -28,21 +46,21 @@ def _create_vertical_components(
     if gap is not None:
         verticalSlitComponents.update(
             {
-                "vertical_gap": Component(
-                    VirtualControllableMotor,
-                    f"{gap}",
-                    components=virtualMotorComponents,
-                ),
+                "vertical_gap": _get_optional_kinematic_component(
+                    gap,
+                    has_kinematic,
+                    virtualMotorComponents
+                )
             }
         )
 
     if offset is not None:
         verticalSlitComponents.update(
             {
-                "vertical_offset": Component(
-                    VirtualControllableMotor,
-                    f"{offset}",
-                    components=virtualMotorComponents,
+                "vertical_offset": _get_optional_kinematic_component(
+                    offset,
+                    has_kinematic,
+                    virtualMotorComponents
                 )
             }
         )
@@ -77,6 +95,7 @@ def _create_horizontal_components(
     right: str,
     gap: typing.Optional[str] = None,
     offset: typing.Optional[str] = None,
+    has_kinematic: bool = True
 ) -> dict:
     """
     Create all the components belonging to the horizontal slit device and
@@ -93,21 +112,21 @@ def _create_horizontal_components(
     if gap is not None:
         horizontalSlitComponents.update(
             {
-                "horizontal_gap": Component(
-                    VirtualControllableMotor,
-                    f"{gap}",
-                    components=virtualMotorComponents,
-                ),
+                "horizontal_gap": _get_optional_kinematic_component(
+                    gap,
+                    has_kinematic,
+                    virtualMotorComponents
+                )
             }
         )
 
     if offset is not None:
         horizontalSlitComponents.update(
             {
-                "horizontal_offset": Component(
-                    VirtualControllableMotor,
-                    f"{offset}",
-                    components=virtualMotorComponents,
+                "horizontal_offset": _get_optional_kinematic_component(
+                    gap,
+                    has_kinematic,
+                    virtualMotorComponents
                 )
             }
         )
@@ -146,17 +165,18 @@ def Slit(
     v_offset: typing.Optional[str] = None,
     h_gap: typing.Optional[str] = None,
     h_offset: typing.Optional[str] = None,
+    has_kinematic: bool = True,
     **kwargs,
 ) -> Device:
     """Create a slit device that can be moved vertically and horizontally."""
     slitComponents = {}
 
     horizontalSlitComponents = _create_horizontal_components(
-        prefix, left, right, h_gap, h_offset
+        prefix, left, right, h_gap, h_offset, has_kinematic
     )
     slitComponents.update(horizontalSlitComponents)
     verticalSlitComponents = _create_vertical_components(
-        prefix, top, bottom, v_gap, v_offset
+        prefix, top, bottom, v_gap, v_offset, has_kinematic
     )
     slitComponents.update(verticalSlitComponents)
 
