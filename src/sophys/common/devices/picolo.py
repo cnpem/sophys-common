@@ -1,5 +1,5 @@
-from ophyd import Device, Component, EpicsSignal, EpicsSignalWithRBV, \
-    DynamicDeviceComponent, EpicsSignalRO
+from ophyd import Device, Component, FormattedComponent, EpicsSignal, \
+    EpicsSignalWithRBV, DynamicDeviceComponent, EpicsSignalRO
 
 
 class PicoloChannel(Device):
@@ -7,24 +7,29 @@ class PicoloChannel(Device):
     Device for one of the channels in the Picolo picoammeter.
     """
 
-    data = Component(EpicsSignalRO, ":Data", kind="hinted")
-    scaled_data = Component(EpicsSignalRO, ":ScaledData", kind="hinted")
+    data = Component(EpicsSignalRO, "Data", kind="hinted")
+    scaled_data = Component(EpicsSignalRO, "ScaledData", kind="hinted")
 
-    value = Component(EpicsSignalRO, "", kind="hinted")
-    scaled_value = Component(EpicsSignalRO, ":ScaledValue", kind="hinted")
+    value = FormattedComponent(EpicsSignalRO, "{continuous_value}", kind="hinted")
+    scaled_value = Component(EpicsSignalRO, "ScaledValue", kind="hinted")
 
-    enable = Component(EpicsSignal, ":Enable", kind="config")
-    engvalue = Component(EpicsSignal, ":EngValue", kind="hinted")
-    saturated = Component(EpicsSignal, ":Saturated", kind="config")
-    range = Component(EpicsSignalWithRBV, ":Range", string=True, kind="config")
-    auto_range = Component(EpicsSignal, ":AutoRange", kind="omitted")
-    acquire_mode = Component(EpicsSignalWithRBV, ":AcquireMode", string=True, kind="config")
-    state = Component(EpicsSignalRO, ":State", string=True, kind="config")
-    analog_bw = Component(EpicsSignalRO, ":AnalogBW_RBV", kind="omitted")
+    enable = Component(EpicsSignal, "Enable", kind="config")
+    engvalue = Component(EpicsSignal, "EngValue", kind="hinted")
+    saturated = Component(EpicsSignal, "Saturated", kind="config")
+    range = Component(EpicsSignalWithRBV, "Range", string=True, kind="config")
+    auto_range = Component(EpicsSignal, "AutoRange", kind="omitted")
+    acquire_mode = Component(EpicsSignalWithRBV, "AcquireMode", string=True, kind="config")
+    state = Component(EpicsSignalRO, "State", string=True, kind="config")
+    analog_bw = Component(EpicsSignalRO, "AnalogBW_RBV", kind="omitted")
     
-    user_offset = Component(EpicsSignalWithRBV, ":UserOffset", kind="config")
-    exp_offset = Component(EpicsSignalWithRBV, ":ExpOffset", kind="config")
-    set_zero = Component(EpicsSignal, ":SetZero", kind="omitted")
+    user_offset = Component(EpicsSignalWithRBV, "UserOffset", kind="config")
+    exp_offset = Component(EpicsSignalWithRBV, "ExpOffset", kind="config")
+    set_zero = Component(EpicsSignal, "SetZero", kind="omitted")
+
+
+    def __init__(self, prefix, **kwargs):
+        self.continuous_value = prefix[:-1]
+        super().__init__(prefix=prefix, **kwargs)
 
 
 class PicoloAcquisitionTime(EpicsSignalWithRBV):
@@ -63,13 +68,16 @@ class Picolo(Device):
         "stop_acq": (EpicsSignal, "Stop", {})
     })
 
-    ch1 = Component(PicoloChannel, "Current1")
-    ch2 = Component(PicoloChannel, "Current2")
-    ch3 = Component(PicoloChannel, "Current3")
-    ch4 = Component(PicoloChannel, "Current4")
+    ch1 = Component(PicoloChannel, "Current1:")
+    ch2 = Component(PicoloChannel, "Current2:")
+    ch3 = Component(PicoloChannel, "Current3:")
+    ch4 = Component(PicoloChannel, "Current4:")
 
 
     def reset_data(self):
+        """
+            Reset the picolo history data.
+        """
         past_acquire_mode = self.acquire_mode.get()
         
         self.acquire_mode.set(0).wait() # Set continuous mode
