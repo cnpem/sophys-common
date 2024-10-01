@@ -73,14 +73,11 @@ class CoupledShortStroke(PVPositionerIsClose):
 
 
 class ShortStroke(Device):
-
-    # gap_coupled = Component(CoupledShortStroke, "", shs_axis="Uy", lazy=True)
+    """
+        Device for controlling all the axis of the Short Stroke of the DCM Lite.
+    """
     gap_uncoupled = Component(UncoupledShortStroke, "", shs_axis="Uy")
-
-    # pitch_coupled = Component(CoupledShortStroke, "", shs_axis="Rx", lazy=True)
     pitch_uncoupled = Component(UncoupledShortStroke, "", shs_axis="Rx")
-
-    # roll_coupled = Component(CoupledShortStroke, "", shs_axis="Rz", lazy=True)
     roll_uncoupled = Component(UncoupledShortStroke, "", shs_axis="Rz")
 
 
@@ -93,7 +90,9 @@ class DcmEnergy(PVPositionerPC):
 
 
 class DcmScan(Device):
-    
+    """
+        Device that groups all the PVs related to the energy scan of the DCM Lite.
+    """
     start = Component(EpicsSignal, "Start")
     active = Component(EpicsSignalRO, "Active_RBV")
     
