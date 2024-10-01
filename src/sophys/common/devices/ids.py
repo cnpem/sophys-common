@@ -7,10 +7,7 @@ from ophyd import (
     PVPositionerIsClose,
     Kind
 )
-
-class EpicsSignalMon(EpicsSignalRO):
-    def __init__(self, prefix, **kwargs):
-        super().__init__(prefix + "-Mon", **kwargs)
+from ..utils.signals import EpicsSignalMon
 
 class EpicsSignalIDs(PVPositionerIsClose):
     setpoint = Component(EpicsSignal, "-SP")

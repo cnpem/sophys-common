@@ -1,6 +1,6 @@
 import numpy as np
 
-from ophyd import EpicsSignal
+from ophyd import EpicsSignal, EpicsSignalRO
 from ophyd.utils.epics_pvs import _wait_for_value
 
 
@@ -97,6 +97,11 @@ class EpicsSignalWithCustomReadoutRBV(EpicsSignalWithCustomReadout):
 
     def __init__(self, write_pv, **kwargs):
         super().__init__(read_pv=write_pv + "_RBV", write_pv=write_pv, **kwargs)
+
+
+class EpicsSignalMon(EpicsSignalRO):
+    def __init__(self, prefix, **kwargs):
+        super().__init__(prefix + "-Mon", **kwargs)
 
 
 def create_loose_comparator(common_type, readout):
