@@ -14,12 +14,12 @@ def _get_optional_kinematic_component(
     if has_kinematic:
         return Component(
             VirtualControllableMotor,
-            f"{suffix}",
+            str(suffix),
             components=virtual_motor_components
         )
     return Component(
         ControllableMotor,
-        f"{suffix}"
+        str(suffix)
     )
 
 
