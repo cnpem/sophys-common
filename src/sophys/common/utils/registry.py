@@ -108,7 +108,7 @@ def get_all_root_devices(as_dict: bool = False):
     return list(chain.from_iterable(v.root_devices for v in registries))
 
 
-def get_all_devices(as_dict: bool = False):
+def get_all_devices(as_dict: bool = False, include_components: bool = False):
     """
     Return all the devices from all the registries currently instantiated.
 
@@ -117,16 +117,23 @@ def get_all_devices(as_dict: bool = False):
     as_dict : bool, optional
         If True, return a dictionary, as per :func:`to_variable_dict`.
         Otherwise, return a list of all devices. Defaults to False.
+    include_components : bool, optional
+        If True, return all registered devices and components.
     """
     root_devices = get_all_root_devices(True)
     devices = root_devices.copy()
 
+    attr_key = 'walk_subdevices'
+    if include_components:
+        attr_key = '_signals'
+
     for key, dev in root_devices.items():
-        if hasattr(dev, 'walk_subdevices'):
-            for child_name, child in dev.walk_subdevices(include_lazy=True):
+        devices[key] = dev
+
+        if hasattr(dev, attr_key):
+            for child_name, child in dev._signals.items():
                 pattern = re.compile("[^a-zA-Z1-9_]")
                 clear_name = functools.partial(re.sub, pattern, "_")
-
                 devices[key + "_" + clear_name(child_name)] = child
 
     if not as_dict:
