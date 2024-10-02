@@ -140,7 +140,7 @@ def get_all_devices(
         it = []
         if include_components and hasattr(dev, "_signals"):
             it = dev._signals.items()
-        elif hasattr("walk_subdevices"):
+        elif hasattr(dev, "walk_subdevices"):
             it = dev.walk_subdevices(include_lazy=True)
 
         for child_dotted_name, child in it:
