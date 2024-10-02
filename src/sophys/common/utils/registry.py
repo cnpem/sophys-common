@@ -108,7 +108,12 @@ def get_all_root_devices(as_dict: bool = False):
     return list(chain.from_iterable(v.root_devices for v in registries))
 
 
-def get_all_devices(as_dict: bool = False, include_components: bool = False, use_registry_name: bool = True, use_dotted_name: bool = True):
+def get_all_devices(
+    as_dict: bool = False,
+    include_components: bool = False,
+    use_registry_name: bool = True,
+    use_dotted_name: bool = True,
+):
     """
     Return all the devices from all the registries currently instantiated.
 
@@ -129,23 +134,24 @@ def get_all_devices(as_dict: bool = False, include_components: bool = False, use
     root_devices = get_all_root_devices(True)
     devices = root_devices.copy()
 
-    attr_key = 'walk_subdevices'
-    if include_components:
-        attr_key = '_signals'
-
     for key, dev in root_devices.items():
         devices[key] = dev
 
-        if hasattr(dev, attr_key):
-            for child_dotted_name, child in dev._signals.items():
-                pattern = re.compile("[^a-zA-Z1-9_]")
-                clear_name = functools.partial(re.sub, pattern, "_")
+        it = []
+        if include_components and hasattr(dev, "_signals"):
+            it = dev._signals.items()
+        elif hasattr("walk_subdevices"):
+            it = dev.walk_subdevices(include_lazy=True)
 
-                name = clear_name(child_dotted_name if use_dotted_name else child.name)
-                if use_registry_name:
-                    name = key + "_" + name
+        for child_dotted_name, child in it:
+            pattern = re.compile("[^a-zA-Z1-9_]")
+            clear_name = functools.partial(re.sub, pattern, "_")
 
-                devices[name] = child
+            name = clear_name(child_dotted_name if use_dotted_name else child.name)
+            if use_registry_name:
+                name = key + "_" + name
+
+            devices[name] = child
 
     if not as_dict:
         return list(chain.from_iterable(devices.values()))
