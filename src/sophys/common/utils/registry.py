@@ -108,7 +108,12 @@ def get_all_root_devices(as_dict: bool = False):
     return list(chain.from_iterable(v.root_devices for v in registries))
 
 
-def get_all_devices(as_dict: bool = False, include_components: bool = False):
+def get_all_devices(
+    as_dict: bool = False,
+    include_components: bool = False,
+    use_registry_name: bool = True,
+    use_dotted_name: bool = True,
+):
     """
     Return all the devices from all the registries currently instantiated.
 
@@ -119,22 +124,34 @@ def get_all_devices(as_dict: bool = False, include_components: bool = False):
         Otherwise, return a list of all devices. Defaults to False.
     include_components : bool, optional
         If True, return all registered devices and components.
+    use_registry_name : bool, optional
+        If True, prepend the containing registry name to the device's
+        name in the dict key. Defaults to True.
+    use_dotted_name : bool, optional
+        If True, use the dotted name, with hierarchical information,
+        in the dict key. Otherwise, use `name`. Defaults to True.
     """
     root_devices = get_all_root_devices(True)
     devices = root_devices.copy()
 
-    attr_key = 'walk_subdevices'
-    if include_components:
-        attr_key = '_signals'
-
     for key, dev in root_devices.items():
         devices[key] = dev
 
-        if hasattr(dev, attr_key):
-            for child_name, child in dev._signals.items():
-                pattern = re.compile("[^a-zA-Z1-9_]")
-                clear_name = functools.partial(re.sub, pattern, "_")
-                devices[key + "_" + clear_name(child_name)] = child
+        it = []
+        if include_components and hasattr(dev, "_signals"):
+            it = dev._signals.items()
+        elif hasattr("walk_subdevices"):
+            it = dev.walk_subdevices(include_lazy=True)
+
+        for child_dotted_name, child in it:
+            pattern = re.compile("[^a-zA-Z1-9_]")
+            clear_name = functools.partial(re.sub, pattern, "_")
+
+            name = clear_name(child_dotted_name if use_dotted_name else child.name)
+            if use_registry_name:
+                name = key + "_" + name
+
+            devices[name] = child
 
     if not as_dict:
         return list(chain.from_iterable(devices.values()))
