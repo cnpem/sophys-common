@@ -40,3 +40,7 @@ class PowerPmacScan(Device):
     
     start = Component(EpicsSignal, "SendCmd")
     servo_freq = Component(EpicsSignal, "SERVO_FREQ")
+
+    def stop(self):
+        super().stop()
+        self.abort.set(1).wait()
