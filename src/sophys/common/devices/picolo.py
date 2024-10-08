@@ -13,11 +13,11 @@ class PicoloChannel(Device):
     value = FormattedComponent(EpicsSignalRO, "{continuous_value}", kind="hinted")
     scaled_value = Component(EpicsSignalRO, "ScaledValue", kind="hinted")
 
-    enable = Component(EpicsSignal, "Enable", kind="config")
+    enable = Component(EpicsSignalWithRBV, "Enable", kind="config")
     engvalue = Component(EpicsSignal, "EngValue", kind="hinted")
     saturated = Component(EpicsSignal, "Saturated", kind="config")
     range = Component(EpicsSignalWithRBV, "Range", string=True, kind="config")
-    auto_range = Component(EpicsSignal, "AutoRange", kind="omitted")
+    auto_range = Component(EpicsSignalWithRBV, "AutoRange", kind="omitted")
     acquire_mode = Component(EpicsSignalWithRBV, "AcquireMode", string=True, kind="config")
     state = Component(EpicsSignalRO, "State", string=True, kind="config")
     analog_bw = Component(EpicsSignalRO, "AnalogBW_RBV", kind="omitted")
