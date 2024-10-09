@@ -351,7 +351,12 @@ class MonitorBase(KafkaConsumer):
 
                 return
 
-            if len(self.__documents[data]) == 0:
+            try:
+                if len(self.__documents[data]) == 0:
+                    # In the middle of a run, try to go back to the beginning
+                    self.seek_start(event.topic, event.partition, event.offset, data[1])
+                    return
+            except KeyError:
                 # In the middle of a run, try to go back to the beginning
                 self.seek_start(event.topic, event.partition, event.offset, data[1])
                 return
