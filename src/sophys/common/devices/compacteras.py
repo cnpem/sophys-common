@@ -30,7 +30,7 @@ class Channel(Device):
     voltage_scale_factor = Cpt(EpicsSignal, "VoltageSF", kind=Kind.omitted)
 
     associated_voltage_channel = Cpt(
-        EpicsSignalRO, "AssociatedVoltageChannel", kind=Kind.omitted
+        EpicsSignalRO, "AssociatedVoltageChannel", kind=Kind.omitted, lazy=True
     )
 
     SC0 = Cpt(Scale, "SC0:", lazy=True, kind=Kind.omitted)
