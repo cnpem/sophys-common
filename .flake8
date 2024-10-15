@@ -1,5 +1,5 @@
 [flake8]
-ignore = E501, E203, E402, W503, F401
+ignore = E501, E203, E402, W503, F401, E701
 # E501 & E203: Formatting handled by Black
 # E402 complains about imports not being at the top
 # W503 complains about splitting if across lines which conflicts with Black
