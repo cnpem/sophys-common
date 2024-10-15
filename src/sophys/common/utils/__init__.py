@@ -98,9 +98,9 @@ class HDF5PluginWithFileStore(HDF5Plugin, FileStoreHDF5IterativeWrite):
     def stage(self):
         if not self._override_path:
             # stage_sigs will be ran after the override takes place.
-            self.stage_sigs["file_path"] = self.hdf.file_path.get()
-            self.stage_sigs["file_name"] = self.hdf.file_name.get()
-            self.stage_sigs["file_number"] = self.hdf.file_number.get()
+            self.stage_sigs["file_path"] = self.file_path.get()
+            self.stage_sigs["file_name"] = self.file_name.get()
+            self.stage_sigs["file_number"] = self.file_number.get()
 
         super().stage()
 
