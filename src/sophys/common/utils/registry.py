@@ -144,7 +144,7 @@ def get_all_devices(
             it = dev.walk_subdevices(include_lazy=True)
 
         for child_dotted_name, child in it:
-            pattern = re.compile("[^a-zA-Z1-9_]")
+            pattern = re.compile("[^a-zA-Z0-9_]")
             clear_name = functools.partial(re.sub, pattern, "_")
 
             name = clear_name(child_dotted_name if use_dotted_name else child.name)
@@ -234,7 +234,7 @@ def to_variable_dict(registries: typing.Iterable):
     """
 
     def process_name(registry, name: str):
-        pattern = re.compile("[^a-zA-Z1-9_]")
+        pattern = re.compile("[^a-zA-Z0-9_]")
         clear_name = functools.partial(re.sub, pattern, "_")
 
         device_name = clear_name(name)
