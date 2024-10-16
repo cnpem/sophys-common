@@ -90,7 +90,7 @@ def get_all_registries():
     return __global_registries.values()
 
 
-def get_all_root_devices(as_dict: bool = False):
+def get_all_root_devices(as_dict: bool = False, use_registry_name: bool = True):
     """
     Return all the root devices from all the registries currently instantiated.
 
@@ -103,7 +103,7 @@ def get_all_root_devices(as_dict: bool = False):
     registries = get_all_registries()
 
     if as_dict:
-        return to_variable_dict(registries)
+        return to_variable_dict(registries, use_registry_name)
 
     return list(chain.from_iterable(v.root_devices for v in registries))
 
@@ -131,7 +131,7 @@ def get_all_devices(
         If True, use the dotted name, with hierarchical information,
         in the dict key. Otherwise, use `name`. Defaults to True.
     """
-    root_devices = get_all_root_devices(True)
+    root_devices = get_all_root_devices(True, use_registry_name)
     devices = root_devices.copy()
 
     for key, dev in root_devices.items():
@@ -225,7 +225,7 @@ def register_devices(registry_name: str):
     __auto_register.val = None
 
 
-def to_variable_dict(registries: typing.Iterable):
+def to_variable_dict(registries: typing.Iterable, use_registry_name: bool = True):
     """
     Turns a registry (or set of registries) into a dictionary, intended of being used as such:
 
@@ -233,18 +233,25 @@ def to_variable_dict(registries: typing.Iterable):
     - ``locals().update(<return value>)``
     """
 
-    def process_name(registry, name: str):
+    def process_name(registry, name: str, use_registry_name: bool = True):
         pattern = re.compile("[^a-zA-Z0-9_]")
         clear_name = functools.partial(re.sub, pattern, "_")
 
         device_name = clear_name(name)
         registry_name = clear_name(get_registry_name(registry))
 
-        return "{}_{}".format(registry_name, device_name)
+        if use_registry_name:
+            return "{}_{}".format(registry_name, device_name)
+        return device_name
 
     ret = {}
     for registry in registries:
-        ret.update({process_name(registry, d.name): d for d in registry.root_devices})
+        ret.update(
+            {
+                process_name(registry, d.name, use_registry_name): d
+                for d in registry.root_devices
+            }
+        )
 
     return ret
 
