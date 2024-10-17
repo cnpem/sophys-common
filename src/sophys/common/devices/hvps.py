@@ -1,13 +1,14 @@
 from typing import List
 from sophys.common.utils import EpicsSignalMon, EpicsSignalWithRBSP
-from ophyd import PVPositionerIsClose, EpicsSignal, Component, EpicsSignalRO
+from ophyd import PVPositionerIsClose, EpicsSignal, Component
 
 
 class HVPS(PVPositionerIsClose):
     """
     A High-Voltage Power Supply (HVPS) device, since the HVPS has no done PV,
     the implementation uses a PositionerIsClose with a configurable absolute
-    tolerance (default is 2V).
+    tolerance (default is 2V). The absolute tolerance does not work well for
+    low voltages (e.g. < 50V), but this is not a common use case for HVPS.
     """
 
     setpoint = Component(EpicsSignalWithRBSP, "VoltageSetpoint", kind="config")
@@ -22,7 +23,6 @@ class HVPS(PVPositionerIsClose):
     enable = Component(EpicsSignal, "OutputEnable-Cmd", kind="config")
     disable = Component(EpicsSignal, "OutputDisable-Cmd", kind="config")
 
-    # For low voltages this does not work well, but this is not the common use-case
     atol = 2  # Set 2V as the absolute tolerance
     actuate_value = 2
     limits = (0, 3000)
