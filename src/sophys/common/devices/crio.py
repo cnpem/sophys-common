@@ -1,4 +1,11 @@
-from ophyd import Component, Device, EpicsSignal, EpicsSignalRO, Kind
+from ophyd import (
+    Component,
+    FormattedComponent as FormattedCpt,
+    Device,
+    EpicsSignal,
+    EpicsSignalRO,
+    Kind,
+)
 from ophyd.device import create_device_from_components
 
 # Useful resources:
@@ -6,7 +13,15 @@ from ophyd.device import create_device_from_components
 
 
 class _BaseCRIO(Device):
-    pv_averaging_time = Component(EpicsSignal, "PvAvgTime", kind=Kind.config)
+    pv_averaging_time = FormattedCpt(
+        EpicsSignal, "{global_prefix}PvAvgTime", kind=Kind.config
+    )
+
+    def __init__(self, prefix: str, **kwargs):
+        # Get the prefix before the second to last ':' (without the card information)
+        self.global_prefix = prefix[:-1].rpartition(":")[0] + ":"
+
+        super().__init__(prefix, **kwargs)
 
 
 def __createAnalogIn(num: int) -> dict:
