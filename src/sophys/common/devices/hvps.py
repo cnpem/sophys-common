@@ -1,4 +1,5 @@
 from typing import List
+from sophys.common.utils import EpicsSignalMon
 from ophyd import PVPositionerIsClose, EpicsSignal, Component, EpicsSignalRO
 
 
@@ -20,13 +21,13 @@ class HVPS(PVPositionerIsClose):
     """
 
     setpoint = Component(EpicsSignalWithRBSP, "VoltageSetpoint", kind="config")
-    readback = Component(EpicsSignalRO, "Voltage-Mon", kind="hinted")
+    readback = Component(EpicsSignalMon, "Voltage", kind="hinted")
     actuate = Component(EpicsSignal, "VoltageSetpoint-Cmd", kind="omitted")
 
     current_limit = Component(EpicsSignalWithRBSP, "CurrentLimit", kind="config")
     current_trip = Component(EpicsSignalWithRBSP, "CurrentTrip", kind="config")
 
-    operation_status = Component(EpicsSignalRO, "OperationStatus-Mon", kind="config")
+    operation_status = Component(EpicsSignalMon, "OperationStatus", kind="config")
 
     enable = Component(EpicsSignal, "OutputEnable-Cmd", kind="config")
     disable = Component(EpicsSignal, "OutputDisable-Cmd", kind="config")
