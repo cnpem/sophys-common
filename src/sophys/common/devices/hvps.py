@@ -1,16 +1,6 @@
 from typing import List
-from sophys.common.utils import EpicsSignalMon
+from sophys.common.utils import EpicsSignalMon, EpicsSignalWithRBSP
 from ophyd import PVPositionerIsClose, EpicsSignal, Component, EpicsSignalRO
-
-
-class EpicsSignalWithRBSP(EpicsSignal):
-    """
-    A simple Signal with a similar logic of EpicsSignalWithRBV, but
-    pvname is -RB and write_pv is -SP.
-    """
-
-    def __init__(self, prefix, **kwargs):
-        super().__init__(prefix + "-RB", write_pv=prefix + "-SP", **kwargs)
 
 
 class HVPS(PVPositionerIsClose):
