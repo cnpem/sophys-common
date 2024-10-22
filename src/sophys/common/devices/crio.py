@@ -19,6 +19,9 @@ class _BaseCRIO(Device):
     pv_averaging_time = FormattedCpt(
         EpicsSignal, "{global_prefix}PvAvgTime", kind=Kind.config
     )
+    file_averaging_time = Component(EpicsSignal, "FileAvgTime", kind=Kind.config)
+    saving_to_file = Component(EpicsSignalRO, "AnalogSaving2File", kind=Kind.omitted)
+    disable_file_close = Component(EpicsSignal, "DisableFileClose", kind=Kind.omitted)
 
     def __init__(self, prefix: str, **kwargs):
         # Get the prefix before the second to last ':' (without the card information)
