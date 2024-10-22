@@ -95,6 +95,16 @@ class HDF5PluginWithFileStore(HDF5Plugin, FileStoreHDF5IterativeWrite):
         for sig, val in reversed(list(original_vals.items())):
             sig.set(val).wait(timeout=self.warmup_signal_timeout)
 
+    def make_filename(self):
+        if self._override_path:
+            return super().make_filename()
+
+        filename = self.file_name.get()
+        read_path = self.file_path.get()
+        write_path = read_path
+
+        return filename, read_path, write_path
+
     def stage(self):
         if not self._override_path:
             # stage_sigs will be ran after the override takes place.
@@ -102,9 +112,16 @@ class HDF5PluginWithFileStore(HDF5Plugin, FileStoreHDF5IterativeWrite):
             self.stage_sigs["file_name"] = self.file_name.get()
             self.stage_sigs["file_number"] = self.file_number.get()
 
+            # NOTE: Since stage_sigs is a OrderedDict, the insertion order matters.
+            #       Here, we need to set file_number before starting the capture, so the
+            #       file name sees such change, so capture must go last.
+            del self.stage_sigs["capture"]
+            self.stage_sigs["capture"] = 1
+
         super().stage()
 
     def unstage(self):
+        auto_increment = False
         if not self._override_path:
             # The super().unstage call will override our values to
             # the dumb defaults. Before that, however, we have the
@@ -113,12 +130,14 @@ class HDF5PluginWithFileStore(HDF5Plugin, FileStoreHDF5IterativeWrite):
             file_name = self.file_name.get()
             file_number = self.file_number.get()
 
+            auto_increment = self.auto_increment.get()
+
         super().unstage()
 
         if not self._override_path:
             self.file_path.set(file_path).wait()
             self.file_name.set(file_name).wait()
-            self.file_number.set(file_number).wait()
+            self.file_number.set(file_number + (1 if auto_increment else 0)).wait()
 
 
 @dataclass
