@@ -168,6 +168,7 @@ def set_debug_mode(
     ophyd_debug: Union[bool, DebugOptions, None] = None,
     mock_commands: bool = True,
     print_documents: bool = False,
+    print_messages: bool = False,
 ) -> dict:
     """
     Enables / disables debugging facilities for bluesky / ophyd.
@@ -193,6 +194,10 @@ def set_debug_mode(
         Whether to subscribe 'run_engine' to a callback that prints every document generated. Defaults to False.
 
         If it is set, the return's "print_sub_id" key will be set to the subscription ID returned by the RunEngine.
+    print_messages : bool, optional
+        Whether to override 'run_engine's 'msg_hook' attribute to print every generated Msg object. Defaults to False.
+
+        If it is set, the return's "old_msg_hook" key will be set to the last function in 'msg_hook'.
     """
     return_dict = {}
 
@@ -239,6 +244,14 @@ def set_debug_mode(
             print("[{}] - {}".format(name, str(doc)))
 
         return_dict["print_sub_id"] = run_engine.subscribe(pretty_doc_print)
+
+    if print_messages:
+
+        def pretty_msg_print(msg):
+            print("[{}] {}".format(msg.command, repr(msg)))
+
+        return_dict["old_msg_hook"] = run_engine.msg_hook
+        run_engine.msg_hook = pretty_msg_print
 
     return return_dict
 
