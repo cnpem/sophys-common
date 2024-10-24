@@ -60,7 +60,8 @@ __all__ = [
     "tune_centroid",
     "tweak",
     "fly",
-    "mv"
+    "mv",
+    "read",
 ]
 
 
@@ -915,7 +916,7 @@ def fly(flyers: FLYERS_TYPE, *, md: MD_TYPE = None):
         "parameters": {
             "args": {
                 "description": """
-device1,value1,device2,value2, ... 
+device1,value1,device2,value2, ...
 -.-device,value;device to be moved,value to be setted;__MOVABLE__,typing.Any-.-
 """
             }
@@ -923,5 +924,21 @@ device1,value1,device2,value2, ...
     }
 )
 @wraps(plan_stubs.mv)
-def mv(*args, group: typing.Any=None, **kwargs: typing.Optional[dict]):
+def mv(*args, group: typing.Any = None, **kwargs: typing.Optional[dict]):
     return (yield from plan_stubs.mv(*args, group=group, **kwargs))
+
+
+@parameter_annotation_decorator(
+    {
+        "parameters": {
+            "device": {
+                "description": """
+-.-device;device to be read;__READABLE__-.-
+"""
+            }
+        }
+    }
+)
+@wraps(plan_stubs.read)
+def read(device):
+    return (yield from plan_stubs.read(device))
