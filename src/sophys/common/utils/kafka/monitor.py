@@ -42,6 +42,8 @@ class DocumentDictionary(dict):
 
         self._logger = logging.getLogger("DocumentDictionary")
 
+        self._original_stream = []
+
         self.__start_document_uid: str = None
         self.__descriptor_documents_uids: list[str] = []
         self.__stop_document_uid: str = None
@@ -84,6 +86,8 @@ class DocumentDictionary(dict):
         self._logger.debug(
             "Appending data to DocumentDict: {} {}".format(event_name, event_data)
         )
+
+        self._original_stream.append((event_name, event_data))
 
         if (uid := _get_uid_from_event_data(event_data)) is not None:
             super().update({uid: event_data})
