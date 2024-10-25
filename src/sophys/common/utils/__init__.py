@@ -139,6 +139,10 @@ class HDF5PluginWithFileStore(HDF5Plugin, FileStoreHDF5IterativeWrite):
             self.file_name.set(file_name).wait()
             self.file_number.set(file_number + (1 if auto_increment else 0)).wait()
 
+class HDF5PluginWithFileStoreV34(HDF5PluginWithFileStore):
+    file_number_sync = None
+    file_number_write = None
+    pool_max_buffers = None
 
 @dataclass
 class DebugOptions:
