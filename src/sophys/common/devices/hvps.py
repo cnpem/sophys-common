@@ -1,6 +1,6 @@
-from typing import List
 from sophys.common.utils import EpicsSignalMon, EpicsSignalWithRBSP, EpicsSignalCmd
 from ophyd import PVPositionerIsClose, EpicsSignal, Component
+from ophyd.status import DeviceStatus
 
 
 class HVPS(PVPositionerIsClose):
@@ -27,6 +27,11 @@ class HVPS(PVPositionerIsClose):
     actuate_value = 2
     limits = (0, 3000)
     egu = "V"
+
+    def set(self, val):
+        if self.done_comparator(self.readback.get(), val):
+            return DeviceStatus(self, done=True, success=True)
+        return super().set(val)
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
