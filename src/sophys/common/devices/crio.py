@@ -20,11 +20,14 @@ class _BaseCRIO(Device):
         EpicsSignal, "{global_prefix}PvAvgTime", kind=Kind.config
     )
     file_averaging_time = FormattedCpt(
-        EpicsSignal, "{global_prefix}FileAvgTime", kind=Kind.config)
+        EpicsSignal, "{global_prefix}FileAvgTime", kind=Kind.config
+    )
     saving_to_file = FormattedCpt(
-        EpicsSignalRO, "{global_prefix}AnalogSaving2File", kind=Kind.omitted)
+        EpicsSignalRO, "{global_prefix}AnalogSaving2File", kind=Kind.omitted
+    )
     disable_file_close = FormattedCpt(
-        EpicsSignal, "{global_prefix}DisableFileClose", kind=Kind.omitted)
+        EpicsSignal, "{global_prefix}DisableFileClose", kind=Kind.omitted
+    )
 
     def __init__(self, prefix: str, **kwargs):
         # Get the prefix before the second to last ':' (without the card information)
@@ -97,6 +100,10 @@ __CRIO_9220_docstring = """
 An Ophyd device for the NI-9220 CompactRIO device, with 16 analog inputs.
 """
 
+__CRIO_9223_docstring = """
+An Ophyd device for the NI-9223 CompactRIO device, with 4 analog inputs.
+"""
+
 
 CRIO_9215 = create_device_from_components(
     "CRIO_9215",
@@ -109,4 +116,10 @@ CRIO_9220 = create_device_from_components(
     base_class=_BaseCRIO,
     docstring=__CRIO_9220_docstring,
     **__createAnalogIn(16),
+)
+CRIO_9223 = create_device_from_components(
+    "CRIO_9223",
+    base_class=_BaseCRIO,
+    docstring=__CRIO_9223_docstring,
+    **__createAnalogIn(4),
 )
