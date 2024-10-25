@@ -95,16 +95,33 @@ class HDF5PluginWithFileStore(HDF5Plugin, FileStoreHDF5IterativeWrite):
         for sig, val in reversed(list(original_vals.items())):
             sig.set(val).wait(timeout=self.warmup_signal_timeout)
 
+    def make_filename(self):
+        if self._override_path:
+            return super().make_filename()
+
+        filename = self.file_name.get()
+        read_path = self.file_path.get()
+        write_path = read_path
+
+        return filename, read_path, write_path
+
     def stage(self):
         if not self._override_path:
             # stage_sigs will be ran after the override takes place.
-            self.stage_sigs["file_path"] = self.hdf.file_path.get()
-            self.stage_sigs["file_name"] = self.hdf.file_name.get()
-            self.stage_sigs["file_number"] = self.hdf.file_number.get()
+            self.stage_sigs["file_path"] = self.file_path.get()
+            self.stage_sigs["file_name"] = self.file_name.get()
+            self.stage_sigs["file_number"] = self.file_number.get()
+
+            # NOTE: Since stage_sigs is a OrderedDict, the insertion order matters.
+            #       Here, we need to set file_number before starting the capture, so the
+            #       file name sees such change, so capture must go last.
+            del self.stage_sigs["capture"]
+            self.stage_sigs["capture"] = 1
 
         super().stage()
 
     def unstage(self):
+        auto_increment = False
         if not self._override_path:
             # The super().unstage call will override our values to
             # the dumb defaults. Before that, however, we have the
@@ -113,12 +130,14 @@ class HDF5PluginWithFileStore(HDF5Plugin, FileStoreHDF5IterativeWrite):
             file_name = self.file_name.get()
             file_number = self.file_number.get()
 
+            auto_increment = self.auto_increment.get()
+
         super().unstage()
 
         if not self._override_path:
             self.file_path.set(file_path).wait()
             self.file_name.set(file_name).wait()
-            self.file_number.set(file_number).wait()
+            self.file_number.set(file_number + (1 if auto_increment else 0)).wait()
 
 class HDF5PluginWithFileStoreV34(HDF5PluginWithFileStore):
     file_number_sync = None
@@ -153,6 +172,7 @@ def set_debug_mode(
     ophyd_debug: Union[bool, DebugOptions, None] = None,
     mock_commands: bool = True,
     print_documents: bool = False,
+    print_messages: bool = False,
 ) -> dict:
     """
     Enables / disables debugging facilities for bluesky / ophyd.
@@ -178,6 +198,10 @@ def set_debug_mode(
         Whether to subscribe 'run_engine' to a callback that prints every document generated. Defaults to False.
 
         If it is set, the return's "print_sub_id" key will be set to the subscription ID returned by the RunEngine.
+    print_messages : bool, optional
+        Whether to override 'run_engine's 'msg_hook' attribute to print every generated Msg object. Defaults to False.
+
+        If it is set, the return's "old_msg_hook" key will be set to the last function in 'msg_hook'.
     """
     return_dict = {}
 
@@ -224,6 +248,14 @@ def set_debug_mode(
             print("[{}] - {}".format(name, str(doc)))
 
         return_dict["print_sub_id"] = run_engine.subscribe(pretty_doc_print)
+
+    if print_messages:
+
+        def pretty_msg_print(msg):
+            print("[{}] {}".format(msg.command, repr(msg)))
+
+        return_dict["old_msg_hook"] = run_engine.msg_hook
+        run_engine.msg_hook = pretty_msg_print
 
     return return_dict
 

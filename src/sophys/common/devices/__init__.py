@@ -1,7 +1,7 @@
 from .ids import UndulatorKymaAPU
 from .c400 import C400, OldC400
 from .compacteras import CompactERAS
-from .crio import CRIO_9215, CRIO_9220
+from .crio import CRIO_9215, CRIO_9220, CRIO_9223
 from .eras import ERAS
 from .mobipix import Mobipix, MobipixEnergyThresholdSetter
 from .motor import (

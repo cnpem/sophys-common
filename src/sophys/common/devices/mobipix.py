@@ -17,23 +17,20 @@ from ophyd.areadetector.plugins import (
     ROIStatPlugin_V34 as ROIStatPlugin,
     ROIStatNPlugin_V25 as ROIStatNPlugin,
 )
-from ophyd.signal import InternalSignal
+from ophyd.signal import Signal, InternalSignal
 from ophyd.utils.errors import WaitTimeoutError
 
 from ..utils import HDF5PluginWithFileStore, EpicsSignalWithCustomReadoutRBV
 from .cam import CamBase_V33
 
 
-class MobipixError(Exception):
-    ...
+class MobipixError(Exception): ...
 
 
-class MobipixMissingConfigurationError(MobipixError):
-    ...
+class MobipixMissingConfigurationError(MobipixError): ...
 
 
-class MobipixCam(CamBase_V33):
-    ...
+class MobipixCam(CamBase_V33): ...
 
 
 class MobipixBackend(Device):
@@ -99,6 +96,9 @@ class Mobipix(SingleTrigger, MobipixDetector):
     plugin_roi_1 = ADComponent(ROIPlugin, "ROI1:")
     plugin_roi_stat_1 = ADComponent(MobipixROIStatPlugin, "ROIStat1:")
 
+    num_images = ADComponent(Signal, name="num_images", value=1, kind=Kind.config)
+    acquire_time = ADComponent(Signal, name="acquire_time", value=0.1, kind=Kind.config)
+
     def __init__(
         self, name, prefix, *, save_hdf_file=True, enable_num_images=False, **kwargs
     ):
@@ -121,9 +121,9 @@ class Mobipix(SingleTrigger, MobipixDetector):
 
         Attributes
         ----------
-        acquisition_time : float
+        acquisition_time : Signal
             Time taken to acquire a single image (disconsidering control overheads).
-        num_images|num_steps : int
+        num_images : Signal
             Total number of images to take.
         num_exposures : int
             Number of images to take for each trigger signal.
@@ -139,8 +139,6 @@ class Mobipix(SingleTrigger, MobipixDetector):
 
         self.__logger = logging.getLogger(str(self.__class__))
         self.__enable_num_images = enable_num_images
-        self.__num_images = -1
-        self.__acquire_time = -1
 
         self._acquisition_signal = self.acquire
 
@@ -162,21 +160,23 @@ class Mobipix(SingleTrigger, MobipixDetector):
         super(Mobipix, self).stage()
 
         # NOTE: num_images is ignored when enable_num_images is not set
+        _num_images = self.num_images.get()
         if self.__enable_num_images:
-            if self.num_images <= 0:
+            if _num_images <= 0:
                 raise MobipixMissingConfigurationError(
                     "You must set the number of images to a positive integer."
                 )
 
-            self.cam.num_images.set(self.num_images).wait()
-        self.hdf5.num_capture.set(self.num_images).wait()
+            self.cam.num_images.set(_num_images).wait()
+        self.hdf5.num_capture.set(_num_images).wait()
 
-        if self.acquire_time <= 0:
+        _acquire_time = self.acquire_time.get()
+        if _acquire_time <= 0:
             raise MobipixMissingConfigurationError(
-                "You must set the acquisition time to a positive integer."
+                "You must set the acquisition time to a positive number."
             )
 
-        self.backend.acquire_time.set(self.acquire_time).wait()
+        self.backend.acquire_time.set(_acquire_time).wait()
         self.backend.acquire_period.set(0).wait()
 
         if "/tmp" in self.hdf5.file_path.get():
@@ -184,7 +184,7 @@ class Mobipix(SingleTrigger, MobipixDetector):
 
     def trigger(self):
         # NOTE: 2.0 is an arbitrary value that should cover every scenario.
-        timeout_time = self.acquire_time + 2.0
+        timeout_time = self.acquire_time.get() + 2.0
 
         trigger_status = super().trigger()
         try:
@@ -206,30 +206,6 @@ class Mobipix(SingleTrigger, MobipixDetector):
             new_status.set_finished()
             return new_status
         return trigger_status
-
-    @property
-    def num_steps(self):
-        return self.num_images
-
-    @num_steps.setter
-    def num_steps(self, value: int):
-        self.num_images = value
-
-    @property
-    def num_images(self):
-        return self.__num_images
-
-    @num_images.setter
-    def num_images(self, value: int):
-        self.__num_images = value
-
-    @property
-    def acquire_time(self):
-        return self.__acquire_time
-
-    @acquire_time.setter
-    def acquire_time(self, value: float):
-        self.__acquire_time = value
 
     @property
     def hdf_file_name(self):
