@@ -1,6 +1,7 @@
 from ophyd import ADComponent
 from ophyd.areadetector import SingleTrigger, DetectorBase, EpicsSignalWithRBV, \
     EpicsSignalRO, EpicsSignal, Device
+from ophyd.areadetector.plugins import ImagePlugin_V34
 from sophys.common.utils import HDF5PluginWithFileStoreV34
 from .cam import CamBase_V33
 
@@ -42,6 +43,7 @@ class AravisCam(CamBase_V33, ADAravis, ADGenICam):
 class AravisDetector(SingleTrigger, DetectorBase):
 
     cam = ADComponent(AravisCam, "cam1:")
+    image = ADComponent(ImagePlugin_V34, "image1:")
     hdf5 = ADComponent(
         HDF5PluginWithFileStoreV34,
         "HDF1:",
