@@ -17,6 +17,14 @@ def _get_uid_from_event_data(event_data: dict):
     return event_data.get("uid", None)
 
 
+def _get_uid_from_datum_data(datum_data: dict):
+    return datum_data.get("datum_id", None)
+
+
+def _get_resource_uid_from_datum_data(datum_data: dict):
+    return datum_data.get("resource", None)
+
+
 def _get_descriptor_uid_from_event_data(event_data: dict):
     return event_data.get("descriptor", None)
 
@@ -83,13 +91,15 @@ class DocumentDictionary(dict):
             "Appending data to DocumentDict: {} {}".format(event_name, event_data)
         )
 
-        uid = _get_uid_from_event_data(event_data)
-        if uid is None:
+        if (uid := _get_uid_from_event_data(event_data)) is not None:
+            super().update({uid: event_data})
+        elif (uid := _get_uid_from_datum_data(event_data)) is not None:
+            # FIXME: Relate datum with their resource.
+            super().update({uid: event_data})
+        else:
             print("Invalid event data:")
             print(event_data)
             return
-
-        super().update({uid: event_data})
 
         if event_name == "start":
             self.__start_document_uid = uid
@@ -215,6 +225,13 @@ class MultipleDocumentDictionary(dict):
                 ):
                     return id
 
+    def find_with_resource(self, resource_uid):
+        """Retrieve the UUID for a run dictionary containing the given resource."""
+        for id, doc_dict in self.items():
+            for doc in doc_dict.values():
+                if doc is not None and _get_uid_from_event_data(doc) == resource_uid:
+                    return id
+
     def get_by_identifier(self, id: str):
         """
         Retrieve a DocumentDictionary with the given identifier.
@@ -244,6 +261,10 @@ class MultipleDocumentDictionary(dict):
         uid = _get_uid_from_event_data(data[1])
         if uid is not None:
             return super().__getitem__(uid)
+
+        resource_uid = _get_resource_uid_from_datum_data(data[1])
+        if resource_uid is not None:
+            return super().__getitem__(self.find_with_resource(resource_uid))
 
 
 class MonitorBase(KafkaConsumer):
