@@ -30,6 +30,19 @@ NI-9220
 
 .. include:: _generated/sophys.common.devices.crio.CRIO_9220.rst
 
+NI-9223
+~~~~~~~
+
+.. container:: hidden
+
+    .. autosummary::
+        :toctree: _generated
+        :template: device_attr_list_embed.rst
+
+        sophys.common.devices.crio.CRIO_9223
+
+.. include:: _generated/sophys.common.devices.crio.CRIO_9223.rst
+
 Storage Ring
 ------------
 
