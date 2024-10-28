@@ -176,6 +176,25 @@ class EpicsSignalMon(EpicsSignalRO):
         super().__init__(prefix + "-Mon", **kwargs)
 
 
+class EpicsSignalWithRBSP(EpicsSignal):
+    """
+    A simple Signal with a similar logic of EpicsSignalWithRBV, but
+    pvname is -RB and write_pv is -SP.
+    """
+
+    def __init__(self, prefix, **kwargs):
+        super().__init__(prefix + "-RB", write_pv=prefix + "-SP", **kwargs)
+
+
+class EpicsSignalCmd(EpicsSignal):
+    """
+    A EpicsSignal with Cmd added to prefix.
+    """
+
+    def __init__(self, prefix, **kwargs):
+        super().__init__(prefix + "-Cmd", **kwargs)
+
+
 def create_loose_comparator(common_type, readout):
     ret = _LooseComparator(common_type)()
     ret._value = readout
