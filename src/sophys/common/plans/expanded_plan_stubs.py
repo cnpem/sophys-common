@@ -10,17 +10,23 @@ def _read_many(devices):
     yield from bps.save()
 
 
-@bpp.run_decorator()
-def read_many(devices):
+def read_many(devices, md=None):
     """Take a reading of many devices, and bundle them into a single Bluesky document."""
-    yield from _read_many(devices)
+    @bpp.run_decorator(md=md)
+    def __inner():
+        yield from _read_many(devices)
+
+    return (yield from __inner())
 
 
-@bpp.run_decorator()
-def mov(*args):
+def mov(*args, md=None):
     """Move many devices, and bundle their start and end positions in Bluesky documents."""
-    devices = [d for i, d in enumerate(args) if i % 2 == 0]
+    @bpp.run_decorator(md=md)
+    def __inner():
+        devices = [d for i, d in enumerate(args) if i % 2 == 0]
 
-    yield from _read_many(devices)
-    yield from mv(*args)
-    yield from _read_many(devices)
+        yield from _read_many(devices)
+        yield from mv(*args)
+        yield from _read_many(devices)
+
+    return (yield from __inner())
