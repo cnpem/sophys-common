@@ -44,9 +44,3 @@ class AravisDetector(SingleTrigger, DetectorBase):
 
     cam = ADComponent(AravisCam, "cam1:")
     image = ADComponent(ImagePlugin_V34, "image1:")
-    hdf5 = ADComponent(
-        HDF5PluginWithFileStoreV34,
-        "HDF1:",
-        write_path_template="/tmp",
-        read_attrs=[],
-    )
