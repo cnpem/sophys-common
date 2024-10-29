@@ -22,3 +22,4 @@ from .cam import CamBase_V33, Xspress3DetectorCamV33
 from .ocean import OceanOpticsSpectrometer
 from .power_pmac import PowerPmacScan
 from .aravis import AravisDetector
+from .hvps import HVPS

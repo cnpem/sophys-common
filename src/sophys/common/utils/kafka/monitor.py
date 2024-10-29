@@ -1,7 +1,6 @@
 import logging
 import json
 from functools import wraps, partial
-from pathlib import Path
 from typing import Optional
 
 from threading import Thread
@@ -37,16 +36,13 @@ def _get_start_uid_from_event_data(event_data: dict):
 class DocumentDictionary(dict):
     """Auxiliary class for accumulating Document entries."""
 
-    SAVE_FILE_LOCATION = "metadata_save_file_location"
-    """Name of the metadata entry specifying the file path to use when saving the documents."""
-    SAVE_FILE_IDENTIFIER = "metadata_save_file_identifier"
-    """Name of the metatata entry specifying the file name to use when saving the documents."""
-
     @wraps(dict.__init__)
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
 
         self._logger = logging.getLogger("DocumentDictionary")
+
+        self._original_stream = []
 
         self.__start_document_uid: str = None
         self.__descriptor_documents_uids: list[str] = []
@@ -90,6 +86,8 @@ class DocumentDictionary(dict):
         self._logger.debug(
             "Appending data to DocumentDict: {} {}".format(event_name, event_data)
         )
+
+        self._original_stream.append((event_name, event_data))
 
         if (uid := _get_uid_from_event_data(event_data)) is not None:
             super().update({uid: event_data})
@@ -172,30 +170,6 @@ class DocumentDictionary(dict):
             if self.__stop_document_uid is not None
             else None
         )
-
-    @property
-    def save_file_name(self):
-        """The base save file name for this run."""
-        if self.start_document is None:
-            self._logger.warning(
-                "Calling 'save-file_name' will return None, as there's no start document."
-            )
-            return None
-
-        if self.SAVE_FILE_IDENTIFIER in self.start_document:
-            return self.start_document.get(self.SAVE_FILE_IDENTIFIER)
-        return self.identifier
-
-    @property
-    def save_location(self):
-        if self.start_document is None:
-            self._logger.warning(
-                "Calling 'save_location' will return None, as there's no start document."
-            )
-            return
-        location = self.start_document.get(self.SAVE_FILE_LOCATION, None)
-        if location is not None:
-            return Path(location) / self.save_file_name
 
 
 class MultipleDocumentDictionary(dict):
@@ -298,7 +272,6 @@ class MonitorBase(KafkaConsumer):
         self.name = repr(self)
 
         self.__documents = MultipleDocumentDictionary()
-        self.__save_location = None
         self.__save_queue = save_queue
 
         self.__incomplete_documents = incomplete_documents
