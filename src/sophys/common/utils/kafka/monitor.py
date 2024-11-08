@@ -89,6 +89,10 @@ class DocumentDictionary(dict):
 
         self._original_stream.append((event_name, event_data))
 
+        # NOTE: Add extra key to all documents specifying its type,
+        # to facilitate re-processing of saved files.
+        event_data["document_type"] = event_name
+
         if (uid := _get_uid_from_event_data(event_data)) is not None:
             super().update({uid: event_data})
         elif (uid := _get_uid_from_datum_data(event_data)) is not None:
