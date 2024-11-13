@@ -131,14 +131,8 @@ class DocumentDictionary(dict):
 
         obj = DocumentDictionary()
 
-        # FIXME: De-hardcode this ordering
-        # FIXME: Handle non-event entries
-
-        obj.append("start", data[0])
-        obj.append("descriptor", data[1])
-        for i in range(2, len(data) - 1):
-            obj.append("event", data[i])
-        obj.append("stop", data[-1])
+        for document_type, document in data:
+            obj.append(document_type, document)
 
         return obj
 
