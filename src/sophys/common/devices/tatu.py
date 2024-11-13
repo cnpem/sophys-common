@@ -1,6 +1,8 @@
 from ophyd import Component, FormattedComponent, DynamicDeviceComponent, \
     Device, EpicsSignal, EpicsSignalRO
 
+from .crio import CRIO_9403
+
 
 class TatuInput(Device):
     """
@@ -127,7 +129,7 @@ class Tatu9401(TatuBase):
         super().__init__(prefix=prefix+"9401H:", **kwargs)
 
 
-class Tatu9403(TatuBase):
+class Tatu9403(TatuBase, CRIO_9403):
     """
     TATU device adapted to work with the C-Series module 9403.
 
