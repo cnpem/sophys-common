@@ -6,6 +6,7 @@ from ophyd import (
     Device,
     EpicsSignal,
     EpicsSignalRO,
+    EpicsSignalWithRBV,
     Kind,
 )
 from ophyd.device import create_device_from_components
@@ -125,3 +126,41 @@ CRIO_9223 = create_device_from_components(
     docstring=__CRIO_9223_docstring,
     **__createAnalogIn(4),
 )
+
+
+class CRIO_9403(_BaseCRIO):
+    """
+    An Ophyd device for the NI-9403 CompactRIO device.
+
+    Commonly used as a :ref:`tatu`, this device contains low-level debug signals for such usages.
+    """
+
+    bi0 = Component(EpicsSignalRO, "bi0")
+    bi1 = Component(EpicsSignalRO, "bi1")
+    bi2 = Component(EpicsSignalRO, "bi2")
+    bi3 = Component(EpicsSignalRO, "bi3")
+
+    bo4 = Component(EpicsSignalWithRBV, "bo4")
+    bo5 = Component(EpicsSignalWithRBV, "bo5")
+    bo6 = Component(EpicsSignalWithRBV, "bo6")
+    bo7 = Component(EpicsSignalWithRBV, "bo7")
+
+    bi8 = Component(EpicsSignalRO, "bi8")
+    bi9 = Component(EpicsSignalRO, "bi9")
+    bi10 = Component(EpicsSignalRO, "bi10")
+    bi11 = Component(EpicsSignalRO, "bi11")
+
+    bo12 = Component(EpicsSignalWithRBV, "bo12")
+    bo13 = Component(EpicsSignalWithRBV, "bo13")
+    bo14 = Component(EpicsSignalWithRBV, "bo14")
+    bo15 = Component(EpicsSignalWithRBV, "bo15")
+
+    bi16 = Component(EpicsSignalRO, "bi16")
+    bi17 = Component(EpicsSignalRO, "bi17")
+    bi18 = Component(EpicsSignalRO, "bi18")
+    bi19 = Component(EpicsSignalRO, "bi19")
+
+    bo20 = Component(EpicsSignalWithRBV, "bo20")
+    bo21 = Component(EpicsSignalWithRBV, "bo21")
+    bo22 = Component(EpicsSignalWithRBV, "bo22")
+    bo23 = Component(EpicsSignalWithRBV, "bo23")

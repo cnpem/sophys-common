@@ -69,6 +69,8 @@ Channels are accessible via `self.channel_{x}`, for `x` in {1, 2, 3, 4}.
         .. include:: _generated/sophys.common.devices.eras.Scale.rst
 
 
+.. _tatu:
+
 TATU - Timing and Trigger Unit 
 ------------------------------
 
