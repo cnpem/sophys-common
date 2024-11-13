@@ -123,10 +123,7 @@ class Tatu9401(TatuBase):
 
     This module consists of four high-speed TTL channels as an input and the other four high-speed TTL channels as an output.
     """
-
-    def __init__(self, prefix, **kwargs):
-        self.prefix = prefix
-        super().__init__(prefix=prefix+"9401H:", **kwargs)
+    pass
 
 
 class Tatu9403(TatuBase, CRIO_9403):
@@ -165,7 +162,3 @@ class Tatu9403(TatuBase, CRIO_9403):
         "io22": (TatuOutput, "", {"output_number": "22"}),
         "io23": (TatuOutput, "", {"output_number": "23"})
     })
-
-    def __init__(self, prefix, **kwargs):
-        self.prefix = prefix
-        super().__init__(prefix=prefix+"9403H:", **kwargs)
