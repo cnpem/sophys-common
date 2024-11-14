@@ -1,4 +1,4 @@
-import time
+import threading
 
 from ophyd import (
     Component,
@@ -63,9 +63,11 @@ class _BaseCRIO(Device):
         self.pv_averaging_time.set(0.001).wait()
         self.pv_averaging_time.set(avg_time).wait()
 
-        time.sleep(avg_time)
+        status = Status()
 
-        return sts
+        threading.Timer(avg_time, status.set_finished).start()
+
+        return sts & status
 
 
 class BaseAnalogInput(EpicsSignalRO):
