@@ -382,12 +382,37 @@ class MonitorBase(KafkaConsumer):
                                 id
                             )
                         )
+                    except Exception as e:
+                        self._logger.error(
+                            "Unhandled exception while trying to save documents. Will try to continue regardless."
+                        )
+                        self._logger.error("Exception if you're into that:")
+                        self._logger.exception(e)
+
+                        if id in self.__incomplete_documents_save_attempts:
+                            self.__incomplete_documents_save_attempts[id] += 1
+
+                            if self.__incomplete_documents_save_attempts[id] >= 3:
+                                self._logger.error(
+                                    "Failed to save document with id '%s' three times. Giving up.",
+                                    id,
+                                )
+
+                                self.__incomplete_documents.remove(id)
+                                self.__documents.pop(id)
+                                del self.__incomplete_documents_save_attempts[id]
+                        else:
+                            self.__incomplete_documents_save_attempts[id] = 1
+
                     else:
                         _completed_documents.append(id)
 
                 for id in _completed_documents:
                     self.__incomplete_documents.remove(id)
                     self.__documents.pop(id)
+
+                    if id in self.__incomplete_documents_save_attempts:
+                        del self.__incomplete_documents_save_attempts[id]
 
         except Exception as e:
             self._logger.error("Unhandled exception. Will try to continue regardless.")
