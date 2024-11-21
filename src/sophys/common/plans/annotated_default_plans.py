@@ -931,6 +931,23 @@ def mv(*args, group: typing.Any = None, **kwargs: typing.Optional[dict]):
 @parameter_annotation_decorator(
     {
         "parameters": {
+            "args": {
+                "description": """
+device1,value1,device2,value2, ...
+-.-device,value;device to be moved,value to be setted;__MOVABLE__,typing.Any-.-
+"""
+            }
+        }
+    }
+)
+@wraps(plan_stubs.mvr)
+def mvr(*args, group: typing.Any = None, **kwargs: typing.Optional[dict]):
+    return (yield from plan_stubs.mvr(*args, group=group, **kwargs))
+
+
+@parameter_annotation_decorator(
+    {
+        "parameters": {
             "device": {
                 "description": """
 -.-device;device to be read;__READABLE__-.-
