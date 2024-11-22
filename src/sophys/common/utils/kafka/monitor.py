@@ -89,6 +89,10 @@ class DocumentDictionary(dict):
 
         self._original_stream.append((event_name, event_data))
 
+        # NOTE: Add extra key to all documents specifying its type,
+        # to facilitate re-processing of saved files.
+        event_data["document_type"] = event_name
+
         if (uid := _get_uid_from_event_data(event_data)) is not None:
             super().update({uid: event_data})
         elif (uid := _get_uid_from_datum_data(event_data)) is not None:
@@ -127,14 +131,8 @@ class DocumentDictionary(dict):
 
         obj = DocumentDictionary()
 
-        # FIXME: De-hardcode this ordering
-        # FIXME: Handle non-event entries
-
-        obj.append("start", data[0])
-        obj.append("descriptor", data[1])
-        for i in range(2, len(data) - 1):
-            obj.append("event", data[i])
-        obj.append("stop", data[-1])
+        for document_type, document in data:
+            obj.append(document_type, document)
 
         return obj
 
@@ -384,12 +382,37 @@ class MonitorBase(KafkaConsumer):
                                 id
                             )
                         )
+                    except Exception as e:
+                        self._logger.error(
+                            "Unhandled exception while trying to save documents. Will try to continue regardless."
+                        )
+                        self._logger.error("Exception if you're into that:")
+                        self._logger.exception(e)
+
+                        if id in self.__incomplete_documents_save_attempts:
+                            self.__incomplete_documents_save_attempts[id] += 1
+
+                            if self.__incomplete_documents_save_attempts[id] >= 3:
+                                self._logger.error(
+                                    "Failed to save document with id '%s' three times. Giving up.",
+                                    id,
+                                )
+
+                                self.__incomplete_documents.remove(id)
+                                self.__documents.pop(id)
+                                del self.__incomplete_documents_save_attempts[id]
+                        else:
+                            self.__incomplete_documents_save_attempts[id] = 1
+
                     else:
                         _completed_documents.append(id)
 
                 for id in _completed_documents:
                     self.__incomplete_documents.remove(id)
                     self.__documents.pop(id)
+
+                    if id in self.__incomplete_documents_save_attempts:
+                        del self.__incomplete_documents_save_attempts[id]
 
         except Exception as e:
             self._logger.error("Unhandled exception. Will try to continue regardless.")
