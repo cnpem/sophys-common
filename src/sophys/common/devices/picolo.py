@@ -1,5 +1,8 @@
+from datetime import datetime
 from ophyd import Device, Component, FormattedComponent, EpicsSignal, \
     EpicsSignalWithRBV, DynamicDeviceComponent, EpicsSignalRO
+from ophyd.flyers import FlyerInterface
+from ophyd.status import SubscriptionStatus, StatusBase
 
 
 class PicoloChannel(Device):
@@ -85,3 +88,51 @@ class Picolo(Device):
         self.data_reset.set(1).wait()
 
         self.acquire_mode.set(past_acquire_mode).wait()
+
+
+class PicoloFlyScan(Picolo, FlyerInterface):
+
+    def kickoff(self):
+        sts = StatusBase()
+        sts.set_finished()
+        return sts
+        
+    def fly_scan_complete(self, **kwargs):
+        """
+        Wait for the Picolo device to acquire and save the predetermined quantity
+        of values.
+        """
+        num_exposures = self.samples_per_trigger.get()
+        data_acquired = self.data_acquired.get()
+        data_saved = len(self.ch2.data.get())
+        if ((data_saved == num_exposures) and (data_acquired == num_exposures)):
+            return True
+        return False
+
+    def complete(self):
+        return SubscriptionStatus(self, callback=self.fly_scan_complete)
+    
+    def describe_collect(self):
+        descriptor = {"pico02": {}}
+        descriptor["pico02"].update(self.ch1.data.describe())
+        descriptor["pico02"].update(self.ch2.data.describe())
+        descriptor["pico02"].update(self.ch3.data.describe())
+        descriptor["pico02"].update(self.ch4.data.describe())
+        return descriptor
+
+    def collect(self):
+        data = {}
+        timestamps = {}
+        for device in [self.ch1.data, self.ch2.data, self.ch3.data, self.ch4.data]:
+            dev_name = device.name
+            dev_info = device.read()[dev_name]
+            data.update({dev_name: dev_info["value"]})
+            timestamps.update({dev_name: dev_info["timestamp"]})
+
+        return [
+            {
+                "time": datetime.now(),
+                "data": data,
+                "timestamps": timestamps
+            }
+        ]

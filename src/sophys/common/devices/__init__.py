@@ -16,7 +16,7 @@ from .vortex import Vortex
 from .storage_ring import StorageRing
 from .tatu import Tatu9401, Tatu9403
 from .dcm_lite import DcmLite
-from .picolo import Picolo
+from .picolo import Picolo, PicoloFlyScan
 from .slit import VerticalSlit, HorizontalSlit, Slit, KinematicSlit
 from .cam import CamBase_V33, Xspress3DetectorCamV33
 from .ocean import OceanOpticsSpectrometer
