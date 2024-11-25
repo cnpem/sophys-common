@@ -8,6 +8,8 @@ from ophyd import (
     SingleTrigger,
     Device
 )
+from ophyd.status import SubscriptionStatus
+from ophyd.flyers import FlyerInterface
 from ophyd.areadetector.detectors import DetectorBase
 from .cam import CamBase_V33
 
@@ -111,8 +113,7 @@ class Pimega(SingleTrigger, PimegaDetector):
 class PimegaFlyScan(Pimega, FlyerInterface):
 
     def kickoff(self):
-        self.cam.acquire.start()
-        return NullStatus()
+        return self.cam.acquire.start()
 
     def fly_scan_complete(self, **kwargs):
         """
