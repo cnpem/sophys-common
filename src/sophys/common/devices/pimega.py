@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-
+from datetime import datetime
 from ophyd import (
     ADComponent,
     EpicsSignal,
@@ -47,7 +47,7 @@ class PimegaAcquire(Device):
         # Start backend
         self.capture.set(1)
         # Send start signal to chips. This also checks that the Capture one has finished.
-        self.acquire.set(1).wait()
+        return self.acquire.set(1)
 
     def stop(self):
         # Stop both the backend and the detector
@@ -106,3 +106,48 @@ class PimegaDetector(DetectorBase):
 class Pimega(SingleTrigger, PimegaDetector):
     def __init__(self, name, prefix, **kwargs):
         super(Pimega, self).__init__(prefix, name=name, **kwargs)
+
+
+class PimegaFlyScan(Pimega, FlyerInterface):
+
+    def kickoff(self):
+        self.cam.acquire.start()
+        return NullStatus()
+
+    def fly_scan_complete(self, **kwargs):
+        """
+        Wait for the Pimega device to acquire and save all the predetermined quantity
+        of images.
+        """
+        num2capture = self.cam.num_capture.get()
+        num_captured = self.cam.num_captured.get()
+
+        if num2capture == num_captured:
+            return True
+        return False
+
+    def complete(self):
+        return SubscriptionStatus(self.cam, callback=self.fly_scan_complete)
+    
+    def describe_collect(self):
+        descriptor = {"pimega": {}}
+        descriptor["pimega"].update(self.cam.file_name.describe())
+        descriptor["pimega"].update(self.cam.file_path.describe())
+        return descriptor
+
+    def collect(self):
+        data = {}
+        timestamps = {}
+        for device in [self.cam.file_name, self.cam.file_path]:
+            dev_name = device.name
+            dev_info = device.read()[dev_name]
+            data.update({dev_name: dev_info["value"]})
+            timestamps.update({dev_name: dev_info["timestamp"]})
+
+        return [
+            {
+                "time": datetime.now(),
+                "data": data,
+                "timestamps": timestamps
+            }
+        ]
