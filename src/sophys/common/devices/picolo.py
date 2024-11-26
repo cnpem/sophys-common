@@ -104,30 +104,35 @@ class PicoloFlyScan(Picolo, FlyerInterface):
         """
         num_exposures = self.samples_per_trigger.get()
         data_acquired = self.data_acquired.get()
-        data_saved = len(self.ch2.data.get())
-        if ((data_saved == num_exposures) and (data_acquired == num_exposures)):
-            return True
-        return False
+        if (data_acquired != num_exposures):
+            return False
+            
+        for channel in [self.ch1, self.ch2, self.ch3, self.ch4]:
+            num_points_saved = len(channel.data.get())
+            if channel.enable.get() and num_exposures != num_points_saved:
+                return False
+        return True
 
     def complete(self):
         return SubscriptionStatus(self, callback=self.fly_scan_complete)
     
     def describe_collect(self):
-        descriptor = {"pico02": {}}
-        descriptor["pico02"].update(self.ch1.data.describe())
-        descriptor["pico02"].update(self.ch2.data.describe())
-        descriptor["pico02"].update(self.ch3.data.describe())
-        descriptor["pico02"].update(self.ch4.data.describe())
+        descriptor = {"picolo": {}}
+        for channel in [self.ch1, self.ch2, self.ch3, self.ch4]:
+            if channel.enable.get():
+                descriptor["picolo"].update(channel.data.describe())
         return descriptor
 
     def collect(self):
         data = {}
         timestamps = {}
-        for device in [self.ch1.data, self.ch2.data, self.ch3.data, self.ch4.data]:
-            dev_name = device.name
-            dev_info = device.read()[dev_name]
-            data.update({dev_name: dev_info["value"]})
-            timestamps.update({dev_name: dev_info["timestamp"]})
+        for channel in [self.ch1, self.ch2, self.ch3, self.ch4]:
+            if channel.enable.get():
+                device_data = channel.data
+                dev_name = device_data.name
+                dev_info = device_data.read()[dev_name]
+                data.update({dev_name: dev_info["value"]})
+                timestamps.update({dev_name: dev_info["timestamp"]})
 
         return [
             {
