@@ -1,4 +1,4 @@
-from datetime import datetime
+from time import time
 from ophyd import Device, Component, FormattedComponent, EpicsSignal, \
     EpicsSignalWithRBV, DynamicDeviceComponent, EpicsSignalRO
 from ophyd.flyers import FlyerInterface
@@ -136,7 +136,7 @@ class PicoloFlyScan(Picolo, FlyerInterface):
 
         return [
             {
-                "time": datetime.now(),
+                "time": time(),
                 "data": data,
                 "timestamps": timestamps
             }
