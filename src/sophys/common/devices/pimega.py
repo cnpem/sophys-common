@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-from datetime import datetime
+from time import time
 from ophyd import (
     ADComponent,
     EpicsSignal,
@@ -147,7 +147,7 @@ class PimegaFlyScan(Pimega, FlyerInterface):
 
         return [
             {
-                "time": datetime.now(),
+                "time": time(),
                 "data": data,
                 "timestamps": timestamps
             }
