@@ -6,7 +6,8 @@ from ophyd import (
     EpicsSignal,
     EpicsSignalRO,
 )
-
+from ophyd.flyers import FlyerInterface
+from ophyd.status import StatusBase
 from .crio import CRIO_9403
 
 
@@ -151,7 +152,26 @@ class TatuBase(Device):
         self.activate.set(1).wait()
 
 
-class Tatu9401(TatuBase):
+class TatuFlyScan(FlyerInterface):
+    
+    def kickoff(self):
+        return self.activate.set(1)
+
+    def complete(self):
+        sts = StatusBase()
+        sts.set_finished()
+        return sts
+
+    def describe_collect(self):
+        return {}
+
+    def collect(self):
+        self.activate.set(0).wait()
+        self.reset_pulses.set(1).wait()
+        return []
+
+
+class Tatu9401(TatuBase, TatuFlyScan):
     """
     TATU device adapted to work with the C-Series module 9401.
 
@@ -161,7 +181,7 @@ class Tatu9401(TatuBase):
     pass
 
 
-class Tatu9403(TatuBase, CRIO_9403):
+class Tatu9403(TatuBase, TatuFlyScan, CRIO_9403):
     """
     TATU device adapted to work with the C-Series module 9403.
 
