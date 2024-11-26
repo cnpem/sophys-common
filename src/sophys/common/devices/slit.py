@@ -124,7 +124,7 @@ def _create_horizontal_components(
         horizontalSlitComponents.update(
             {
                 "horizontal_offset": _get_optional_kinematic_component(
-                    gap,
+                    offset,
                     has_kinematic,
                     virtualMotorComponents
                 )
