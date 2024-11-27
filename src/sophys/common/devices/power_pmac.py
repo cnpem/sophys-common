@@ -7,8 +7,8 @@ class PmacEpicsSignal(PVPositionerIsClose):
         Common attributes for every pmac PV, the sync attribute is not
         related to the PVPositionerIsClose device.
     """
-    readback = Component(EpicsSignal, ":SET")
-    setpoint = Component(EpicsSignalRO, ":RBV")
+    setpoint = Component(EpicsSignal, ":SET")
+    readback = Component(EpicsSignalRO, ":RBV")
     sync = Component(EpicsSignal, ":SYNC")
 
 
