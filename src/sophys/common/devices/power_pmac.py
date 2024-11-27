@@ -38,7 +38,7 @@ class PowerPmacScan(Device):
     
     fly_trigger_out = Component(PmacEpicsSignal, "SCAN_FLY_TRIGGER_OUT")
     
-    start = Component(EpicsSignal, "SendCmd")
+    start = Component(EpicsSignal, "SendCmd", string=True)
     servo_freq = Component(EpicsSignal, "SERVO_FREQ")
 
     def stop(self):
