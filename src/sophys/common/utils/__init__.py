@@ -118,6 +118,11 @@ class HDF5PluginWithFileStore(HDF5Plugin, FileStoreHDF5IterativeWrite):
             del self.stage_sigs["capture"]
             self.stage_sigs["capture"] = 1
 
+            if not self.file_path_exists.get():
+                raise IOError(
+                    "Path %s does not exist on IOC." "" % self.file_path.get()
+                )
+
         super().stage()
 
     def unstage(self):
