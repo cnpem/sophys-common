@@ -7,8 +7,8 @@ class PmacEpicsSignal(PVPositionerIsClose):
         Common attributes for every pmac PV, the sync attribute is not
         related to the PVPositionerIsClose device.
     """
-    readback = Component(EpicsSignal, ":SET")
-    setpoint = Component(EpicsSignalRO, ":RBV")
+    setpoint = Component(EpicsSignal, ":SET")
+    readback = Component(EpicsSignalRO, ":RBV")
     sync = Component(EpicsSignal, ":SYNC")
 
 
@@ -38,7 +38,7 @@ class PowerPmacScan(Device):
     
     fly_trigger_out = Component(PmacEpicsSignal, "SCAN_FLY_TRIGGER_OUT")
     
-    start = Component(EpicsSignal, "SendCmd")
+    start = Component(EpicsSignal, "SendCmd", string=True)
     servo_freq = Component(EpicsSignal, "SERVO_FREQ")
 
     def stop(self):
