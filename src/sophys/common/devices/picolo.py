@@ -1,5 +1,8 @@
+from time import time
 from ophyd import Device, Component, FormattedComponent, EpicsSignal, \
     EpicsSignalWithRBV, DynamicDeviceComponent, EpicsSignalRO
+from ophyd.flyers import FlyerInterface
+from ophyd.status import SubscriptionStatus, StatusBase
 
 
 class PicoloChannel(Device):
@@ -85,3 +88,56 @@ class Picolo(Device):
         self.data_reset.set(1).wait()
 
         self.acquire_mode.set(past_acquire_mode).wait()
+
+
+class PicoloFlyScan(Picolo, FlyerInterface):
+
+    def kickoff(self):
+        sts = StatusBase()
+        sts.set_finished()
+        return sts
+        
+    def _fly_scan_complete(self, **kwargs):
+        """
+        Wait for the Picolo device to acquire and save the predetermined quantity
+        of values.
+        """
+        num_exposures = self.samples_per_trigger.get()
+        data_acquired = self.data_acquired.get()
+        if (data_acquired != num_exposures):
+            return False
+            
+        for channel in [self.ch1, self.ch2, self.ch3, self.ch4]:
+            num_points_saved = len(channel.data.get())
+            if channel.enable.get() and num_exposures != num_points_saved:
+                return False
+        return True
+
+    def complete(self):
+        return SubscriptionStatus(self, callback=self._fly_scan_complete)
+    
+    def describe_collect(self):
+        descriptor = {"picolo": {}}
+        for channel in [self.ch1, self.ch2, self.ch3, self.ch4]:
+            if channel.enable.get():
+                descriptor["picolo"].update(channel.data.describe())
+        return descriptor
+
+    def collect(self):
+        data = {}
+        timestamps = {}
+        for channel in [self.ch1, self.ch2, self.ch3, self.ch4]:
+            if channel.enable.get():
+                device_data = channel.data
+                dev_name = device_data.name
+                dev_info = device_data.read()[dev_name]
+                data.update({dev_name: dev_info["value"]})
+                timestamps.update({dev_name: dev_info["timestamp"]})
+
+        return [
+            {
+                "time": time(),
+                "data": data,
+                "timestamps": timestamps
+            }
+        ]
