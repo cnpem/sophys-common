@@ -1,12 +1,14 @@
+import typing
 from bluesky import protocols
 from bluesky.plan_stubs import mv
 
 
 def configure_picolo_acquisition(
         picolo: protocols.Readable,
-        ch1: bool = False, ch2: bool = False, ch3: bool = False, ch4: bool = False,
-        sample_per_trigger: int = 1, sample_rate: int = None, acquisition_time: float = None,
-        auto_range: bool = True):
+        ch1: typing.Optional[bool] = False, ch2: typing.Optional[bool] = False, 
+        ch3: typing.Optional[bool] = False, ch4: typing.Optional[bool] = False,
+        sample_per_trigger: typing.Optional[int] = 1, sample_rate: typing.Optional[int] = None, 
+        acquisition_time: typing.Optional[float] = None, auto_range: typing.Optional[bool] = True):
     """
     Configure picoammeter to execute the acquisition.
 
@@ -24,7 +26,7 @@ def configure_picolo_acquisition(
             Enable channel 4 configuration
         sample_per_trigger : int
             Number of samples to be acquired by trigger
-        sample_per_second : int
+        sample_rate : int
             Int value based on GIE table to choose the sample rate
         acquisition_time: float
             The time for the acquisition of one sample in seconds.
