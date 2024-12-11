@@ -115,7 +115,7 @@ class PimegaFlyScan(Pimega, FlyerInterface):
     def kickoff(self):
         return self.cam.acquire.start()
 
-    def fly_scan_complete(self, **kwargs):
+    def _fly_scan_complete(self, **kwargs):
         """
         Wait for the Pimega device to acquire and save all the predetermined quantity
         of images.
@@ -123,12 +123,10 @@ class PimegaFlyScan(Pimega, FlyerInterface):
         num2capture = self.cam.num_capture.get()
         num_captured = self.cam.num_captured.get()
 
-        if num2capture == num_captured:
-            return True
-        return False
+        return num2capture == num_captured
 
     def complete(self):
-        return SubscriptionStatus(self.cam, callback=self.fly_scan_complete)
+        return SubscriptionStatus(self.cam, callback=self._fly_scan_complete)
     
     def describe_collect(self):
         descriptor = {"pimega": {}}
