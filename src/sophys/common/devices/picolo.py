@@ -97,7 +97,7 @@ class PicoloFlyScan(Picolo, FlyerInterface):
         sts.set_finished()
         return sts
         
-    def fly_scan_complete(self, **kwargs):
+    def _fly_scan_complete(self, **kwargs):
         """
         Wait for the Picolo device to acquire and save the predetermined quantity
         of values.
@@ -114,7 +114,7 @@ class PicoloFlyScan(Picolo, FlyerInterface):
         return True
 
     def complete(self):
-        return SubscriptionStatus(self, callback=self.fly_scan_complete)
+        return SubscriptionStatus(self, callback=self._fly_scan_complete)
     
     def describe_collect(self):
         descriptor = {"picolo": {}}
