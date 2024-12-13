@@ -14,10 +14,10 @@ jobs:
           pip install -r docs-requirements.txt
       - name: Build documentation
         run: |
+          cd docs/
           make html
           cd source/
           sphinx-build -b html . ../build
-          cd ../../
       - name: Upload artifacts
         uses: actions/upload-pages-artifact@v3
         with:
