@@ -16,7 +16,6 @@ from ophyd import Component, EpicsSignal, EpicsSignalRO
 sys.path.insert(0, os.path.abspath("../.."))
 
 year = datetime.date.today().year
-authors = metadata.metadata("sophys-common")["Author-email"]
 name = metadata.metadata("sophys-common")["Name"]
 version = metadata.version("sophys-common")
 
