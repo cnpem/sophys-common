@@ -1,0 +1,36 @@
+on:
+  workflow_dispatch:
+
+jobs:
+  documentation-build:
+    name: Build Sphinx documentation
+    runs-on: ubuntu-22.04
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install build requirements
+        run: |
+          pip install .
+          cd docs/
+          pip install -r docs-requirements.txt
+      - name: Build documentation
+        run: |
+          make html
+          cd source/
+          sphinx-build -b html . ../build
+          cd ../../
+      - name: Upload artifacts
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: docs/build/
+
+  deploy-documentation:
+    name: Deploy documentation to GitHub Pages
+    runs-on: ubuntu-22.04
+    needs: documentation-build
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4
