@@ -16,6 +16,6 @@ This package uses [`pre-commit`](https://pre-commit.com/) to ensure linting and 
 
 There's also an HTML documentation, located at the `docs/` subdirectory. It uses sphinx, and some plugins, to do the job.
 
-The online version is located at http://sol.gitpages.cnpem.br/bluesky/sophys-common/. It is updated to a new version every time a tag is created.
+The online version is located at https://cnpem.github.io/sophys-common/. It is updated manually by a maintainer, usually right after a release or a major change.
 
 To build it locally, go inside the `docs/` folder, where there's a `docs-requirements.txt` file containing the building dependencies. Install those requirements (e.g. via `pip install -r docs-requirements.txt`), and run `make html` to generate the built page. You can access the final result by opening `build/html/index.html`.
