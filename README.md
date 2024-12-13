@@ -1,6 +1,6 @@
-# Sophys: Common
+# sophys-common
 
-Sophys: Common is a collection of [Bluesky](https://blueskyproject.io) and [Ophyd](https://blueskyproject.io/ophyd) utility code (plans, devices, and other useful stuff) for usage at LNLS/SIRIUS beamlines.
+A collection of [Bluesky](https://blueskyproject.io) and [Ophyd](https://blueskyproject.io/ophyd) utility code (plans, devices, and other useful stuff) for usage at LNLS/SIRIUS beamlines.
 
 Sophys stands for **S**irius **Oph**yd and Bluesk**y** utilitie**s**. As an old wise monk once said, nothing beats a cool-looking name.
 
