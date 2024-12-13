@@ -6,6 +6,10 @@ jobs:
     name: Build Sphinx documentation
     runs-on: ubuntu-22.04
     steps:
+      - name: Setup Python
+        uses: actions/setup-python@v5.3.0
+        with:
+          python-version: 3.12
       - uses: actions/checkout@v4
       - name: Install build requirements
         run: |
@@ -14,10 +18,10 @@ jobs:
           pip install -r docs-requirements.txt
       - name: Build documentation
         run: |
+          cd docs/
           make html
           cd source/
           sphinx-build -b html . ../build
-          cd ../../
       - name: Upload artifacts
         uses: actions/upload-pages-artifact@v3
         with:
