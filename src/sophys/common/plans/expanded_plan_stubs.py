@@ -1,6 +1,16 @@
 from bluesky import preprocessors as bpp, plan_stubs as bps
 
 from .annotated_default_plans import mv, mvr, read
+from .queueserver_annotation import parameter_annotation_decorator
+
+
+_ANNOTATION = {
+    "parameters": {
+        "md": {
+            "convert_device_names": False,
+        },
+    },
+}
 
 
 def _read_many(devices):
@@ -10,6 +20,7 @@ def _read_many(devices):
     yield from bps.save()
 
 
+@parameter_annotation_decorator(_ANNOTATION)
 def read_many(devices, md=None):
     """Take a reading of many devices, and bundle them into a single Bluesky document."""
 
@@ -20,6 +31,7 @@ def read_many(devices, md=None):
     return (yield from __inner())
 
 
+@parameter_annotation_decorator(_ANNOTATION)
 def mov(*args, md=None):
     """Move many devices, and bundle their start and end positions in Bluesky documents."""
 
@@ -34,6 +46,7 @@ def mov(*args, md=None):
     return (yield from __inner())
 
 
+@parameter_annotation_decorator(_ANNOTATION)
 def rmov(*args, md=None):
     """Move many devices, and bundle their start and end positions in Bluesky documents."""
 
