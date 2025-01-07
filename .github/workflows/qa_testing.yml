@@ -21,7 +21,7 @@ jobs:
           kafka-version: "3.6.1"
           kafka-topics: "test_bluesky_raw_docs,1"
       - name: Run pytest
-        run: pytest
+        run: pytest -vvv
 
   linting:
     name: Run pre-commit
