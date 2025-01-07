@@ -31,7 +31,7 @@ dev = [
   "pytest-cov",
 ]
 kafka = [
-  "kafka-python",
+  "kafka-python-ng",
   "msgpack",
   "msgpack-numpy"
 ]
@@ -40,6 +40,9 @@ registry = [
 ]
 databroker = [
   "databroker"
+]
+all = [
+  "sophys-common[dev,kafka,registry,databroker]"
 ]
 
 [project.urls]

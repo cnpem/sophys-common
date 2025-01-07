@@ -1,0 +1,41 @@
+on:
+  pull_request:
+    branches:
+      - main
+
+jobs:
+  test:
+    name: Run existing tests
+    runs-on: ubuntu-22.04
+    steps:
+      - name: Setup Python
+        uses: actions/setup-python@v5.3.0
+        with:
+          python-version: 3.12
+      - uses: actions/checkout@v4
+      - name: Install package
+        run: pip install ".[all]"
+      - name: Run Kafka
+        uses: spicyparrot/kafka-kraft-action@v1.1.3
+        with:
+          kafka-version: "3.6.1"
+          kafka-topics: "test_bluesky_raw_docs,1"
+      - name: Run pytest
+        run: pytest -vvv
+
+  linting:
+    name: Run pre-commit
+    runs-on: ubuntu-22.04
+    steps:
+      - name: Setup Python
+        uses: actions/setup-python@v5.3.0
+        with:
+          python-version: 3.12
+      - uses: actions/checkout@v4
+      - name: Acquire changed files
+        id: changed_files
+        uses: tj-actions/changed-files@v45.0.5
+      - name: Run pre-commit on the changed files
+        uses: pre-commit/action@v3.0.1
+        with:
+          extra_args: --files ${{ steps.changed_files.outputs.all_changed_files}}
