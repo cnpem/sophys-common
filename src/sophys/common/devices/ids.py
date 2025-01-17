@@ -7,13 +7,15 @@ from ophyd import (
     EpicsSignalRO,
     PVPositioner,
     PVPositionerIsClose,
-    Kind
+    Kind,
 )
 from ..utils.signals import EpicsSignalMon
+
 
 class EpicsSignalIDs(PVPositionerIsClose):
     setpoint = Component(EpicsSignal, "-SP")
     readback = Component(EpicsSignalMon, "")
+
 
 # Reference:
 # https://cnpemcamp.sharepoint.com/:x:/s/Comissionamento/Eabdu5JQhm1Oh8xjo25QNkEBeA8lLoRFrrTI0nVYT6t9aw?e=JnWNx9
@@ -92,9 +94,7 @@ class UndulatorKymaAPU(Device):
     is_remote = Component(EpicsSignalMon, "IsRemote", lazy=True, kind=Kind.omitted)
     interface = Component(EpicsSignalMon, "Interface", lazy=True, kind=Kind.omitted)
 
-    home_axis = Component(
-        EpicsSignal, "HomeAxis-Sel", lazy=True, kind=Kind.omitted
-    )
+    home_axis = Component(EpicsSignal, "HomeAxis-Sel", lazy=True, kind=Kind.omitted)
 
     phase = Component(
         EpicsSignalIDs,
@@ -148,9 +148,7 @@ class UndulatorKymaAPU(Device):
         OpWarning = 0x48
         Op = 0x4C
 
-    phase_alarm = Component(
-        EpicsSignalMon, "AlrmPhase", lazy=True, kind=Kind.omitted
-    )
+    phase_alarm = Component(EpicsSignalMon, "AlrmPhase", lazy=True, kind=Kind.omitted)
     # Reference:
     # https://infosys.beckhoff.com/english.php?content=../content/1033/tcncerrcode2/index.html
     phase_alarm_errid = Component(
