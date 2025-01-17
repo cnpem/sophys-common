@@ -2,8 +2,10 @@ from enum import IntEnum
 from ophyd import (
     Device,
     Component,
+    FormattedComponent as FmtComponent,
     EpicsSignal,
     EpicsSignalRO,
+    PVPositioner,
     PVPositionerIsClose,
     Kind
 )
@@ -197,3 +199,25 @@ class UndulatorKymaAPU(Device):
     beamline_control_status = Component(
         EpicsSignalRO, "BeamLineCtrlEnbl-Sts", lazy=True, kind=Kind.omitted
     )
+
+
+class IVU(Device):
+    class IVUPositioner(PVPositioner):
+        setpoint = Component(EpicsSignal, "-SP")
+        readback = Component(EpicsSignalRO, "-Mon")
+
+        actuate = FmtComponent(EpicsSignal, "{parent_prefix}KParamChange-Cmd")
+        actuate_value = 1
+
+        def __init__(self, *args, **kwargs):
+            self.parent_prefix = self.parent.prefix
+
+            super().__init__(*args, **kwargs)
+
+    gap = Component(IVUPositioner, "KParam", kind=Kind.hinted)
+    velocity = Component(IVUPositioner, "KParamVelo")
+
+    is_moving = Component(EpicsSignalRO, "Moving-Mon")
+
+    abort = Component(EpicsSignal, "Abort-Cmd")
+    reset = Component(EpicsSignal, "Reset-Cmd")
