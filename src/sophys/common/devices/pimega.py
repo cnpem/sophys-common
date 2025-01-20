@@ -6,7 +6,7 @@ from ophyd import (
     EpicsSignalRO,
     EpicsSignalWithRBV,
     SingleTrigger,
-    Device
+    Device,
 )
 from ophyd.status import SubscriptionStatus
 from ophyd.flyers import FlyerInterface
@@ -72,20 +72,24 @@ class PimegaCam(CamBase_V33):
     acquire = ADComponent(PimegaAcquire, "")
     num_capture = ADComponent(EpicsSignalWithRBV, "NumCapture")
     num_exposures = ADComponent(EpicsSignalWithRBV, "NumExposures")
-    
+
     acquire_time = ADComponent(EpicsSignalWithRBV, "AcquireTime")
     acquire_period = ADComponent(EpicsSignalWithRBV, "AcquirePeriod")
 
     medipix_mode = ADComponent(EpicsSignalWithRBV, "MedipixMode")
 
     detector_state = ADComponent(EpicsSignalRO, "DetectorState_RBV")
-    processed_acquisition_counter = ADComponent(EpicsSignalRO, "ProcessedAcquisitionCounter_RBV")
+    processed_acquisition_counter = ADComponent(
+        EpicsSignalRO, "ProcessedAcquisitionCounter_RBV"
+    )
     num_captured = ADComponent(EpicsSignalRO, "NumCaptured_RBV")
-    
+
     dac = ADComponent(Digital2AnalogConverter, "DAC_")
 
     file_name = ADComponent(EpicsSignalWithRBV, "FileName", string=True)
-    file_path = ADComponent(EpicsPathSignal, "FilePath", read_pv="FilePath_RBV", string=True)
+    file_path = ADComponent(
+        EpicsPathSignal, "FilePath", read_pv="FilePath_RBV", string=True
+    )
     file_path_exists = ADComponent(EpicsSignalRO, "FilePathExists_RBV", string=True)
     file_number = ADComponent(EpicsSignalWithRBV, "FileNumber")
     file_template = ADComponent(EpicsSignalWithRBV, "FileTemplate", string=True)
@@ -122,7 +126,7 @@ class PimegaFlyScan(Pimega, FlyerInterface):
 
     def complete(self):
         return SubscriptionStatus(self.cam, callback=self._fly_scan_complete)
-    
+
     def describe_collect(self):
         descriptor = {"pimega": {}}
         descriptor["pimega"].update(self.cam.file_name.describe())
@@ -138,10 +142,4 @@ class PimegaFlyScan(Pimega, FlyerInterface):
             data.update({dev_name: dev_info["value"]})
             timestamps.update({dev_name: dev_info["timestamp"]})
 
-        return [
-            {
-                "time": time(),
-                "data": data,
-                "timestamps": timestamps
-            }
-        ]
+        return [{"time": time(), "data": data, "timestamps": timestamps}]
