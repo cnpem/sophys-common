@@ -13,6 +13,8 @@ from ophyd.flyers import FlyerInterface
 from ophyd.areadetector.detectors import DetectorBase
 from .cam import CamBase_V33
 
+from ..utils.status import PremadeStatus
+
 
 class Digital2AnalogConverter(Device):
 
@@ -38,24 +40,28 @@ class Digital2AnalogConverter(Device):
 
 
 class PimegaAcquire(Device):
-    """
-        Handle the necessary PVs to start and stop the pimega acquisition.
-    """
+    """Handle the necessary PVs to start and stop the pimega acquisition."""
 
     acquire = ADComponent(EpicsSignalWithRBV, "Acquire")
     capture = ADComponent(EpicsSignalWithRBV, "Capture")
 
-    def start(self):
-        # Start backend
-        self.capture.set(1)
-        # Send start signal to chips. This also checks that the Capture one has finished.
-        return self.acquire.set(1)
+    def start(self, value, **kwargs):
+        if value == 0:
+            return PremadeStatus(True)
 
-    def stop(self):
+        # Start backend
+        self.capture.set(1, **kwargs)
+        # Send start signal to chips. This also checks that the Capture one has finished.
+        return self.acquire.set(1, **kwargs)
+
+    def stop(self, value, **kwargs):
+        if value == 0:
+            return PremadeStatus(True)
+
         # Stop both the backend and the detector
         self.acquire.set(0).wait(timeout=30.0)
         # In practice, this does nothing. But it doesn't hurt anyone :-)
-        self.capture.set(0).wait()
+        return self.capture.set(0)
 
 
 class PimegaFilePath(EpicsSignalWithRBV):
