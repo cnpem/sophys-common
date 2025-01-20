@@ -2,7 +2,7 @@ from time import time
 from ophyd import Device, Component, FormattedComponent, EpicsSignal, \
     EpicsSignalWithRBV, DynamicDeviceComponent, EpicsSignalRO
 from ophyd.flyers import FlyerInterface
-from ophyd.status import SubscriptionStatus, StatusBase
+from ophyd.status import SubscriptionStatus, StatusBase, Status
 
 
 class PicoloChannel(Device):
@@ -36,18 +36,19 @@ class PicoloChannel(Device):
 
 
 class PicoloAcquisitionTime(EpicsSignalWithRBV):
-    """
-        Device that handles set enum acquisition time using a float in milliseconds.
-    """
+    """Device that handles set enum acquisition time using a float value in ms."""
 
-    def set_value(self, acquisiton_time: float):
-        enums = self.metadata['enum_strs']
-        enums_float = [(float(item.replace(" ms", ""))/1000) for item in enums]
+    def set(self, acquisiton_time: float, **kwargs):
+        enums = self.metadata["enum_strs"]
+        enums_float = [(float(item.replace(" ms", "")) / 1000) for item in enums]
         if acquisiton_time not in enums_float:
             print("Acquisition time not found")
-            return
 
-        super().set(f"{int(acquisiton_time*1000)} ms").wait()
+            s = Status()
+            s.set_exception(Exception())
+            return s
+
+        return super().set(f"{int(acquisiton_time*1000)} ms", **kwargs)
 
 
 class Picolo(Device):
