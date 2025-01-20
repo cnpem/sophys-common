@@ -273,6 +273,7 @@ class MonitorBase(KafkaConsumer):
         self.__save_queue = save_queue
 
         self.__incomplete_documents = incomplete_documents
+        self.__incomplete_documents_save_attempts = dict()
 
         self._logger = logging.getLogger(logger_name)
 
