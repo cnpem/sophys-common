@@ -11,6 +11,7 @@ from ophyd import (
 from ophyd.status import SubscriptionStatus
 from ophyd.flyers import FlyerInterface
 from ophyd.areadetector.detectors import DetectorBase
+from ophyd.areadetector.paths import EpicsPathSignal
 from .cam import CamBase_V33
 
 from ..utils.status import PremadeStatus
@@ -64,18 +65,6 @@ class PimegaAcquire(Device):
         return self.capture.set(0)
 
 
-class PimegaFilePath(EpicsSignalWithRBV):
-    """
-        Add '/' at the end of the file path if it isn't already specified.
-    """
-
-    def set(self, value: str, **kwargs):
-        if len(value) > 0:
-            if value[-1] != '/':
-                value += '/'
-        return super().set(value, **kwargs)
-
-
 class PimegaCam(CamBase_V33):
 
     magic_start = ADComponent(EpicsSignal, "MagicStart")
@@ -96,7 +85,7 @@ class PimegaCam(CamBase_V33):
     dac = ADComponent(Digital2AnalogConverter, "DAC_")
 
     file_name = ADComponent(EpicsSignalWithRBV, "FileName", string=True)
-    file_path = ADComponent(PimegaFilePath, "FilePath", string=True)
+    file_path = ADComponent(EpicsPathSignal, "FilePath", read_pv="FilePath_RBV", string=True)
     file_path_exists = ADComponent(EpicsSignalRO, "FilePathExists_RBV", string=True)
     file_number = ADComponent(EpicsSignalWithRBV, "FileNumber")
     file_template = ADComponent(EpicsSignalWithRBV, "FileTemplate", string=True)
