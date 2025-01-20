@@ -52,9 +52,24 @@ class PicoloAcquisitionTime(EpicsSignalWithRBV):
 
 
 class Picolo(Device):
-    """
-    Device for the 4 channel Picolo picoammeter.
-    """
+    """Device for the 4 channel Picolo picoammeter."""
+
+    class DataResetSignal(EpicsSignal):
+        def set(self, value, **kwargs):
+            _s = Status()
+            _s.set_finished()
+            if value == 0:
+                return _s
+
+            parent = self.parent
+
+            past_acquire_mode = parent.acquire_mode.get()
+
+            parent.acquire_mode.set(0).wait()  # Set continuous mode
+            super().set(value, **kwargs).wait()
+            parent.acquire_mode.set(past_acquire_mode).wait()
+
+            return _s
 
     range = Component(EpicsSignal, "Range", string=True, kind="config")
     auto_range = Component(EpicsSignal, "AutoRange", kind="omitted")
@@ -62,7 +77,7 @@ class Picolo(Device):
     sample_rate = Component(EpicsSignalWithRBV, "SampleRate", string=True, kind="config")
     acquire_mode = Component(EpicsSignal, "AcquireMode", string=True, kind="config")
     samples_per_trigger = Component(EpicsSignalWithRBV, "NumAcquire", kind="config")
-    data_reset = Component(EpicsSignal, "DataReset", kind="omitted")
+    data_reset = Component(DataResetSignal, "DataReset", kind="omitted")
     data_acquired = Component(EpicsSignal, "DataAcquired", kind="config")
     triggering = Component(EpicsSignal, "Triggering", kind="omitted")
     enable = Component(EpicsSignal, "Enable", kind="omitted")
@@ -78,26 +93,13 @@ class Picolo(Device):
     ch4 = Component(PicoloChannel, "Current4:")
 
 
-    def reset_data(self):
-        """
-            Reset the picolo history data.
-        """
-        past_acquire_mode = self.acquire_mode.get()
-        
-        self.acquire_mode.set(0).wait() # Set continuous mode
-        
-        self.data_reset.set(1).wait()
-
-        self.acquire_mode.set(past_acquire_mode).wait()
-
-
 class PicoloFlyScan(Picolo, FlyerInterface):
 
     def kickoff(self):
         sts = StatusBase()
         sts.set_finished()
         return sts
-        
+
     def _fly_scan_complete(self, **kwargs):
         """
         Wait for the Picolo device to acquire and save the predetermined quantity
