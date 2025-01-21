@@ -11,6 +11,8 @@ from ophyd import (
 from ophyd.flyers import FlyerInterface
 from ophyd.status import SubscriptionStatus, StatusBase, Status
 
+from ..utils.status import PremadeStatus
+
 
 class PicoloChannel(Device):
     """
@@ -50,11 +52,12 @@ class PicoloAcquisitionTime(EpicsSignalWithRBV):
         enums = self.metadata["enum_strs"]
         enums_float = [(float(item.replace(" ms", "")) / 1000) for item in enums]
         if acquisiton_time not in enums_float:
-            print("Acquisition time not found")
-
-            s = Status()
-            s.set_exception(Exception())
-            return s
+            return PremadeStatus(
+                False,
+                exception=ValueError(
+                    f"The acquisition time '{acquisiton_time}' is not a valid option."
+                ),
+            )
 
         return super().set(f"{int(acquisiton_time * 1000)} ms", **kwargs)
 
