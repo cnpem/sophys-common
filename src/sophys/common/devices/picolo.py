@@ -48,18 +48,18 @@ class PicoloChannel(Device):
 class PicoloAcquisitionTime(EpicsSignalWithRBV):
     """Device that handles set enum acquisition time using a float value in ms."""
 
-    def set(self, acquisiton_time: float, **kwargs):
+    def set(self, acquisition_time: float, **kwargs):
         enums = self.metadata["enum_strs"]
         enums_float = [(float(item.replace(" ms", "")) / 1000) for item in enums]
-        if acquisiton_time not in enums_float:
+        if acquisition_time not in enums_float:
             return PremadeStatus(
                 False,
                 exception=ValueError(
-                    f"The acquisition time '{acquisiton_time}' is not a valid option."
+                    f"The acquisition time '{acquisition_time}' is not a valid option."
                 ),
             )
 
-        return super().set(f"{int(acquisiton_time * 1000)} ms", **kwargs)
+        return super().set(f"{int(acquisition_time * 1000)} ms", **kwargs)
 
 
 class Picolo(Device):
