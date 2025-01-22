@@ -9,6 +9,7 @@ from ophyd import (
     EpicsSignalRO,
 )
 from ophyd.flyers import FlyerInterface
+from ophyd.signal import DEFAULT_WRITE_TIMEOUT
 from ophyd.status import SubscriptionStatus, StatusBase, Status
 
 from ..utils.status import PremadeStatus
@@ -66,7 +67,7 @@ class Picolo(Device):
     """Device for the 4 channel Picolo picoammeter."""
 
     class DataResetSignal(EpicsSignal):
-        def set(self, value, **kwargs):
+        def set(self, value, *, timeout=DEFAULT_WRITE_TIMEOUT, settle_time=None):
             _s = Status()
             _s.set_finished()
             if value == 0:
@@ -76,9 +77,9 @@ class Picolo(Device):
 
             past_acquire_mode = parent.acquire_mode.get()
 
-            parent.acquire_mode.set(0).wait()  # Set continuous mode
-            super().set(value, **kwargs).wait()
-            parent.acquire_mode.set(past_acquire_mode).wait()
+            parent.acquire_mode.set(0, timeout=timeout).wait()  # Set continuous mode
+            super().set(value, timeout=timeout, settle_time=settle_time).wait()
+            parent.acquire_mode.set(past_acquire_mode, timeout=timeout).wait()
 
             return _s
 
