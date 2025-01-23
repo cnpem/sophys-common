@@ -6,12 +6,15 @@ from ophyd import (
     EpicsSignalRO,
     EpicsSignalWithRBV,
     SingleTrigger,
-    Device
+    Device,
 )
 from ophyd.status import SubscriptionStatus
 from ophyd.flyers import FlyerInterface
 from ophyd.areadetector.detectors import DetectorBase
+from ophyd.areadetector.paths import EpicsPathSignal
 from .cam import CamBase_V33
+
+from ..utils.status import PremadeStatus
 
 
 class Digital2AnalogConverter(Device):
@@ -38,36 +41,28 @@ class Digital2AnalogConverter(Device):
 
 
 class PimegaAcquire(Device):
-    """
-        Handle the necessary PVs to start and stop the pimega acquisition.
-    """
+    """Handle the necessary PVs to start and stop the pimega acquisition."""
 
     acquire = ADComponent(EpicsSignalWithRBV, "Acquire")
     capture = ADComponent(EpicsSignalWithRBV, "Capture")
 
-    def start(self):
-        # Start backend
-        self.capture.set(1)
-        # Send start signal to chips. This also checks that the Capture one has finished.
-        return self.acquire.set(1)
+    def start(self, value, **kwargs):
+        if value == 0:
+            return PremadeStatus(True)
 
-    def stop(self):
+        # Start backend
+        self.capture.set(1, **kwargs)
+        # Send start signal to chips. This also checks that the Capture one has finished.
+        return self.acquire.set(1, **kwargs)
+
+    def stop(self, value, **kwargs):
+        if value == 0:
+            return PremadeStatus(True)
+
         # Stop both the backend and the detector
         self.acquire.set(0).wait(timeout=30.0)
         # In practice, this does nothing. But it doesn't hurt anyone :-)
-        self.capture.set(0).wait()
-
-
-class PimegaFilePath(EpicsSignalWithRBV):
-    """
-        Add '/' at the end of the file path if it isn't already specified.
-    """
-
-    def set(self, value: str, **kwargs):
-        if len(value) > 0:
-            if value[-1] != '/':
-                value += '/'
-        return super().set(value, **kwargs)
+        return self.capture.set(0)
 
 
 class PimegaCam(CamBase_V33):
@@ -77,20 +72,24 @@ class PimegaCam(CamBase_V33):
     acquire = ADComponent(PimegaAcquire, "")
     num_capture = ADComponent(EpicsSignalWithRBV, "NumCapture")
     num_exposures = ADComponent(EpicsSignalWithRBV, "NumExposures")
-    
+
     acquire_time = ADComponent(EpicsSignalWithRBV, "AcquireTime")
     acquire_period = ADComponent(EpicsSignalWithRBV, "AcquirePeriod")
 
     medipix_mode = ADComponent(EpicsSignalWithRBV, "MedipixMode")
 
     detector_state = ADComponent(EpicsSignalRO, "DetectorState_RBV")
-    processed_acquisition_counter = ADComponent(EpicsSignalRO, "ProcessedAcquisitionCounter_RBV")
+    processed_acquisition_counter = ADComponent(
+        EpicsSignalRO, "ProcessedAcquisitionCounter_RBV"
+    )
     num_captured = ADComponent(EpicsSignalRO, "NumCaptured_RBV")
-    
+
     dac = ADComponent(Digital2AnalogConverter, "DAC_")
 
     file_name = ADComponent(EpicsSignalWithRBV, "FileName", string=True)
-    file_path = ADComponent(PimegaFilePath, "FilePath", string=True)
+    file_path = ADComponent(
+        EpicsPathSignal, "FilePath", read_pv="FilePath_RBV", string=True
+    )
     file_path_exists = ADComponent(EpicsSignalRO, "FilePathExists_RBV", string=True)
     file_number = ADComponent(EpicsSignalWithRBV, "FileNumber")
     file_template = ADComponent(EpicsSignalWithRBV, "FileTemplate", string=True)
@@ -127,7 +126,7 @@ class PimegaFlyScan(Pimega, FlyerInterface):
 
     def complete(self):
         return SubscriptionStatus(self.cam, callback=self._fly_scan_complete)
-    
+
     def describe_collect(self):
         descriptor = {"pimega": {}}
         descriptor["pimega"].update(self.cam.file_name.describe())
@@ -143,10 +142,4 @@ class PimegaFlyScan(Pimega, FlyerInterface):
             data.update({dev_name: dev_info["value"]})
             timestamps.update({dev_name: dev_info["timestamp"]})
 
-        return [
-            {
-                "time": time(),
-                "data": data,
-                "timestamps": timestamps
-            }
-        ]
+        return [{"time": time(), "data": data, "timestamps": timestamps}]
