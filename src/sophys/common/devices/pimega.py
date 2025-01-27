@@ -82,7 +82,7 @@ class PimegaCam(CamBase_V33):
 
     file_name = ADComponent(EpicsSignalWithRBV, "FileName", string=True)
     file_path = ADComponent(
-        EpicsPathSignal, "FilePath", read_pv="FilePath_RBV", string=True
+        EpicsPathSignal, "FilePath", path_semantics="posix", string=True
     )
     file_path_exists = ADComponent(EpicsSignalRO, "FilePathExists_RBV", string=True)
     file_number = ADComponent(EpicsSignalWithRBV, "FileNumber")
