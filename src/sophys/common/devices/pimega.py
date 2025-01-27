@@ -46,23 +46,17 @@ class PimegaAcquire(Device):
     acquire = ADComponent(EpicsSignalWithRBV, "Acquire")
     capture = ADComponent(EpicsSignalWithRBV, "Capture")
 
-    def start(self, value, **kwargs):
+    def set(self, value, **kwargs):
         if value == 0:
-            return PremadeStatus(True)
-
-        # Start backend
-        self.capture.set(1, **kwargs)
-        # Send start signal to chips. This also checks that the Capture one has finished.
-        return self.acquire.set(1, **kwargs)
-
-    def stop(self, value, **kwargs):
-        if value == 0:
-            return PremadeStatus(True)
-
-        # Stop both the backend and the detector
-        self.acquire.set(0).wait(timeout=30.0)
-        # In practice, this does nothing. But it doesn't hurt anyone :-)
-        return self.capture.set(0)
+            # Stop both the backend and the detector
+            self.acquire.set(0).wait(timeout=30.0)
+            # In practice, this does nothing. But it doesn't hurt anyone :-)
+            return self.capture.set(0)
+        else:
+            # Start backend
+            self.capture.set(1, **kwargs)
+            # Send start signal to chips. This also checks that the Capture one has finished.
+            return self.acquire.set(1, **kwargs)
 
 
 class PimegaCam(CamBase_V33):
