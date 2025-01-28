@@ -1,6 +1,8 @@
 import copy
 import typing
 
+from contextlib import contextmanager
+
 import numpy as np
 
 from ophyd import Device, Component, EpicsSignal, EpicsSignalRO
@@ -138,30 +140,43 @@ class EpicsSignalWithCustomReadout(EpicsSignal):
                 self._enforce_type, self._expected_readout
             )
 
+            if self.tolerance is not None:
+                self._expected_readout.atol = self.tolerance
+            if self.rtolerance is not None:
+                self._expected_readout.rtol = self.rtolerance
+
         return super(EpicsSignalWithCustomReadout, self).set(
             value=value, timeout=timeout, settle_time=settle_time
         )
 
+    @contextmanager
+    def no_implicit_tolerance(self):
+        self._old_tolerance = self.tolerance
+        self._old_rtolerance = self.rtolerance
+
+        self.tolerance = None
+        self.rtolerance = None
+
+        yield
+
+        self.tolerance = self._old_tolerance
+        self.rtolerance = self._old_rtolerance
+
     def _set_and_wait(self, value, timeout, **kwargs):
         self.put(value, **kwargs)
 
-        if is_loose_comparator(self._expected_readout) and (
-            self.tolerance or self.rtolerance
-        ):
-            self._expected_readout.atol = self.tolerance
-            self._expected_readout.rtol = self.rtolerance
+        atol = self.tolerance if not hasattr(self._expected_readout, "atol") else None
+        rtol = self.rtolerance if not hasattr(self._expected_readout, "rtol") else None
 
-            self.tolerance = None
-            self.rtolerance = None
-
-        _wait_for_value(
-            self,
-            self._expected_readout,
-            poll_time=0.01,
-            timeout=timeout,
-            atol=self.tolerance,
-            rtol=self.rtolerance,
-        )
+        with self.no_implicit_tolerance():
+            _wait_for_value(
+                self,
+                self._expected_readout,
+                poll_time=0.01,
+                timeout=timeout,
+                atol=atol,
+                rtol=rtol,
+            )
 
 
 class EpicsSignalWithCustomReadoutRBV(EpicsSignalWithCustomReadout):
