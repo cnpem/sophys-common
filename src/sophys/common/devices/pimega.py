@@ -46,6 +46,9 @@ class PimegaAcquire(Device):
     acquire = ADComponent(EpicsSignalWithRBV, "Acquire")
     capture = ADComponent(EpicsSignalWithRBV, "Capture")
 
+    def subscribe(self, callback, event_type=None, run=True):
+        return self.acquire.subscribe(callback, event_type, run)
+
     def set(self, value, **kwargs):
         if value == 0:
             # Stop both the backend and the detector
@@ -106,7 +109,7 @@ class Pimega(SingleTrigger, PimegaDetector):
 class PimegaFlyScan(Pimega, FlyerInterface):
 
     def kickoff(self):
-        return self.cam.acquire.start()
+        return self.cam.acquire.set(1)
 
     def _fly_scan_complete(self, **kwargs):
         """
@@ -119,7 +122,7 @@ class PimegaFlyScan(Pimega, FlyerInterface):
         return num2capture == num_captured
 
     def complete(self):
-        return SubscriptionStatus(self.cam, callback=self._fly_scan_complete)
+        return SubscriptionStatus(self.cam.acquire, callback=self._fly_scan_complete)
 
     def describe_collect(self):
         descriptor = {"pimega": {}}
