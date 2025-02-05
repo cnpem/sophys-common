@@ -4,7 +4,7 @@ from ..utils import HDF5PluginWithFileStore
 from .cam import Xspress3DetectorCamV33
 
 
-class Vortex(SingleTrigger, DetectorBase):
+class Xpress(SingleTrigger, DetectorBase):
     hdf5 = Component(
         HDF5PluginWithFileStore,
         "HDF5:",
