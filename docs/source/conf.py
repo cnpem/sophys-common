@@ -108,3 +108,25 @@ def setup(app):
 html_theme = "sphinx_rtd_theme"
 html_static_path = ["_static"]
 html_css_files = ["css/custom_theming.css"]
+
+
+# Jinja custom filters
+
+from jinja2.filters import FILTERS
+
+
+def natural_sort(input, key=None, reverse=False, ignore_case=True):
+    """
+    Sort a list naturally, e.g. [A1, B1, A2, A10] will sort into [A1, A2, A10, B1].
+    Ref.: https://gist.github.com/dylanjnz/bfc16c02972521f5c8fea58d3b303071
+    """
+    from natsort import natsorted, ns
+
+    alg = ns.IGNORECASE
+    if not ignore_case:
+        alg = ns.LOWERCASEFIRST
+
+    return natsorted(input, key=key, reverse=reverse, alg=alg)
+
+
+FILTERS["natural_sort"] = natural_sort
