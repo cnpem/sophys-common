@@ -84,14 +84,17 @@ def create_virtual_controllable_motor(components):
                 self.attr_list.append(getattr(self, attr))
 
         def stage(self):
-            super().stage()
+            ret = super().stage()
             for attr in self.attr_list:
                 attr.set(1).wait()
 
+            return ret
+
         def unstage(self):
-            super().unstage()
             for attr in self.attr_list:
                 attr.set(0).wait()
+
+            return super().unstage()
 
     return (VirtualControllableMotorClass, {"attr_keys": formattedComponents.keys()})
 
