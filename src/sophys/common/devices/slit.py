@@ -3,24 +3,16 @@ import typing
 from ophyd import Device, Component
 from ophyd.device import create_device_from_components
 
-from .motor import ControllableMotor, VirtualControllableMotor
+from .motor import ControllableMotor, create_virtual_controllable_motor
 
 
 def _get_optional_kinematic_component(
-    suffix: str,
-    has_kinematic: bool,
-    virtual_motor_components: dict
+    suffix: str, has_kinematic: bool, virtual_motor_components: dict
 ):
     if has_kinematic:
-        return Component(
-            VirtualControllableMotor,
-            str(suffix),
-            components=virtual_motor_components
-        )
-    return Component(
-        ControllableMotor,
-        str(suffix)
-    )
+        klass, kwargs = create_virtual_controllable_motor(virtual_motor_components)
+        return Component(klass, str(suffix), **kwargs)
+    return Component(ControllableMotor, str(suffix))
 
 
 def _create_vertical_components(
@@ -29,7 +21,7 @@ def _create_vertical_components(
     bottom: str,
     gap: typing.Optional[str] = None,
     offset: typing.Optional[str] = None,
-    has_kinematic: bool = True
+    has_kinematic: bool = True,
 ) -> dict:
     """
     Create all the components belonging to the vertical slit device and
@@ -47,9 +39,7 @@ def _create_vertical_components(
         verticalSlitComponents.update(
             {
                 "vertical_gap": _get_optional_kinematic_component(
-                    gap,
-                    has_kinematic,
-                    virtualMotorComponents
+                    gap, has_kinematic, virtualMotorComponents
                 )
             }
         )
@@ -58,9 +48,7 @@ def _create_vertical_components(
         verticalSlitComponents.update(
             {
                 "vertical_offset": _get_optional_kinematic_component(
-                    offset,
-                    has_kinematic,
-                    virtualMotorComponents
+                    offset, has_kinematic, virtualMotorComponents
                 )
             }
         )
@@ -95,7 +83,7 @@ def _create_horizontal_components(
     right: str,
     gap: typing.Optional[str] = None,
     offset: typing.Optional[str] = None,
-    has_kinematic: bool = True
+    has_kinematic: bool = True,
 ) -> dict:
     """
     Create all the components belonging to the horizontal slit device and
@@ -113,9 +101,7 @@ def _create_horizontal_components(
         horizontalSlitComponents.update(
             {
                 "horizontal_gap": _get_optional_kinematic_component(
-                    gap,
-                    has_kinematic,
-                    virtualMotorComponents
+                    gap, has_kinematic, virtualMotorComponents
                 )
             }
         )
@@ -124,9 +110,7 @@ def _create_horizontal_components(
         horizontalSlitComponents.update(
             {
                 "horizontal_offset": _get_optional_kinematic_component(
-                    offset,
-                    has_kinematic,
-                    virtualMotorComponents
+                    offset, has_kinematic, virtualMotorComponents
                 )
             }
         )
@@ -190,42 +174,34 @@ def _create_kinematic_vertical_components(
     gap: str,
     offset: str,
     top: typing.Optional[str] = None,
-    bottom: typing.Optional[str] = None
+    bottom: typing.Optional[str] = None,
 ) -> dict:
     """
-    Create all the components belonging to the vertical slit device 
+    Create all the components belonging to the vertical slit device
     that can be moved through a gap and an offset and return them in a dictionary,
     using them as real motors, while the individual directions are virtual motors.
     """
 
-    virtualMotorComponents = {"vertical_gap": f"{prefix}{gap}", "vertical_offset": f"{prefix}{offset}"}
+    virtualMotorComponents = {
+        "vertical_gap": f"{prefix}{gap}",
+        "vertical_offset": f"{prefix}{offset}",
+    }
 
     verticalSlitComponents = {
         "vertical_gap": Component(ControllableMotor, f"{gap}"),
         "vertical_offset": Component(ControllableMotor, f"{offset}"),
     }
 
+    klass, kwargs = create_virtual_controllable_motor(virtualMotorComponents)
     if top is not None:
         verticalSlitComponents.update(
             {
-                "top": Component(
-                    VirtualControllableMotor,
-                    f"{top}",
-                    components=virtualMotorComponents,
-                ),
+                "top": Component(klass, name=f"{top}"),
             }
         )
 
     if bottom is not None:
-        verticalSlitComponents.update(
-            {
-                "bottom": Component(
-                    VirtualControllableMotor,
-                    f"{bottom}",
-                    components=virtualMotorComponents,
-                )
-            }
-        )
+        verticalSlitComponents.update({"bottom": Component(klass, name=f"{bottom}")})
 
     return verticalSlitComponents
 
@@ -235,42 +211,34 @@ def _create_kinematic_horizontal_components(
     gap: str,
     offset: str,
     left: typing.Optional[str] = None,
-    right: typing.Optional[str] = None
+    right: typing.Optional[str] = None,
 ) -> dict:
     """
-    Create all the components belonging to the horizontal slit device 
+    Create all the components belonging to the horizontal slit device
     that can be moved through a gap and an offset and return them in a dictionary,
     using them as real motors, while the individual directions are virtual motors.
     """
 
-    virtualMotorComponents = {"horizontal_gap": f"{prefix}{gap}", "horizontal_offset": f"{prefix}{offset}"}
+    virtualMotorComponents = {
+        "horizontal_gap": f"{prefix}{gap}",
+        "horizontal_offset": f"{prefix}{offset}",
+    }
 
     horizontalSlitComponents = {
         "horizontal_gap": Component(ControllableMotor, f"{gap}"),
         "horizontal_offset": Component(ControllableMotor, f"{offset}"),
     }
 
+    klass, kwargs = create_virtual_controllable_motor(virtualMotorComponents)
     if left is not None:
         horizontalSlitComponents.update(
             {
-                "left": Component(
-                    VirtualControllableMotor,
-                    f"{left}",
-                    components=virtualMotorComponents,
-                ),
+                "left": Component(klass, name=f"{left}"),
             }
         )
 
     if right is not None:
-        horizontalSlitComponents.update(
-            {
-                "right": Component(
-                    VirtualControllableMotor,
-                    f"{right}",
-                    components=virtualMotorComponents,
-                )
-            }
-        )
+        horizontalSlitComponents.update({"right": Component(klass, name=f"{right}")})
 
     return horizontalSlitComponents
 
