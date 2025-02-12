@@ -55,6 +55,15 @@ class TatuOutputConditionV2(Device):
     delay = FormattedComponent(
         EpicsSignal, "{prefix}DelayIO{output_number}:c{condition_number}"
     )
+    low = FormattedComponent(
+        EpicsSignal, "{prefix}LowPeriodIO{output_number}:c{condition_number}"
+    )
+    high = FormattedComponent(
+        EpicsSignal, "{prefix}HighPeriodIO{output_number}:c{condition_number}"
+    )
+    number_of_pulses = FormattedComponent(
+        EpicsSignal, "{prefix}NPulsesIO{output_number}:c{condition_number}"
+    )
 
     def __init__(self, prefix, condition_number, **kwargs):
         split_prefix = prefix.split("/")
