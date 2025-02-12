@@ -210,16 +210,6 @@ class Tatu9401V2(Tatu9401):
 
     file_name = FormattedComponent(EpicsSignal, "{global_prefix}Filename")
 
-    master_pulse = DynamicDeviceComponent(
-        {
-            "number": (EpicsSignal, "MasterPulseNumber", {"kind": "config"}),
-            "period": (EpicsSignal, "MasterPulsePeriod", {"kind": "config"}),
-            "length": (EpicsSignal, "MasterPulseLength", {"kind": "config"}),
-            "active": (EpicsSignalRO, "Masterpulsing", {"kind": "config"}),
-            "count": (EpicsSignalRO, "IssuedMasterPulses", {"kind": "config"}),
-        }
-    )
-
     def __init__(self, prefix, **kwargs):
         self.global_prefix = prefix[:-1].rpartition(":")[0] + ":"
         super().__init__(prefix, **kwargs)
