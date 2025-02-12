@@ -87,7 +87,7 @@ class TatuOutputCondition(TatuOutputConditionV2):
 
 class TatuOutputV2(Device):
     """
-    All the conditions PVs for a TATU Output port.
+    All the conditions PVs for a TATU V2 Output port.
     """
 
     c1 = FormattedComponent(
