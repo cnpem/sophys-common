@@ -34,9 +34,9 @@ class TatuInput(Device):
         super().__init__(prefix=prefix, **kwargs)
 
 
-class TatuOutputCondition(Device):
+class TatuOutputConditionV2(Device):
     """
-    Base configuration and status PVs for a TATU Output port condition.
+    Base configuration and status PVs for a TATU V2 Output port condition.
     """
 
     changed = FormattedComponent(EpicsSignal, "{prefix}IO{output_number}changed")
@@ -55,15 +55,47 @@ class TatuOutputCondition(Device):
     delay = FormattedComponent(
         EpicsSignal, "{prefix}DelayIO{output_number}:c{condition_number}"
     )
-    pulse = FormattedComponent(
-        EpicsSignal, "{prefix}PulseIO{output_number}:c{condition_number}"
-    )
 
     def __init__(self, prefix, condition_number, **kwargs):
         split_prefix = prefix.split("/")
         self.condition_number = condition_number
         self.output_number = split_prefix[1]
         super().__init__(prefix=split_prefix[0], **kwargs)
+
+
+class TatuOutputCondition(TatuOutputConditionV2):
+    """
+    Base configuration and status PVs for a TATU Output port condition.
+    """
+
+    pulse = FormattedComponent(
+        EpicsSignal, "{prefix}PulseIO{output_number}:c{condition_number}"
+    )
+
+    def __init__(self, prefix, condition_number, **kwargs):
+        super().__init__(prefix, condition_number, **kwargs)
+
+
+class TatuOutputV2(Device):
+    """
+    All the conditions PVs for a TATU Output port.
+    """
+
+    c1 = FormattedComponent(
+        TatuOutputConditionV2, "{prefix}/{output_number}", condition_number="0"
+    )
+    c2 = FormattedComponent(
+        TatuOutputConditionV2, "{prefix}/{output_number}", condition_number="1"
+    )
+    c3 = FormattedComponent(
+        TatuOutputConditionV2, "{prefix}/{output_number}", condition_number="2"
+    )
+
+    logic = FormattedComponent(EpicsSignal, "{prefix}OutputLogicIO{output_number}")
+
+    def __init__(self, prefix, output_number, **kwargs):
+        self.output_number = output_number
+        super().__init__(prefix=prefix, **kwargs)
 
 
 class TatuOutput(Device):
@@ -98,16 +130,6 @@ class TatuBase(Device):
     master_mode = Component(EpicsSignal, "MasterMode", kind="config")
     tatu_stop = Component(EpicsSignal, "Stop", kind="config")
     reset_pulses = Component(EpicsSignal, "Zeropulses", kind="config")
-
-    master_pulse = DynamicDeviceComponent(
-        {
-            "number": (EpicsSignal, "MasterPulseNumber", {"kind": "config"}),
-            "period": (EpicsSignal, "MasterPulsePeriod", {"kind": "config"}),
-            "length": (EpicsSignal, "MasterPulseLength", {"kind": "config"}),
-            "active": (EpicsSignalRO, "MasterPulsing", {"kind": "config"}),
-            "count": (EpicsSignalRO, "IssuedMasterPulses", {"kind": "config"}),
-        }
-    )
 
     input = DynamicDeviceComponent(
         {
@@ -159,6 +181,39 @@ class Tatu9401(TatuBase):
     """
 
     pass
+
+
+class Tatu9401V2(Tatu9401):
+    """
+    TATU V2 device adapted to work with the C-Series module 9401.
+
+    This module consists of four high-speed TTL channels as an input and the other four high-speed TTL channels as an output.
+    """
+
+    output = DynamicDeviceComponent(
+        {
+            "io4": (TatuOutputV2, "", {"output_number": "4"}),
+            "io5": (TatuOutputV2, "", {"output_number": "5"}),
+            "io6": (TatuOutputV2, "", {"output_number": "6"}),
+            "io7": (TatuOutputV2, "", {"output_number": "7"}),
+        }
+    )
+
+    file_name = FormattedComponent(EpicsSignal, "{global_prefix}Filename")
+
+    master_pulse = DynamicDeviceComponent(
+        {
+            "number": (EpicsSignal, "MasterPulseNumber", {"kind": "config"}),
+            "period": (EpicsSignal, "MasterPulsePeriod", {"kind": "config"}),
+            "length": (EpicsSignal, "MasterPulseLength", {"kind": "config"}),
+            "active": (EpicsSignalRO, "Masterpulsing", {"kind": "config"}),
+            "count": (EpicsSignalRO, "IssuedMasterPulses", {"kind": "config"}),
+        }
+    )
+
+    def __init__(self, prefix, **kwargs):
+        self.global_prefix = prefix[:-1].rpartition(":")[0] + ":"
+        super().__init__(prefix, **kwargs)
 
 
 class Tatu9403(TatuBase, CRIO_9403):
