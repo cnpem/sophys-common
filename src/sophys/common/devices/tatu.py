@@ -140,6 +140,16 @@ class TatuBase(Device):
     tatu_stop = Component(EpicsSignal, "Stop", kind="config")
     reset_pulses = Component(EpicsSignal, "Zeropulses", kind="config")
 
+    master_pulse = DynamicDeviceComponent(
+        {
+            "number": (EpicsSignal, "MasterPulseNumber", {"kind": "config"}),
+            "period": (EpicsSignal, "MasterPulsePeriod", {"kind": "config"}),
+            "length": (EpicsSignal, "MasterPulseLength", {"kind": "config"}),
+            "active": (EpicsSignalRO, "MasterPulsing", {"kind": "config"}),
+            "count": (EpicsSignalRO, "IssuedMasterPulses", {"kind": "config"}),
+        }
+    )
+
     input = DynamicDeviceComponent(
         {
             "p0": (TatuInput, "", {"input_number": "0"}),
