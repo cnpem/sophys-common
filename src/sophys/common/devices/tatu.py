@@ -169,15 +169,6 @@ class TatuBase(Device):
         }
     )
 
-    output = DynamicDeviceComponent(
-        {
-            "io4": (TatuOutput, "", {"output_number": "4"}),
-            "io5": (TatuOutput, "", {"output_number": "5"}),
-            "io6": (TatuOutput, "", {"output_number": "6"}),
-            "io7": (TatuOutput, "", {"output_number": "7"}),
-        }
-    )
-
     def __init__(self, prefix, **kwargs):
         self.prefix = prefix
         super().__init__(prefix=prefix, **kwargs)
@@ -209,7 +200,14 @@ class Tatu9401(TatuBase):
     This module consists of four high-speed TTL channels as an input and the other four high-speed TTL channels as an output.
     """
 
-    pass
+    output = DynamicDeviceComponent(
+        {
+            "io4": (TatuOutput, "", {"output_number": "4"}),
+            "io5": (TatuOutput, "", {"output_number": "5"}),
+            "io6": (TatuOutput, "", {"output_number": "6"}),
+            "io7": (TatuOutput, "", {"output_number": "7"}),
+        }
+    )
 
 
 class Tatu9401V2(Tatu9401):
@@ -243,6 +241,15 @@ class Tatu9403(TatuBase, CRIO_9403):
 
     This same sequence is repeated for the other channels in the sequence, four inputs, four outputs, for the first 24 IO ports.
     """
+
+    output = DynamicDeviceComponent(
+        {
+            "io4": (TatuOutput, "", {"output_number": "4"}),
+            "io5": (TatuOutput, "", {"output_number": "5"}),
+            "io6": (TatuOutput, "", {"output_number": "6"}),
+            "io7": (TatuOutput, "", {"output_number": "7"}),
+        }
+    )
 
     input2 = DynamicDeviceComponent(
         {
