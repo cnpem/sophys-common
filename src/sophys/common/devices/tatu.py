@@ -35,6 +35,10 @@ class TatuInput(Device):
 
 
 class TatuOutputBase(Device):
+    """
+    Base configuration and status PVs for a TATU Output port condition.
+    """
+
     changed = FormattedComponent(EpicsSignal, "{prefix}IO{output_number}changed")
     condition = FormattedComponent(
         EpicsSignal, "{prefix}ConditionIO{output_number}:c{condition_number}"
@@ -61,8 +65,9 @@ class TatuOutputBase(Device):
 
 class TatuOutputConditionV2(TatuOutputBase):
     """
-    Base configuration and status PVs for a TATU V2 Output port condition.
+    Configuration and status PVs for a TATU V2 Output port condition.
     """
+
     low = FormattedComponent(
         EpicsSignal, "{prefix}LowPeriodIO{output_number}:c{condition_number}"
     )
@@ -79,7 +84,7 @@ class TatuOutputConditionV2(TatuOutputBase):
 
 class TatuOutputCondition(TatuOutputBase):
     """
-    Base configuration and status PVs for a TATU Output port condition.
+    Configuration and status PVs for a TATU Output port condition.
     """
 
     pulse = FormattedComponent(
