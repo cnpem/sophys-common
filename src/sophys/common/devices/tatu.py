@@ -34,11 +34,7 @@ class TatuInput(Device):
         super().__init__(prefix=prefix, **kwargs)
 
 
-class TatuOutputConditionV2(Device):
-    """
-    Base configuration and status PVs for a TATU V2 Output port condition.
-    """
-
+class TatuOutputBase(Device):
     changed = FormattedComponent(EpicsSignal, "{prefix}IO{output_number}changed")
     condition = FormattedComponent(
         EpicsSignal, "{prefix}ConditionIO{output_number}:c{condition_number}"
@@ -55,6 +51,18 @@ class TatuOutputConditionV2(Device):
     delay = FormattedComponent(
         EpicsSignal, "{prefix}DelayIO{output_number}:c{condition_number}"
     )
+
+    def __init__(self, prefix, condition_number, **kwargs):
+        split_prefix = prefix.split("/")
+        self.condition_number = condition_number
+        self.output_number = split_prefix[1]
+        super().__init__(prefix=split_prefix[0], **kwargs)
+
+
+class TatuOutputConditionV2(TatuOutputBase):
+    """
+    Base configuration and status PVs for a TATU V2 Output port condition.
+    """
     low = FormattedComponent(
         EpicsSignal, "{prefix}LowPeriodIO{output_number}:c{condition_number}"
     )
@@ -66,13 +74,10 @@ class TatuOutputConditionV2(Device):
     )
 
     def __init__(self, prefix, condition_number, **kwargs):
-        split_prefix = prefix.split("/")
-        self.condition_number = condition_number
-        self.output_number = split_prefix[1]
-        super().__init__(prefix=split_prefix[0], **kwargs)
+        super().__init__(prefix, condition_number, **kwargs)
 
 
-class TatuOutputCondition(TatuOutputConditionV2):
+class TatuOutputCondition(TatuOutputBase):
     """
     Base configuration and status PVs for a TATU Output port condition.
     """
