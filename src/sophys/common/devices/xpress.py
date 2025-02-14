@@ -14,9 +14,7 @@ def Xpress(prefix: str, roi_num: int = 1, **kwargs):
     xpressComponents = {
         "hdf5": Component(
             HDF5PluginWithFileStoreV34,
-            "HDF1:",
-            write_path_template="/tmp",
-            read_attrs=[]
+            "HDF1:"
         ),
         "cam": Component(Xspress3DetectorCamV33, "det1:")
     }
