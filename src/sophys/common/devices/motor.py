@@ -38,7 +38,7 @@ class ControllableMotor(EpicsMotor):
         self.stage_sigs["enable_control"] = 1
 
 
-def create_virtual_controllable_motor(components):
+def _create_virtual_controllable_motor(components):
     """
     Custom EpicsMotor that enables control of a list of motors
     before a plan and disables them after.
@@ -142,7 +142,7 @@ def MotorGroup(prefix, motors_suffixes, name, **kwargs):
         if isinstance(suffix, tuple):
             args["components"] = suffix[1]
             suffix = suffix[0]
-            deviceClass, comp_kwargs = create_virtual_controllable_motor(suffix[1])
+            deviceClass, comp_kwargs = _create_virtual_controllable_motor(suffix[1])
 
         components[key] = Component(deviceClass, prefix=suffix, **comp_kwargs)
 

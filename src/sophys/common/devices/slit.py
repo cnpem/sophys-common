@@ -3,14 +3,14 @@ import typing
 from ophyd import Device, Component
 from ophyd.device import create_device_from_components
 
-from .motor import ControllableMotor, create_virtual_controllable_motor
+from .motor import ControllableMotor, _create_virtual_controllable_motor
 
 
 def _get_optional_kinematic_component(
     suffix: str, has_kinematic: bool, virtual_motor_components: dict
 ):
     if has_kinematic:
-        klass, kwargs = create_virtual_controllable_motor(virtual_motor_components)
+        klass, kwargs = _create_virtual_controllable_motor(virtual_motor_components)
         return Component(klass, str(suffix), **kwargs)
     return Component(ControllableMotor, str(suffix))
 
@@ -192,7 +192,7 @@ def _create_kinematic_vertical_components(
         "vertical_offset": Component(ControllableMotor, f"{offset}"),
     }
 
-    klass, kwargs = create_virtual_controllable_motor(virtualMotorComponents)
+    klass, kwargs = _create_virtual_controllable_motor(virtualMotorComponents)
     if top is not None:
         verticalSlitComponents.update(
             {
@@ -229,7 +229,7 @@ def _create_kinematic_horizontal_components(
         "horizontal_offset": Component(ControllableMotor, f"{offset}"),
     }
 
-    klass, kwargs = create_virtual_controllable_motor(virtualMotorComponents)
+    klass, kwargs = _create_virtual_controllable_motor(virtualMotorComponents)
     if left is not None:
         horizontalSlitComponents.update(
             {
