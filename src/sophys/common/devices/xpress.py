@@ -12,18 +12,20 @@ class XpressBase(SingleTrigger, DetectorBase):
 
 def Xpress(prefix: str, roi_num: int = 1, **kwargs):
     xpressComponents = {
-        "hdf5": Component(
-            HDF5PluginWithFileStoreV34,
-            "HDF1:"
-        ),
-        "cam": Component(Xspress3DetectorCamV33, "det1:")
+        "hdf5": Component(HDF5PluginWithFileStoreV34, "HDF1:"),
+        "cam": Component(Xspress3DetectorCamV33, "det1:"),
     }
     for num in range(1, roi_num + 1):
         for mca_num in range(1, 5):
-            xpressComponents.update({
-                f"mca{mca_num}roi_{num}": Component(ROIStatNPlugin_V25, f"MCA{mca_num}ROI:{num}:")
-            })
+            xpressComponents.update(
+                {
+                    f"mca{mca_num}roi_{num}": Component(
+                        ROIStatNPlugin_V25, f"MCA{mca_num}ROI:{num}:"
+                    )
+                }
+            )
 
     xpress = create_device_from_components(
-        name="xpress", base_class=XpressBase, **xpressComponents)
+        name="xpress", base_class=XpressBase, **xpressComponents
+    )
     return xpress(prefix=prefix, **kwargs)
