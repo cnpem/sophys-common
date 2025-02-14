@@ -1,0 +1,22 @@
+on:
+  pull_request:
+    branches:
+      - main
+
+jobs:
+  linting:
+    name: Run pre-commit
+    runs-on: ubuntu-22.04
+    steps:
+      - name: Setup Python
+        uses: actions/setup-python@v5.3.0
+        with:
+          python-version: 3.12
+      - uses: actions/checkout@v4
+      - name: Acquire changed files
+        id: changed_files
+        uses: tj-actions/changed-files@v45.0.5
+      - name: Run pre-commit on the changed files
+        uses: pre-commit/action@v3.0.1
+        with:
+          extra_args: --files ${{ steps.changed_files.outputs.all_changed_files}}
