@@ -92,7 +92,19 @@ TATU - Timing and Trigger Unit
         :toctree: _generated
         :template: device_attr_list_embed.rst
 
+        sophys.common.devices.tatu.TatuOutputConditionV2
+
+    .. autosummary::
+        :toctree: _generated
+        :template: device_attr_list_embed.rst
+
         sophys.common.devices.tatu.TatuOutput
+
+    .. autosummary::
+        :toctree: _generated
+        :template: device_attr_list_embed.rst
+
+        sophys.common.devices.tatu.TatuOutputV2
 
     .. autosummary::
         :toctree: _generated
@@ -110,9 +122,17 @@ TATU - Timing and Trigger Unit
         :toctree: _generated
         :template: device_attr_list_embed.rst
 
+        sophys.common.devices.tatu.Tatu9401V2
+
+    .. autosummary::
+        :toctree: _generated
+        :template: device_attr_list_embed.rst
+
         sophys.common.devices.tatu.Tatu9403
 
 .. include:: _generated/sophys.common.devices.tatu.Tatu9401.rst
+
+.. include:: _generated/sophys.common.devices.tatu.Tatu9401V2.rst
 
 .. include:: _generated/sophys.common.devices.tatu.Tatu9403.rst
 
@@ -121,7 +141,11 @@ Each input and output are themselves Ophyd devices with some specific signals:
     .. include:: _generated/sophys.common.devices.tatu.TatuInput.rst
 
     .. include:: _generated/sophys.common.devices.tatu.TatuOutput.rst
+            .
+    .. include:: _generated/sophys.common.devices.tatu.TatuOutputV2.rst
 
     Each output condition, in turn, has its own signals:
 
         .. include:: _generated/sophys.common.devices.tatu.TatuOutputCondition.rst
+        .. include:: _generated/sophys.common.devices.tatu.TatuOutputConditionV2.rst
+
