@@ -7,14 +7,12 @@ from .cam import Xspress3DetectorCamV33
 
 
 class XspressBase(SingleTrigger, DetectorBase):
-    pass
+    cam = Component(Xspress3DetectorCamV33, "det1:")
+    hdf5 = Component(HDF5PluginWithFileStoreV34, "HDF1:")
 
 
 def Xspress(prefix: str, rois_per_mca: int = 1, **kwargs):
-    xspressComponents = {
-        "hdf5": Component(HDF5PluginWithFileStoreV34, "HDF1:"),
-        "cam": Component(Xspress3DetectorCamV33, "det1:"),
-    }
+    xspressComponents = dict()
     for mca_num in range(1, 5):
         for roi_num in range(1, rois_per_mca + 1):
             xspressComponents.update(
