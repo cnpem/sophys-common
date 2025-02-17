@@ -10,17 +10,17 @@ class XspressBase(SingleTrigger, DetectorBase):
     pass
 
 
-def Xspress(prefix: str, roi_num: int = 1, **kwargs):
+def Xspress(prefix: str, rois_per_mca: int = 1, **kwargs):
     xspressComponents = {
         "hdf5": Component(HDF5PluginWithFileStoreV34, "HDF1:"),
         "cam": Component(Xspress3DetectorCamV33, "det1:"),
     }
-    for num in range(1, roi_num + 1):
-        for mca_num in range(1, 5):
+    for mca_num in range(1, 5):
+        for roi_num in range(1, rois_per_mca + 1):
             xspressComponents.update(
                 {
-                    f"mca{mca_num}roi_{num}": Component(
-                        ROIStatNPlugin_V25, f"MCA{mca_num}ROI:{num}:"
+                    f"mca{mca_num}roi_{roi_num}": Component(
+                        ROIStatNPlugin_V25, f"MCA{mca_num}ROI:{roi_num}:"
                     )
                 }
             )
