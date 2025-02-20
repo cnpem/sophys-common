@@ -11,6 +11,8 @@ import msgpack_numpy as _m
 from kafka import KafkaConsumer
 from kafka.structs import TopicPartition
 
+from event_model import EventPage, unpack_event_page
+
 
 def _get_uid_from_event_data(event_data: dict):
     return event_data.get("uid", None)
@@ -83,6 +85,14 @@ class DocumentDictionary(dict):
         event_data : dict
             The event data, containing all the relevant event data, as defined by Bluesky's event model.
         """
+        # Pre-filter EventPage documents into a series of Events.
+        if event_name == "event_page":
+            event_gen = unpack_event_page(EventPage(event_data))
+            for event in event_gen:
+                self.append("event", event)
+
+            return
+
         self._logger.debug(
             "Appending data to DocumentDict: {} {}".format(event_name, event_data)
         )
