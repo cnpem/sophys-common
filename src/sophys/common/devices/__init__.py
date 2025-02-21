@@ -7,7 +7,6 @@ from .mobipix import Mobipix, MobipixEnergyThresholdSetter
 from .motor import (
     ExtendedEpicsMotor,
     ControllableMotor,
-    VirtualControllableMotor,
     MotorGroup,
 )
 from .pilatus_300k import Pilatus, PilatusWithoutHDF5
