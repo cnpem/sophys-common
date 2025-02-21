@@ -131,6 +131,24 @@ def test_basic_custom_plan(
     assert len(docs) == 4, docs.get_raw_data()
 
 
+def test_basic_fly_plan(
+    good_monitor, run_engine_without_md, incomplete_documents, save_queue: queue.Queue
+):
+    def custom_plan():
+        flyer = hw().flyer1
+        yield from bp.fly([flyer])
+
+    uid, *_ = run_engine_without_md(custom_plan())
+
+    _wait(lambda: uid not in incomplete_documents)
+
+    docs = save_queue.get(True, timeout=2.0)
+    assert docs is not None
+
+    # One start doc, one descriptor doc, twenty event doc (from 1 EventPage), one stop doc
+    assert len(docs) == 23, docs.get_raw_data()
+
+
 def test_basic_custom_plan_with_two_descriptor_documents(
     good_monitor, run_engine_without_md, incomplete_documents, save_queue: queue.Queue
 ):
