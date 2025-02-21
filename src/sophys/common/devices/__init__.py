@@ -12,7 +12,7 @@ from .motor import (
 )
 from .pilatus_300k import Pilatus, PilatusWithoutHDF5
 from .pimega import Pimega, PimegaFlyScan
-from .vortex import Vortex
+from .xspress import Xspress
 from .storage_ring import StorageRing
 from .tatu import Tatu9401, Tatu9403, Tatu9401V2
 from .dcm_lite import DcmLite
