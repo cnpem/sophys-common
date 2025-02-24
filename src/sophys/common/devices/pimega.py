@@ -52,8 +52,13 @@ class PimegaAcquire(Device):
     def subscribe(self, callback, event_type=None, run=True):
         return self.acquire.subscribe(callback, event_type, run)
 
+    def check_value_zero(self, value):
+        # We can be called either with an integer, or an automatically
+        # generated namedtuple with both acquire and capture desired values.
+        return value == 0 or (isinstance(value, tuple) and value.acquire == 0)
+
     def set(self, value, **kwargs):
-        if value == 0:
+        if self.check_value_zero(value):
             # Stop both the backend and the detector
             self.acquire.set(0).wait(timeout=30.0)
             # In practice, this does nothing. But it doesn't hurt anyone :-)
@@ -66,7 +71,7 @@ class PimegaAcquire(Device):
 
     # Needed for code calling put directly (namely SingleTrigger)
     def put(self, value, **kwargs):
-        if value == 0:
+        if self.check_value_zero(value):
             # Stop both the backend and the detector
             self.acquire.put(0, **kwargs)
             # In practice, this does nothing. But it doesn't hurt anyone :-)
