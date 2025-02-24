@@ -64,6 +64,19 @@ class PimegaAcquire(Device):
             # Send start signal to chips. This also checks that the Capture one has finished.
             return self.acquire.set(1, **kwargs)
 
+    # Needed for code calling put directly (namely SingleTrigger)
+    def put(self, value, **kwargs):
+        if value == 0:
+            # Stop both the backend and the detector
+            self.acquire.put(0, **kwargs)
+            # In practice, this does nothing. But it doesn't hurt anyone :-)
+            self.capture.put(0, **kwargs)
+        else:
+            # Start backend
+            self.capture.put(1, **kwargs)
+            # Send start signal to chips. This also checks that the Capture one has finished.
+            self.acquire.put(1, **kwargs)
+
 
 class PimegaCam(CamBase_V33):
 
