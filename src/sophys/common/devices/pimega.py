@@ -1,4 +1,5 @@
 #!/usr/bin/env python3
+from collections import OrderedDict
 from time import time
 from ophyd import (
     ADComponent,
@@ -7,6 +8,8 @@ from ophyd import (
     EpicsSignalWithRBV,
     SingleTrigger,
     Device,
+    BlueskyInterface,
+    Kind,
 )
 from ophyd.status import SubscriptionStatus
 from ophyd.flyers import FlyerInterface
@@ -84,7 +87,6 @@ class PimegaAcquire(Device):
 
 
 class PimegaCam(CamBase_V33):
-
     magic_start = ADComponent(EpicsSignal, "MagicStart")
     trigger_mode = ADComponent(EpicsSignalWithRBV, "TriggerMode", string=True)
     acquire = ADComponent(PimegaAcquire, "")
@@ -116,6 +118,24 @@ class PimegaCam(CamBase_V33):
 
     def __init__(self, prefix, name, **kwargs):
         super(PimegaCam, self).__init__(prefix, name=name, **kwargs)
+
+    def describe(self):
+        res = BlueskyInterface.describe()
+        for _, component in self._get_components_of_kind(Kind.normal):
+            cpt_describe = component.describe()
+            if cpt_describe[component.name].get("units", None) is None:
+                del cpt_describe[component.name]["units"]
+            res.update(cpt_describe)
+        return res
+
+    def describe_configuration(self):
+        res = OrderedDict()
+        for _, component in self._get_components_of_kind(Kind.config):
+            cpt_describe = component.describe_configuration()
+            if cpt_describe[component.name].get("units", None) is None:
+                del cpt_describe[component.name]["units"]
+            res.update(cpt_describe)
+        return res
 
 
 class PimegaDetector(DetectorBase):
