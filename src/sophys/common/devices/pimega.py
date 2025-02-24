@@ -43,6 +43,9 @@ class Digital2AnalogConverter(Device):
 class PimegaAcquire(Device):
     """Handle the necessary PVs to start and stop the pimega acquisition."""
 
+    SUB_VALUE = "value"
+    _default_sub = SUB_VALUE
+
     acquire = ADComponent(EpicsSignalWithRBV, "Acquire")
     capture = ADComponent(EpicsSignalWithRBV, "Capture")
 
