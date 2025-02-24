@@ -116,6 +116,13 @@ class PimegaCam(CamBase_V33):
     auto_increment = ADComponent(EpicsSignalWithRBV, "AutoIncrement", string=True)
     auto_save = ADComponent(EpicsSignalWithRBV, "AutoSave", string=True)
 
+    ioc_status_message = ADComponent(
+        EpicsSignalRO, "IOCStatusMessage_RBV", string=True, kind="omitted"
+    )
+    backend_status_message = ADComponent(
+        EpicsSignalRO, "ServerStatusMessage_RBV", string=True, kind="omitted"
+    )
+
     def __init__(self, prefix, name, **kwargs):
         super(PimegaCam, self).__init__(prefix, name=name, **kwargs)
 
@@ -145,6 +152,19 @@ class PimegaDetector(DetectorBase):
 class Pimega(SingleTrigger, PimegaDetector):
     def __init__(self, name, prefix, **kwargs):
         super(Pimega, self).__init__(prefix, name=name, **kwargs)
+
+        self.cam.ioc_status_message.subscribe(
+            self._ioc_status_message_changed, run=False
+        )
+
+    def _ioc_status_message_changed(self, value=None, old_value=None, **kwargs):
+        if self._status is None or self._status.done:
+            return
+
+        if value == "Cannot start":
+            exc = Exception(self.cam.backend_status_message.get())
+            self._status.set_exception(exc)
+            return
 
 
 class PimegaFlyScan(Pimega, FlyerInterface):
