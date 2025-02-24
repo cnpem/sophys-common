@@ -10,6 +10,7 @@ from ophyd import (
 )
 from ophyd.status import SubscriptionStatus
 from ophyd.flyers import FlyerInterface
+from ophyd.utils.epics_pvs import AlarmSeverity
 from ophyd.areadetector.detectors import DetectorBase
 from ophyd.areadetector.paths import EpicsPathSignal
 from .cam import CamBase_V33
@@ -114,6 +115,13 @@ class PimegaCam(CamBase_V33):
     auto_increment = ADComponent(EpicsSignalWithRBV, "AutoIncrement", string=True)
     auto_save = ADComponent(EpicsSignalWithRBV, "AutoSave", string=True)
 
+    ioc_status_message = ADComponent(
+        EpicsSignalRO, "IOCStatusMessage_RBV", string=True, kind="omitted"
+    )
+    backend_status_message = ADComponent(
+        EpicsSignalRO, "ServerStatusMessage_RBV", string=True, kind="omitted"
+    )
+
     def __init__(self, prefix, name, **kwargs):
         super(PimegaCam, self).__init__(prefix, name=name, **kwargs)
 
@@ -125,6 +133,35 @@ class PimegaDetector(DetectorBase):
 class Pimega(SingleTrigger, PimegaDetector):
     def __init__(self, name, prefix, **kwargs):
         super(Pimega, self).__init__(prefix, name=name, **kwargs)
+
+    def stage(self):
+        # Make sure the current acquisition status is 'Done'
+        self._acquisition_signal.set(0).wait(timeout=30.0)
+
+        self._acquisition_signal.subscribe(
+            self._acquire_setpoint_changed, EpicsSignal.SUB_SETPOINT
+        )
+
+        return super().stage()
+
+    def unstage(self):
+        super().unstage()
+
+        self._acquisition_signal.unsubscribe(self._acquire_setpoint_changed)
+
+    def _acquire_setpoint_changed(self, value, severity, **kwargs):
+        if self._status is None or self._status.done:
+            return
+
+        if value == 1 and severity == AlarmSeverity.INVALID:
+            exc_messages = (
+                "An alarm has been raised by the IOC, with the following status messages:",
+                f"IOC: {self.cam.ioc_status_message.get()}",
+                f"Backend: {self.cam.backend_status_message.get()}",
+            )
+            exc = Exception(*exc_messages)
+            self._status.set_exception(exc)
+            return
 
 
 class PimegaFlyScan(Pimega, FlyerInterface):
