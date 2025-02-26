@@ -31,8 +31,8 @@ Sophys stands for **S**\ irius **Oph**\ yd and Bluesk\ **y** utilitie\ **s**\ . 
     :caption: Links
     :hidden:
 
-    Source code <https://gitlab.cnpem.br/SOL/bluesky/sophys-common>
-    Issues <https://gitlab.cnpem.br/SOL/bluesky/sophys-common/-/issues>
+    Source code <https://github.com/cnpem/sophys-common>
+    Issues <https://github.com/cnpem/sophys-common/issues>
 
 
 .. _Bluesky: https://blueskyproject.io
