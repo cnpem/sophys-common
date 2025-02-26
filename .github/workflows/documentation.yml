@@ -1,5 +1,4 @@
-on:
-  workflow_dispatch:
+on: [pull_request, workflow_dispatch]
 
 jobs:
   documentation-build:
@@ -19,9 +18,7 @@ jobs:
       - name: Build documentation
         run: |
           cd docs/
-          make html
-          cd source/
-          sphinx-build -b html . ../build
+          ./build_docs.sh
       - name: Upload artifacts
         uses: actions/upload-pages-artifact@v3
         with:
@@ -29,6 +26,7 @@ jobs:
 
   deploy-documentation:
     name: Deploy documentation to GitHub Pages
+    if: github.event_name == 'workflow_dispatch'
     runs-on: ubuntu-22.04
     needs: documentation-build
     permissions:
