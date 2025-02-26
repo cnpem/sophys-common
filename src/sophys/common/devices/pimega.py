@@ -1,4 +1,5 @@
 #!/usr/bin/env python3
+from collections import OrderedDict
 from time import time
 from ophyd import (
     ADComponent,
@@ -7,6 +8,8 @@ from ophyd import (
     EpicsSignalWithRBV,
     SingleTrigger,
     Device,
+    BlueskyInterface,
+    Kind,
 )
 from ophyd.status import SubscriptionStatus
 from ophyd.flyers import FlyerInterface
@@ -43,14 +46,22 @@ class Digital2AnalogConverter(Device):
 class PimegaAcquire(Device):
     """Handle the necessary PVs to start and stop the pimega acquisition."""
 
+    SUB_VALUE = "value"
+    _default_sub = SUB_VALUE
+
     acquire = ADComponent(EpicsSignalWithRBV, "Acquire")
     capture = ADComponent(EpicsSignalWithRBV, "Capture")
 
     def subscribe(self, callback, event_type=None, run=True):
         return self.acquire.subscribe(callback, event_type, run)
 
+    def check_value_zero(self, value):
+        # We can be called either with an integer, or an automatically
+        # generated namedtuple with both acquire and capture desired values.
+        return value == 0 or (isinstance(value, tuple) and value.acquire == 0)
+
     def set(self, value, **kwargs):
-        if value == 0:
+        if self.check_value_zero(value):
             # Stop both the backend and the detector
             self.acquire.set(0).wait(timeout=30.0)
             # In practice, this does nothing. But it doesn't hurt anyone :-)
@@ -61,9 +72,21 @@ class PimegaAcquire(Device):
             # Send start signal to chips. This also checks that the Capture one has finished.
             return self.acquire.set(1, **kwargs)
 
+    # Needed for code calling put directly (namely SingleTrigger)
+    def put(self, value, **kwargs):
+        if self.check_value_zero(value):
+            # Stop both the backend and the detector
+            self.acquire.put(0, **kwargs)
+            # In practice, this does nothing. But it doesn't hurt anyone :-)
+            self.capture.put(0, **kwargs)
+        else:
+            # Start backend
+            self.capture.put(1, **kwargs)
+            # Send start signal to chips. This also checks that the Capture one has finished.
+            self.acquire.put(1, **kwargs)
+
 
 class PimegaCam(CamBase_V33):
-
     magic_start = ADComponent(EpicsSignal, "MagicStart")
     trigger_mode = ADComponent(EpicsSignalWithRBV, "TriggerMode", string=True)
     acquire = ADComponent(PimegaAcquire, "")
@@ -93,8 +116,33 @@ class PimegaCam(CamBase_V33):
     auto_increment = ADComponent(EpicsSignalWithRBV, "AutoIncrement", string=True)
     auto_save = ADComponent(EpicsSignalWithRBV, "AutoSave", string=True)
 
+    ioc_status_message = ADComponent(
+        EpicsSignalRO, "IOCStatusMessage_RBV", string=True, kind="omitted"
+    )
+    backend_status_message = ADComponent(
+        EpicsSignalRO, "ServerStatusMessage_RBV", string=True, kind="omitted"
+    )
+
     def __init__(self, prefix, name, **kwargs):
         super(PimegaCam, self).__init__(prefix, name=name, **kwargs)
+
+    def describe(self):
+        res = BlueskyInterface.describe()
+        for _, component in self._get_components_of_kind(Kind.normal):
+            cpt_describe = component.describe()
+            if cpt_describe[component.name].get("units", None) is None:
+                del cpt_describe[component.name]["units"]
+            res.update(cpt_describe)
+        return res
+
+    def describe_configuration(self):
+        res = OrderedDict()
+        for _, component in self._get_components_of_kind(Kind.config):
+            cpt_describe = component.describe_configuration()
+            if cpt_describe[component.name].get("units", None) is None:
+                del cpt_describe[component.name]["units"]
+            res.update(cpt_describe)
+        return res
 
 
 class PimegaDetector(DetectorBase):
@@ -104,6 +152,19 @@ class PimegaDetector(DetectorBase):
 class Pimega(SingleTrigger, PimegaDetector):
     def __init__(self, name, prefix, **kwargs):
         super(Pimega, self).__init__(prefix, name=name, **kwargs)
+
+        self.cam.ioc_status_message.subscribe(
+            self._ioc_status_message_changed, run=False
+        )
+
+    def _ioc_status_message_changed(self, value=None, old_value=None, **kwargs):
+        if self._status is None or self._status.done:
+            return
+
+        if value == "Cannot start":
+            exc = Exception(self.cam.backend_status_message.get())
+            self._status.set_exception(exc)
+            return
 
 
 class PimegaFlyScan(Pimega, FlyerInterface):
