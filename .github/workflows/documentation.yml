@@ -1,5 +1,4 @@
-on:
-  workflow_dispatch:
+on: [pull_request, workflow_dispatch]
 
 jobs:
   documentation-build:
@@ -27,6 +26,7 @@ jobs:
 
   deploy-documentation:
     name: Deploy documentation to GitHub Pages
+    if: github.event_name == 'workflow_dispatch'
     runs-on: ubuntu-22.04
     needs: documentation-build
     permissions:
