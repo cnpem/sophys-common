@@ -141,7 +141,7 @@ Each input and output are themselves Ophyd devices with some specific signals:
     .. include:: _generated/sophys.common.devices.tatu.TatuInput.rst
 
     .. include:: _generated/sophys.common.devices.tatu.TatuOutput.rst
-            .
+
     .. include:: _generated/sophys.common.devices.tatu.TatuOutputV2.rst
 
     Each output condition, in turn, has its own signals:
