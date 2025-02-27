@@ -53,6 +53,9 @@ class PimegaAcquire(Device):
     def subscribe(self, callback, event_type=None, run=True):
         return self.acquire.subscribe(callback, event_type, run)
 
+    def unsubscribe(self, cid):
+        return self.acquire.unsubscribe(cid)
+
     def check_value_zero(self, value):
         # We can be called either with an integer, or an automatically
         # generated namedtuple with both acquire and capture desired values.
