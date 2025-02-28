@@ -5,7 +5,6 @@ from ophyd import (
     EpicsSignal,
     EpicsSignalRO,
     EpicsSignalWithRBV,
-    SingleTrigger,
     Device,
 )
 from ophyd.status import SubscriptionStatus
@@ -13,6 +12,7 @@ from ophyd.flyers import FlyerInterface
 from ophyd.utils.epics_pvs import AlarmSeverity
 from ophyd.areadetector.detectors import DetectorBase
 from ophyd.areadetector.paths import EpicsPathSignal
+from ophyd.areadetector.trigger_mixins import ADTriggerStatus, SingleTrigger
 from .cam import CamBase_V33
 
 from ..utils.status import PremadeStatus
@@ -133,7 +133,19 @@ class PimegaDetector(DetectorBase):
     cam = ADComponent(PimegaCam, "cam1:", kind="config")
 
 
+class PimegaTriggerStatus(ADTriggerStatus):
+    def __str__(self):
+        # NOTE: Arbitrary timeout, just in case something goes horribly wrong.
+        return "\n".join(self.exception(timeout=2.0).args)
+
+
+class PimegaStartAcquisitionException(Exception):
+    pass
+
+
 class Pimega(SingleTrigger, PimegaDetector):
+    _status_type = PimegaTriggerStatus
+
     def __init__(self, name, prefix, **kwargs):
         super(Pimega, self).__init__(prefix, name=name, **kwargs)
 
@@ -162,7 +174,7 @@ class Pimega(SingleTrigger, PimegaDetector):
                 f"IOC: {self.cam.ioc_status_message.get()}",
                 f"Backend: {self.cam.backend_status_message.get()}",
             )
-            exc = Exception(*exc_messages)
+            exc = PimegaStartAcquisitionException(*exc_messages)
             self._status.set_exception(exc)
             return
 
