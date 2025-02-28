@@ -23,3 +23,4 @@ from .ocean import OceanOpticsSpectrometer
 from .power_pmac import PowerPmacScan
 from .aravis import AravisDetector
 from .hvps import HVPS
+from .pmt import Photomultiplier
