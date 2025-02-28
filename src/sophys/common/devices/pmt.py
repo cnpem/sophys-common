@@ -9,4 +9,4 @@ class Photomultiplier(Device):
         EpicsSignal, "getVoltageRampDAC", write_pv="setVoltageRampDAC"
     )
     status = Component(EpicsSignalRO, "Status")
-    stop = Component(EpicsSignalRO, "Stop")
+    stop_pmt = Component(EpicsSignalRO, "Stop")
