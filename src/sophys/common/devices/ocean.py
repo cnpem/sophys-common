@@ -30,9 +30,7 @@ class OceanOpticsSpectrometer(Device):
     boxcar = Component(EpicsSignal, "SetBoxcar", lazy=True)
 
     spectra = Component(EpicsSignalRO, "Spectra", lazy=True)
-    dark_corrected_spectra = Component(
-        EpicsSignalRO, "DarkCorrectedSpectra", lazy=True, kind="hinted"
-    )
+    dark_corrected_spectra = Component(EpicsSignalRO, "DarkCorrectedSpectra", lazy=True)
     processed_spectra = Component(EpicsSignalRO, "Spectra:Processed", lazy=True)
     spectra_axis = Component(EpicsSignalRO, "SpectraAxis", lazy=True)
 
