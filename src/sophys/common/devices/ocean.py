@@ -77,3 +77,7 @@ class OceanOpticsSpectrometer(Device):
     script_status = Component(EpicsSignal, "scriptStatus", lazy=True, string=True)
 
     det_temperature = Component(OceanDetectorTemperature, "DetectorTemp", lazy=True)
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.lazy_wait_for_connection = False
