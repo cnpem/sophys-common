@@ -6,6 +6,8 @@ from ophyd import (
     EpicsSignal,
     EpicsSignalRO,
 )
+from ophyd.flyers import FlyerInterface
+from ophyd.status import StatusBase
 
 from .crio import CRIO_9403
 
@@ -286,3 +288,20 @@ class Tatu9403(TatuBase, CRIO_9403):
             "io23": (TatuOutput, "", {"output_number": "23"}),
         }
     )
+
+
+class TatuFlyScan(FlyerInterface):
+
+    def kickoff(self):
+        return self.activate.set(1)
+
+    def complete(self):
+        sts = StatusBase()
+        sts.set_finished()
+        return sts
+
+    def describe_collect(self):
+        return {}
+
+    def collect(self):
+        return []
