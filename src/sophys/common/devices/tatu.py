@@ -7,7 +7,7 @@ from ophyd import (
     EpicsSignalRO,
 )
 from ophyd.flyers import FlyerInterface
-from ophyd.status import StatusBase
+from sophys.common.utils.status import PremadeStatus
 
 from .crio import CRIO_9403
 
@@ -296,9 +296,7 @@ class TatuFlyScan(FlyerInterface):
         return self.activate.set(1)
 
     def complete(self):
-        sts = StatusBase()
-        sts.set_finished()
-        return sts
+        return PremadeStatus(success=True)
 
     def describe_collect(self):
         return {}
