@@ -4,7 +4,7 @@ Utility
 Callbacks
 ---------
 
-.. automodule:: sophys.common.utils.callbacks
+.. automodule:: sophys.common.utils.kafka.callback
     :members:
     :show-inheritance:
 
