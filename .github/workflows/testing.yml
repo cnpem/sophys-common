@@ -15,6 +15,9 @@ jobs:
         with:
           python-version: 3.12
       - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          fetch-tags: true
       - name: Install package
         run: pip install ".[all]"
       - name: Run Kafka

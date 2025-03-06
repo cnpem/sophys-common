@@ -10,6 +10,9 @@ jobs:
         with:
           python-version: 3.12
       - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          fetch-tags: true
       - name: Acquire changed files
         id: changed_files
         uses: tj-actions/changed-files@v45.0.5
