@@ -35,7 +35,7 @@ class PicoloChannel(Device):
         EpicsSignalWithRBV, "AcquireMode", string=True, kind="config"
     )
     state = Component(EpicsSignalRO, "State", string=True, kind="config")
-    analog_bw = Component(EpicsSignalRO, "AnalogBW_RBV", kind="omitted")
+    analog_bw = Component(EpicsSignalRO, "BW_RBV", kind="omitted")
 
     user_offset = Component(EpicsSignalWithRBV, "UserOffset", kind="config")
     exp_offset = Component(EpicsSignalWithRBV, "ExpOffset", kind="config")
