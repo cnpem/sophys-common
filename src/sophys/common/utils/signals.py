@@ -191,6 +191,16 @@ class EpicsSignalMon(EpicsSignalRO):
         super().__init__(prefix + "-Mon", **kwargs)
 
 
+class EpicsSignalWithGetSet(EpicsSignal):
+    """
+    A simple Signal with a similar logic of EpicsSignalWithRBV, but
+    pvname has the 'get' prefix and write_pv has the 'set' prefix.
+    """
+
+    def __init__(self, prefix, **kwargs):
+        super().__init__("get" + prefix, write_pv="set" + prefix, **kwargs)
+
+
 class EpicsSignalWithRBSP(EpicsSignal):
     """
     A simple Signal with a similar logic of EpicsSignalWithRBV, but

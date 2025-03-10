@@ -1,12 +1,11 @@
-from ophyd import Device, Component, EpicsSignal, EpicsSignalRO
+from ophyd import Device, Component, EpicsSignalRO
+from sophys.common.utils import EpicsSignalWithGetSet
 
 
 class Photomultiplier(Device):
 
-    voltage = Component(EpicsSignal, "getVoltageDAC", write_pv="setVoltageDAC")
-    current = Component(EpicsSignal, "getCurrentDAC", write_pv="setCurrentDAC")
-    voltage_ramp = Component(
-        EpicsSignal, "getVoltageRampDAC", write_pv="setVoltageRampDAC"
-    )
+    voltage = Component(EpicsSignalWithGetSet, "VoltageDAC")
+    current = Component(EpicsSignalWithGetSet, "CurrentDAC")
+    voltage_ramp = Component(EpicsSignalWithGetSet, "VoltageRampDAC")
     status = Component(EpicsSignalRO, "Status")
     stop_pmt = Component(EpicsSignalRO, "Stop")
