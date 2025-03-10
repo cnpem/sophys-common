@@ -15,6 +15,23 @@ from ophyd.status import SubscriptionStatus, StatusBase, Status
 from ..utils.status import PremadeStatus
 
 
+class PicoloAcquisitionTime(EpicsSignalWithRBV):
+    """Device that handles set enum acquisition time using a float value in ms."""
+
+    def set(self, acquisition_time: float, **kwargs):
+        enums = self.metadata["enum_strs"]
+        enums_float = [(float(item.replace(" ms", "")) / 1000) for item in enums]
+        if acquisition_time not in enums_float:
+            return PremadeStatus(
+                False,
+                exception=ValueError(
+                    f"The acquisition time '{acquisition_time}' is not a valid option."
+                ),
+            )
+
+        return super().set(f"{int(acquisition_time * 1000)} ms", **kwargs)
+
+
 class PicoloChannel(Device):
     """
     Device for one of the channels in the Picolo picoammeter.
@@ -36,7 +53,9 @@ class PicoloChannel(Device):
     )
     state = Component(EpicsSignalRO, "State", string=True, kind="config")
     analog_bw = Component(EpicsSignalRO, "BW_RBV", kind="omitted")
-
+    acquisition_time = Component(
+        PicoloAcquisitionTime, "AcquisitionTime", string=True, kind="config"
+    )
     user_offset = Component(EpicsSignalWithRBV, "UserOffset", kind="config")
     exp_offset = Component(EpicsSignalWithRBV, "ExpOffset", kind="config")
     set_zero = Component(EpicsSignal, "SetZero", kind="omitted")
@@ -44,23 +63,6 @@ class PicoloChannel(Device):
     def __init__(self, prefix, **kwargs):
         self.continuous_value = prefix[:-1]
         super().__init__(prefix=prefix, **kwargs)
-
-
-class PicoloAcquisitionTime(EpicsSignalWithRBV):
-    """Device that handles set enum acquisition time using a float value in ms."""
-
-    def set(self, acquisition_time: float, **kwargs):
-        enums = self.metadata["enum_strs"]
-        enums_float = [(float(item.replace(" ms", "")) / 1000) for item in enums]
-        if acquisition_time not in enums_float:
-            return PremadeStatus(
-                False,
-                exception=ValueError(
-                    f"The acquisition time '{acquisition_time}' is not a valid option."
-                ),
-            )
-
-        return super().set(f"{int(acquisition_time * 1000)} ms", **kwargs)
 
 
 class Picolo(Device):
@@ -85,9 +87,6 @@ class Picolo(Device):
 
     range = Component(EpicsSignal, "Range", string=True, kind="config")
     auto_range = Component(EpicsSignal, "AutoRange", kind="omitted")
-    acquisition_time = Component(
-        PicoloAcquisitionTime, "AcquisitionTime", string=True, kind="config"
-    )
     sample_rate = Component(
         EpicsSignalWithRBV, "SampleRate", string=True, kind="config"
     )
