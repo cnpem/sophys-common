@@ -56,6 +56,9 @@ class PicoloChannel(Device):
     acquisition_time = Component(
         PicoloAcquisitionTime, "AcquisitionTime", string=True, kind="config"
     )
+    sample_rate = Component(
+        EpicsSignalWithRBV, "SampleRate", string=True, kind="config"
+    )
     user_offset = Component(EpicsSignalWithRBV, "UserOffset", kind="config")
     exp_offset = Component(EpicsSignalWithRBV, "ExpOffset", kind="config")
     set_zero = Component(EpicsSignal, "SetZero", kind="omitted")
@@ -87,9 +90,6 @@ class Picolo(Device):
 
     range = Component(EpicsSignal, "Range", string=True, kind="config")
     auto_range = Component(EpicsSignal, "AutoRange", kind="omitted")
-    sample_rate = Component(
-        EpicsSignalWithRBV, "SampleRate", string=True, kind="config"
-    )
     acquire_mode = Component(EpicsSignal, "AcquireMode", string=True, kind="config")
     samples_per_trigger = Component(EpicsSignalWithRBV, "NumAcquire", kind="config")
     data_reset = Component(DataResetSignal, "DataReset", kind="omitted")
