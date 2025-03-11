@@ -3,6 +3,9 @@ from sophys.common.utils import EpicsSignalWithGetSet
 
 
 class Photomultiplier(Device):
+    """
+    Photomultiplier device developed by the group GIE.
+    """
 
     voltage = Component(EpicsSignalWithGetSet, "VoltageDAC")
     current = Component(EpicsSignalWithGetSet, "CurrentDAC")
