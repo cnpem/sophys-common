@@ -96,6 +96,9 @@ class Picolo(Device):
     data_acquired = Component(EpicsSignal, "DataAcquired", kind="config")
     triggering = Component(EpicsSignal, "Triggering", kind="omitted")
     enable = Component(EpicsSignal, "Enable", kind="omitted")
+    common_sample_rate = Component(
+        EpicsSignal, "SampleRate", string=True, kind="omitted"
+    )
 
     continuous_mode = DynamicDeviceComponent(
         {"start_acq": (EpicsSignal, "Start", {}), "stop_acq": (EpicsSignal, "Stop", {})}
