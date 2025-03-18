@@ -3,7 +3,7 @@ import json
 from functools import wraps, partial
 from typing import Optional
 
-from threading import Thread
+from threading import Thread, Event
 from queue import Full as QueueFullException, Queue
 
 import msgpack_numpy as _m
@@ -278,6 +278,7 @@ class MonitorBase(KafkaConsumer):
         super().__init__(topic_name, value_deserializer=_m.unpackb, **configs)
 
         self.name = repr(self)
+        self.running = Event()
 
         self.__documents = MultipleDocumentDictionary()
         self.__save_queue = save_queue
@@ -432,6 +433,10 @@ class MonitorBase(KafkaConsumer):
 
     def run(self):
         """Start monitoring the Kafka topic."""
+        partition_number = list(self.partitions_for_topic(self.topic()))[0]
+        self._update_fetch_positions([TopicPartition(self.topic(), partition_number)])
+
+        self.running.set()
         while not self._closed:
             try:
                 for event in self:
@@ -439,6 +444,7 @@ class MonitorBase(KafkaConsumer):
             except StopIteration:
                 pass
 
+        self.running.clear()
         KafkaConsumer.close(self)
 
     def is_incomplete(self):

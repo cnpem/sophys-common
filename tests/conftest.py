@@ -109,4 +109,7 @@ def run_engine_without_md(kafka_producer, kafka_topic):
 def good_monitor(save_queue, incomplete_documents, kafka_topic) -> ThreadedMonitor:
     mon = ThreadedMonitor(save_queue, incomplete_documents, kafka_topic, "test")
     mon.start()
+
+    mon.running.wait(timeout=2.0)
+
     return mon
