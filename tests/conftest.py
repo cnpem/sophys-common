@@ -6,6 +6,8 @@ import msgpack
 import msgpack_numpy as _m
 
 from kafka.producer import KafkaProducer
+from kafka.consumer import KafkaConsumer
+from kafka.structs import TopicPartition
 
 from bluesky import RunEngine
 
@@ -81,6 +83,24 @@ def kafka_producer(kafka_bootstrap_ip):
     yield producer
     producer.flush()
     producer.close()
+
+
+@pytest.fixture(scope="function")
+def kafka_consumer(kafka_bootstrap_ip, kafka_topic):
+    consumer = KafkaConsumer(
+        bootstrap_servers=[kafka_bootstrap_ip], value_deserializer=msgpack.unpackb
+    )
+
+    # Connect the consumer properly to the topic
+    partition = TopicPartition(kafka_topic, 0)
+    consumer.assign([partition])
+    print("Starting offset:")
+    # Fun fact: this is actually required for the tests to work properly,
+    # because otherwise it doesn't update the current offset before the
+    # producer starts throwing events at the topic. :)))))
+    print(consumer.position(partition))
+
+    return consumer
 
 
 @pytest.fixture(scope="function")
