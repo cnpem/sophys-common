@@ -116,3 +116,26 @@ High Voltage Power Supply (HVPS)
         sophys.common.devices.hvps.HVPS
 
 .. include:: _generated/sophys.common.devices.hvps.HVPS.rst
+
+
+Simulated devices
+-----------------
+
+We have also implemented a factory function to create some simulated devices, mainly for testing and development usage. It is the :py:func:`instantiate_sim_devices` function, importable from :py:mod:`sophys.common.devices`.
+
+It is inspired by the :py:mod:`ophyd.sim` module, but with some trimming down and fixes for our specific requirements.
+
+Example usage:
+
+
+.. code-block:: python
+
+    from sophys.common.devices import instantiate_sim_devices
+
+    hw = instantiate_sim_devices()
+
+    from bluesky import RunEngine
+    from bluesky.plans import scan
+
+    RE = RunEngine()
+    RE(scan([hw.det, hw.rand], hw.motor, -2, 2, 25))
