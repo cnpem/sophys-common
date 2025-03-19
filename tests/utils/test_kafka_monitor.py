@@ -1,8 +1,12 @@
 import queue
 import time
 
+from kafka.structs import TopicPartition
+
 from ophyd.sim import hw
 from bluesky import plans as bp, plan_stubs as bps, preprocessors as bpp
+
+from sophys.common.utils.kafka.monitor import seek_start
 
 from . import _wait
 
@@ -219,3 +223,53 @@ def test_basic_custom_plan_with_two_nested_runs(
 
     # One start doc, one descriptor doc, one event doc, one stop doc
     assert len(docs) == 4, docs.get_raw_data()
+
+
+def test_seek_start(kafka_producer, kafka_consumer, kafka_topic, run_engine_without_md):
+    _hw = hw()
+    det = _hw.det
+
+    partition_number = list(kafka_consumer.partitions_for_topic(kafka_topic))[0]
+    topic_partition = TopicPartition(kafka_topic, partition_number)
+    original_offset = kafka_consumer.position(topic_partition)
+
+    uid, *_ = run_engine_without_md(bp.count([det], num=10))
+
+    kafka_producer.flush(timeout=5.0)
+    kafka_consumer.poll(timeout_ms=5_000)
+
+    new_offset = kafka_consumer.position(topic_partition)
+    # start (1) + descriptor (1) + events (10) + stop (1)
+    assert new_offset - original_offset == 13
+
+    # From stop to start
+    new_offset = seek_start(
+        kafka_consumer, kafka_topic, partition_number, new_offset, "stop", {}
+    )
+    assert kafka_consumer.position(topic_partition) == new_offset
+    assert new_offset == original_offset
+
+    # From event in the middle to start
+    kafka_consumer.seek(topic_partition, original_offset + 5)
+    records = kafka_consumer.poll(timeout_ms=5_000, max_records=1)
+    new_offset = seek_start(
+        kafka_consumer,
+        kafka_topic,
+        partition_number,
+        original_offset + 5,
+        *records[topic_partition][0].value,
+    )
+    assert kafka_consumer.position(topic_partition) == new_offset
+    assert new_offset == original_offset
+
+    # From start to start (do nothing)
+    records = kafka_consumer.poll(timeout_ms=5_000, max_records=1)
+    new_offset = seek_start(
+        kafka_consumer,
+        kafka_topic,
+        partition_number,
+        original_offset,
+        *records[topic_partition][0].value,
+    )
+    assert kafka_consumer.position(topic_partition) == new_offset
+    assert new_offset == original_offset
