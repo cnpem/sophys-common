@@ -35,6 +35,38 @@ def _get_start_uid_from_event_data(event_data: dict):
     return event_data.get("run_start", None)
 
 
+def seek_start(
+    consumer: KafkaConsumer,
+    topic: str,
+    partition_id: int,
+    offset: int,
+    event_name: str,
+    event_data: dict,
+) -> int:
+    """Attempt to seek into the start document of the current run."""
+    topic_partition = TopicPartition(topic, partition_id)
+
+    beginning_offset = consumer.beginning_offsets([topic_partition])[topic_partition]
+    while event_name != "start" and offset != beginning_offset:
+        if "seq_num" in event_data:
+            offset = offset - event_data["seq_num"] - 1
+        else:
+            offset -= 1
+        consumer.seek(topic_partition, offset)
+
+        records = consumer.poll(timeout_ms=5_000, max_records=1, update_offsets=False)
+        assert (
+            topic_partition in records
+        ), "Could not retrieve data from Kafka in seek_start."
+
+        event_name, event_data = records[topic_partition][0].value
+
+    if consumer.position(topic_partition) != offset:
+        consumer.seek(topic_partition, offset)
+
+    return offset
+
+
 class DocumentDictionary(dict):
     """Auxiliary class for accumulating Document entries."""
 
@@ -319,20 +351,6 @@ class MonitorBase(KafkaConsumer):
         """Get the name of the Kafka topic monitored by this object."""
         return "".join(self.subscription())
 
-    def seek_start(
-        self, topic: str, partition_id: int, offset: int, event_data: dict
-    ) -> None:
-        """Attempt to seek into the start document of the current run. May not seek if the current event does not have a sequence number."""
-        if "seq_num" not in event_data:
-            self._logger.debug(
-                "Sequence numbers are not available! o.O\n {}".format(str(event_data))
-            )
-            # Hopefully a future event will have it!
-            return
-        self.seek(
-            TopicPartition(topic, partition_id), offset - event_data["seq_num"] - 1
-        )
-
     def handle_event(self, event):
         self._logger.debug("Event received.")
         try:
@@ -360,11 +378,11 @@ class MonitorBase(KafkaConsumer):
             try:
                 if len(self.__documents[data]) == 0:
                     # In the middle of a run, try to go back to the beginning
-                    self.seek_start(event.topic, event.partition, event.offset, data[1])
+                    seek_start(self, event.topic, event.partition, event.offset, *data)
                     return
             except KeyError:
                 # In the middle of a run, try to go back to the beginning
-                self.seek_start(event.topic, event.partition, event.offset, data[1])
+                seek_start(self, event.topic, event.partition, event.offset, *data)
                 return
 
             self.__documents[data].append(*data)
