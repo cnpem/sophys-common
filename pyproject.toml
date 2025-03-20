@@ -32,7 +32,7 @@ dev = [
   "pytest-virtualenv",
 ]
 kafka = [
-  "kafka-python-ng",
+  "kafka-python",
   "msgpack",
   "msgpack-numpy"
 ]
