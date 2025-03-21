@@ -8,9 +8,8 @@ class PackageManagementBackend(enum.StrEnum):
     UV = "uv"
 
 
-def install_package(
-    package_name: str,
-    version: typing.Optional[str] = None,
+def install_packages(
+    *package_specs: str | typing.Sequence[str],
     extra_index_url: typing.Optional[list[str]] = None,
     force_reinstall: bool = False,
     disable_cache: bool = False,
@@ -21,12 +20,10 @@ def install_package(
 
     Parameters
     ----------
-    package_name : str
-        Name of the package, as is found on the package registry. Also
-        accepts Git URLs (i.e. git+https://...).
-    version : str, optional
-        Version of the package. Specified with the limiter.
-        e.g.: '==1.6.4', '>= 0.7.0', '~=1.10.0'
+    package_specs : str or sequence of strs
+        Name of the packages to be installed, as is found on the package registry,
+        together with an optional version specifier for each of them.
+        Also accepts Git URLs (i.e. git+https://...).
     extra_index_url : list of str, optional
         Extra package registry index locations to search the package in.
     force_reinstall : bool, optional
@@ -58,7 +55,9 @@ def install_package(
     if disable_cache:
         # NOTE: Both pip and uv can deal with this option like that.
         command.append("--no-cache")
-    command.append("{}{}".format(package_name, version or ""))
+
+    for spec in package_specs:
+        command.append(spec)
 
     try:
         subprocess.run(command, check=True, capture_output=True, text=True)
@@ -69,4 +68,6 @@ def install_package(
         print("  Standard error:")
         print(e.stderr)
 
-        raise RuntimeError(f"Package installation failed: {package_name}") from e
+        raise RuntimeError(
+            f"Package installation failed: {" ".join(package_specs)}"
+        ) from e

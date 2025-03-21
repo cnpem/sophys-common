@@ -4,7 +4,7 @@ import sys
 
 from unittest.mock import patch
 
-from sophys.common.utils.packages import install_package
+from sophys.common.utils.packages import install_packages
 
 
 @pytest.fixture
@@ -14,37 +14,41 @@ def mocked_subprocess():
 
 
 @pytest.mark.parametrize(
-    ("in_kwargs", "out_args"),
+    ("in_args", "in_kwargs", "out_args"),
     (
-        ({}, []),
-        ({"version": "==1.2.3"}, []),
-        ({"version": "~=1.2.3"}, []),
-        ({"extra_index_url": ["www.com"]}, ["--extra-index-url", "www.com"]),
+        (["sophys-common"], {}, []),
+        (["sophys_common==1.2.3"], {}, []),
+        (["sophys-common~=1.2.3"], {}, []),
         (
+            ["sophys-common"],
+            {"extra_index_url": ["www.com"]},
+            ["--extra-index-url", "www.com"],
+        ),
+        (
+            ["sophys-common"],
             {"extra_index_url": ["www.com", "www.org"]},
             ["--extra-index-url", "www.com", "--extra-index-url", "www.org"],
         ),
-        ({"force_reinstall": True}, ["--force-reinstall"]),
-        ({"disable_cache": True}, ["--no-cache"]),
+        (["sophys-common"], {"force_reinstall": True}, ["--force-reinstall"]),
+        (["sophys-common"], {"disable_cache": True}, ["--no-cache"]),
         (
-            {"version": "==1.2.3", "force_reinstall": True, "disable_cache": True},
+            ["sophys-common==1.2.3"],
+            {"force_reinstall": True, "disable_cache": True},
             ["--force-reinstall", "--no-cache"],
         ),
+        (["sophys-common", "pytest"], {}, []),
     ),
 )
-def test_simple_pip_installation(mocked_subprocess, in_kwargs, out_args):
-    target = "sophys-common"
+def test_simple_pip_installation(mocked_subprocess, in_args, in_kwargs, out_args):
+    install_packages(*in_args, **in_kwargs)
 
-    install_package(target, **in_kwargs)
-
-    target_with_ver = target + in_kwargs.get("version", "")
     expected_command = [
         sys.executable,
         "-m",
         "pip",
         "install",
         *out_args,
-        target_with_ver,
+        *in_args,
     ]
 
     mocked_subprocess.assert_called_once_with(
@@ -53,44 +57,48 @@ def test_simple_pip_installation(mocked_subprocess, in_kwargs, out_args):
 
 
 @pytest.mark.parametrize(
-    ("in_kwargs", "out_args"),
+    ("in_args", "in_kwargs", "out_args"),
     (
-        ({"backend": "uv"}, []),
-        ({"backend": "uv", "version": "==1.2.3"}, []),
-        ({"backend": "uv", "version": "~=1.2.3"}, []),
+        (["sophys-common"], {"backend": "uv"}, []),
+        (["sophys-common==1.2.3"], {"backend": "uv"}, []),
+        (["sophys-common~=1.2.3"], {"backend": "uv"}, []),
         (
+            ["sophys-common"],
             {"backend": "uv", "extra_index_url": ["www.com"]},
             ["--extra-index-url", "www.com"],
         ),
         (
+            ["sophys-common"],
             {"backend": "uv", "extra_index_url": ["www.com", "www.org"]},
             ["--extra-index-url", "www.com", "--extra-index-url", "www.org"],
         ),
-        ({"backend": "uv", "force_reinstall": True}, ["--force-reinstall"]),
-        ({"backend": "uv", "disable_cache": True}, ["--no-cache"]),
         (
+            ["sophys-common"],
+            {"backend": "uv", "force_reinstall": True},
+            ["--force-reinstall"],
+        ),
+        (["sophys-common"], {"backend": "uv", "disable_cache": True}, ["--no-cache"]),
+        (
+            ["sophys-common==1.2.3"],
             {
                 "backend": "uv",
-                "version": "==1.2.3",
                 "force_reinstall": True,
                 "disable_cache": True,
             },
             ["--force-reinstall", "--no-cache"],
         ),
+        (["sophys-common", "pytest"], {"backend": "uv"}, []),
     ),
 )
-def test_simple_uv_installation(mocked_subprocess, in_kwargs, out_args):
-    target = "sophys-common"
-
+def test_simple_uv_installation(mocked_subprocess, in_args, in_kwargs, out_args):
     with patch("importlib.util.find_spec") as mock:
         # Anything other than None should suffice.
         mock.return_value = True
 
-        install_package(target, **in_kwargs)
+        install_packages(*in_args, **in_kwargs)
 
         mock.assert_called_once_with("uv")
 
-    target_with_ver = target + in_kwargs.get("version", "")
     expected_command = [
         sys.executable,
         "-m",
@@ -98,7 +106,7 @@ def test_simple_uv_installation(mocked_subprocess, in_kwargs, out_args):
         "pip",
         "install",
         *out_args,
-        target_with_ver,
+        *in_args,
     ]
 
     mocked_subprocess.assert_called_once_with(
