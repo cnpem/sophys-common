@@ -1,4 +1,11 @@
+import enum
+import importlib
 import typing
+
+
+class PackageManagementBackend(enum.StrEnum):
+    PIP = "pip"
+    UV = "uv"
 
 
 def install_package(
@@ -7,9 +14,10 @@ def install_package(
     extra_index_url: typing.Optional[list[str]] = None,
     force_reinstall: bool = False,
     disable_cache: bool = False,
+    backend: PackageManagementBackend = PackageManagementBackend.PIP,
 ):
     """
-    Installs a package via pip.
+    Installs a package in the current environment.
 
     Parameters
     ----------
@@ -24,20 +32,32 @@ def install_package(
     force_reinstall : bool, optional
         Force reinstallation of the package in case it's already installed.
     disable_cache : bool, optional
-        Disable caching of package wheels and HTTP responses by pip.
+        Disable caching of package wheels and HTTP responses by the backend.
+    backend : PackageManagementBackend, optional
+        Select which backend to use for package installation. Defaults to pip.
     """
 
     import subprocess
     from sys import executable as _python_exec
 
-    command = [_python_exec, "-m", "pip", "install"]
+    match backend:
+        case PackageManagementBackend.PIP:
+            command = [_python_exec, "-m", "pip", "install"]
+        case PackageManagementBackend.UV:
+            if importlib.util.find_spec("uv") is None:
+                raise RuntimeError(
+                    "The 'uv' package is not installed in the current environment."
+                )
+            command = [_python_exec, "-m", "uv", "pip", "install"]
+
     if extra_index_url is not None:
         for url in extra_index_url:
             command.extend(["--extra-index-url", url])
     if force_reinstall:
         command.append("--force-reinstall")
     if disable_cache:
-        command.append("--no-cache-dir")
+        # NOTE: Both pip and uv can deal with this option like that.
+        command.append("--no-cache")
     command.append("{}{}".format(package_name, version or ""))
 
     try:
