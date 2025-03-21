@@ -13,6 +13,13 @@ def mocked_subprocess():
         yield mock
 
 
+@pytest.fixture
+def mocked_venv(virtualenv):
+    virtualenv.install_package("uv", installer="pip")
+
+    return virtualenv
+
+
 @pytest.mark.parametrize(
     ("in_args", "in_kwargs", "out_args"),
     (
@@ -112,3 +119,38 @@ def test_simple_uv_installation(mocked_subprocess, in_args, in_kwargs, out_args)
     mocked_subprocess.assert_called_once_with(
         expected_command, check=True, capture_output=True, text=True
     )
+
+
+def test_install_package_pip(mocked_venv):
+    assert "setuptools" not in mocked_venv.installed_packages()
+    install_packages("setuptools", custom_python_executable=mocked_venv.python)
+    assert "setuptools" in mocked_venv.installed_packages()
+
+    assert "requests" not in mocked_venv.installed_packages()
+    assert "numpy" not in mocked_venv.installed_packages()
+    install_packages("requests", "numpy", custom_python_executable=mocked_venv.python)
+    assert "requests" in mocked_venv.installed_packages()
+    assert "numpy" in mocked_venv.installed_packages()
+
+
+def test_install_package_uv(mocked_venv):
+    with patch("importlib.util.find_spec") as mock:
+        # Anything other than None should suffice.
+        mock.return_value = True
+
+        assert "setuptools" not in mocked_venv.installed_packages()
+        install_packages(
+            "setuptools", custom_python_executable=mocked_venv.python, backend="uv"
+        )
+        assert "setuptools" in mocked_venv.installed_packages()
+
+        assert "requests" not in mocked_venv.installed_packages()
+        assert "numpy" not in mocked_venv.installed_packages()
+        install_packages(
+            "requests",
+            "numpy",
+            custom_python_executable=mocked_venv.python,
+            backend="uv",
+        )
+        assert "requests" in mocked_venv.installed_packages()
+        assert "numpy" in mocked_venv.installed_packages()

@@ -14,6 +14,7 @@ def install_packages(
     force_reinstall: bool = False,
     disable_cache: bool = False,
     backend: PackageManagementBackend = PackageManagementBackend.PIP,
+    custom_python_executable: typing.Optional[str] = None,
 ):
     """
     Installs a package in the current environment.
@@ -37,15 +38,17 @@ def install_packages(
     import subprocess
     from sys import executable as _python_exec
 
+    python_exec = custom_python_executable or _python_exec
+
     match backend:
         case PackageManagementBackend.PIP:
-            command = [_python_exec, "-m", "pip", "install"]
+            command = [python_exec, "-m", "pip", "install"]
         case PackageManagementBackend.UV:
             if importlib.util.find_spec("uv") is None:
                 raise RuntimeError(
                     "The 'uv' package is not installed in the current environment."
                 )
-            command = [_python_exec, "-m", "uv", "pip", "install"]
+            command = [python_exec, "-m", "uv", "pip", "install"]
 
     if extra_index_url is not None:
         for url in extra_index_url:
