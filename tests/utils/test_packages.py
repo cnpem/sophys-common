@@ -4,7 +4,7 @@ import sys
 
 from unittest.mock import patch
 
-from sophys.common.utils.pip import install_package
+from sophys.common.utils.packages import install_package
 
 
 @pytest.fixture
