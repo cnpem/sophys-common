@@ -17,18 +17,18 @@ from ophyd.status import Status
 
 
 class _BaseCRIO(Device):
-    pv_averaging_time = FormattedCpt(
-        EpicsSignal, "{global_prefix}PvAvgTime", kind=Kind.config
-    )
-    file_averaging_time = FormattedCpt(
-        EpicsSignal, "{global_prefix}FileAvgTime", kind=Kind.config
-    )
-    saving_to_file = FormattedCpt(
-        EpicsSignalRO, "{global_prefix}AnalogSaving2File", kind=Kind.omitted
-    )
-    disable_file_close = FormattedCpt(
-        EpicsSignal, "{global_prefix}DisableFileClose", kind=Kind.omitted
-    )
+    # pv_averaging_time = FormattedCpt(
+    #     EpicsSignal, "{global_prefix}PvAvgTime", kind=Kind.config
+    # )
+    # file_averaging_time = FormattedCpt(
+    #     EpicsSignal, "{global_prefix}FileAvgTime", kind=Kind.config
+    # )
+    # saving_to_file = FormattedCpt(
+    #     EpicsSignalRO, "{global_prefix}AnalogSaving2File", kind=Kind.omitted
+    # )
+    # disable_file_close = FormattedCpt(
+    #     EpicsSignal, "{global_prefix}DisableFileClose", kind=Kind.omitted
+    # )
 
     def __init__(self, prefix: str, **kwargs):
         # Get the prefix before the second to last ':' (without the card information)
