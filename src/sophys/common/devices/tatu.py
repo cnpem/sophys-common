@@ -303,3 +303,58 @@ class Tatu9403(TatuBase, CRIO_9403):
             "io23": (TatuOutput, "", {"output_number": "23"}),
         }
     )
+
+
+class Tatu9403V2(TatuBase):
+    """
+    TATU V2 device adapted to work with the C-Series module 9403.
+
+    This module consists of four high-speed TTL channels as an input and the other four high-speed TTL channels as an output,
+
+    This same sequence is repeated for the other channels in the sequence, four inputs, four outputs, for the first 24 IO ports.
+    """
+
+    output = DynamicDeviceComponent(
+        {
+            "io4": (TatuOutputV2, "", {"output_number": "4"}),
+            "io5": (TatuOutputV2, "", {"output_number": "5"}),
+            "io6": (TatuOutputV2, "", {"output_number": "6"}),
+            "io7": (TatuOutputV2, "", {"output_number": "7"}),
+        }
+    )
+
+    input2 = DynamicDeviceComponent(
+        {
+            "p8": (TatuInput, "", {"input_number": "8"}),
+            "p9": (TatuInput, "", {"input_number": "9"}),
+            "p10": (TatuInput, "", {"input_number": "10"}),
+            "p11": (TatuInput, "", {"input_number": "11"}),
+        }
+    )
+
+    input3 = DynamicDeviceComponent(
+        {
+            "p16": (TatuInput, "", {"input_number": "16"}),
+            "p17": (TatuInput, "", {"input_number": "17"}),
+            "p18": (TatuInput, "", {"input_number": "18"}),
+            "p19": (TatuInput, "", {"input_number": "19"}),
+        }
+    )
+
+    output2 = DynamicDeviceComponent(
+        {
+            "io12": (TatuOutputV2, "", {"output_number": "12"}),
+            "io13": (TatuOutputV2, "", {"output_number": "13"}),
+            "io14": (TatuOutputV2, "", {"output_number": "14"}),
+            "io15": (TatuOutputV2, "", {"output_number": "15"}),
+        }
+    )
+
+    output3 = DynamicDeviceComponent(
+        {
+            "io20": (TatuOutputV2, "", {"output_number": "20"}),
+            "io21": (TatuOutputV2, "", {"output_number": "21"}),
+            "io22": (TatuOutputV2, "", {"output_number": "22"}),
+            "io23": (TatuOutputV2, "", {"output_number": "23"}),
+        }
+    )
