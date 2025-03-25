@@ -42,7 +42,7 @@ class EnumAcquisitionTimeValidator(IEnumValidator):
         return enum_value in self._enums
 
 
-class PicoloAcquisitionTimeBaseMixin:
+class PicoloAcquisitionTimeMixin:
     """A base mix-in class for picolo AcquisitionTime."""
 
     def __init__(self, *args, **kwargs):
@@ -63,13 +63,13 @@ class PicoloAcquisitionTimeBaseMixin:
         return super().set(formatted_time, *args, **kwargs)
 
 
-class PicoloAcquisitionTime(PicoloAcquisitionTimeBaseMixin, EpicsSignal):
+class PicoloAcquisitionTime(PicoloAcquisitionTimeMixin, EpicsSignal):
     """PicoloAcquisitionTime using EpicsSignal."""
 
     pass
 
 
-class PicoloAcquisitionTimeWithRBV(PicoloAcquisitionTimeBaseMixin, EpicsSignalWithRBV):
+class PicoloAcquisitionTimeWithRBV(PicoloAcquisitionTimeMixin, EpicsSignalWithRBV):
     """PicoloAcquisitionTime using EpicsSignalWithRBV."""
 
     pass

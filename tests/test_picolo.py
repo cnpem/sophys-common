@@ -1,7 +1,7 @@
 import pytest
 from sophys.common.devices.picolo import (
     EnumAcquisitionTimeValidator,
-    PicoloAcquisitionTimeBaseMixin,
+    PicoloAcquisitionTimeMixin,
 )
 
 
