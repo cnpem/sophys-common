@@ -9,27 +9,80 @@ from ophyd import (
     EpicsSignalRO,
 )
 from ophyd.flyers import FlyerInterface
-from ophyd.signal import DEFAULT_WRITE_TIMEOUT
+from ophyd.signal import DEFAULT_WRITE_TIMEOUT, DEFAULT_CONNECTION_TIMEOUT
 from ophyd.status import SubscriptionStatus, StatusBase, Status
 
 from ..utils.status import PremadeStatus
+from ..utils.interfaces import IEnumValidator
 
 
-class PicoloAcquisitionTime(EpicsSignalWithRBV):
-    """Device that handles set enum acquisition time using a float value in ms."""
+class EnumAcquisitionTimeValidator(IEnumValidator):
+    """Validates acquisition time based on predefined enum values."""
 
-    def set(self, acquisition_time: float, **kwargs):
-        enums = self.metadata["enum_strs"]
-        enums_float = [(float(item.replace(" ms", "")) / 1000) for item in enums]
-        if acquisition_time not in enums_float:
+    def __init__(self, enum_string):
+        self._enums = [float(item.replace(" ms", "")) / 1000 for item in enum_string]
+
+    def is_valid(self, enum_value: float) -> bool:
+        return enum_value in self._enums
+
+
+class PicoloAcquisitionTimeBase:
+    """Base class for handling acquisition time."""
+
+    def __init__(self, validator: IEnumValidator):
+        self.validator = validator
+
+    def format_acquisition_time(self, acquisition_time: float) -> str:
+        """Convert float acquisition time to formatted string."""
+        ms_value = acquisition_time * 1000  # Convert seconds to milliseconds
+
+        if ms_value == int(ms_value):
+            return f"{int(ms_value)} ms"
+        else:
+            return f"{ms_value} ms"
+
+    def validate_and_format(self, acquisition_time: float):
+        """Validate and format acquisition time."""
+        if not self.validator.is_valid(acquisition_time):
+            raise ValueError(
+                f"The acquisition time '{acquisition_time}' ms is not a valid option."
+            )
+        return self.format_acquisition_time(acquisition_time)
+
+
+class PicoloAcquisitionTimeBaseMixin:
+    """Simple variant of PicoloAcquisitionTime using EpicsSignal."""
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.wait_for_connection(DEFAULT_CONNECTION_TIMEOUT)
+        self._time_base_validator = PicoloAcquisitionTimeBase(
+            EnumAcquisitionTimeValidator(self.enum_strs)
+        )
+
+    def set(self, acquisition_time: float, *args, **kwargs):
+        try:
+            formatted_time = self._time_base_validator.validate_and_format(
+                acquisition_time
+            )
+        except ValueError as e:
             return PremadeStatus(
                 False,
-                exception=ValueError(
-                    f"The acquisition time '{acquisition_time}' is not a valid option."
-                ),
+                exception=e,
             )
+        return super().set(formatted_time, *args, **kwargs)
 
-        return super().set(f"{int(acquisition_time * 1000)} ms", **kwargs)
+
+class PicoloAcquisitionTime(PicoloAcquisitionTimeBaseMixin, EpicsSignal):
+    """PicoloAcquisitionTime using EpicsSignal."""
+
+    pass
+
+
+class PicoloAcquisitionTimeWithRBV(PicoloAcquisitionTimeBaseMixin, EpicsSignalWithRBV):
+    """PicoloAcquisitionTime using EpicsSignalWithRBV."""
+
+    pass
 
 
 class PicoloChannel(Device):
@@ -54,7 +107,7 @@ class PicoloChannel(Device):
     state = Component(EpicsSignalRO, "State", string=True, kind="config")
     analog_bw = Component(EpicsSignalRO, "BW_RBV", kind="omitted")
     acquisition_time = Component(
-        PicoloAcquisitionTime, "AcquisitionTime", string=True, kind="config"
+        PicoloAcquisitionTimeWithRBV, "AcquisitionTime", string=True, kind="config"
     )
     sample_rate = Component(
         EpicsSignalWithRBV, "SampleRate", string=True, kind="config"
@@ -98,6 +151,10 @@ class Picolo(Device):
     enable = Component(EpicsSignal, "Enable", kind="omitted")
     common_sample_rate = Component(
         EpicsSignal, "SampleRate", string=True, kind="omitted"
+    )
+
+    acquisition_time = Component(
+        PicoloAcquisitionTime, "AcquisitionTime", string=True, kind="omitted"
     )
 
     continuous_mode = DynamicDeviceComponent(
