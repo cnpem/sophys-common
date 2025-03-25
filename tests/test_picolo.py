@@ -1,7 +1,6 @@
 import pytest
 from sophys.common.devices.picolo import (
     EnumAcquisitionTimeValidator,
-    PicoloAcquisitionTimeBase,
     PicoloAcquisitionTimeBaseMixin,
 )
 
@@ -25,12 +24,6 @@ def enum_validator():
     )
 
 
-@pytest.fixture
-def picolo_base(enum_validator):
-    """Fixture for PicoloAcquisitionTimeBase."""
-    return PicoloAcquisitionTimeBase(enum_validator)
-
-
 def test_enum_acquisition_time_validator_valid_value(enum_validator):
     """Test if valid acquisition time is correctly validated."""
     assert enum_validator.is_valid(0.2)
@@ -43,30 +36,30 @@ def test_enum_acquisition_time_validator_invalid_value(enum_validator):
     assert not enum_validator.is_valid(30.0)  # Invalid value
 
 
-def test_format_acquisition_time_with_whole_number(picolo_base):
+def test_format_to_enum_with_whole_number(enum_validator):
     """Test if the time is formatted correctly for whole numbers."""
-    assert picolo_base.format_acquisition_time(0.01) == "10 ms"  # 10ms (0.01 seconds)
+    assert enum_validator.format_to_enum(0.01) == "10 ms"  # 10ms (0.01 seconds)
 
 
-def test_format_acquisition_time_with_decimal(picolo_base):
+def test_format_to_enum_with_decimal(enum_validator):
     """Test if the time is formatted correctly for decimal values."""
-    assert picolo_base.format_acquisition_time(0.015) == "15 ms"  # 15ms (0.015 seconds)
+    assert enum_validator.format_to_enum(0.015) == "15 ms"  # 15ms (0.015 seconds)
 
 
-def test_format_acquisition_time_with_integer_seconds(picolo_base):
+def test_format_to_enum_with_integer_seconds(enum_validator):
     """Test if an integer seconds value gets formatted without decimal."""
-    assert picolo_base.format_acquisition_time(1) == "1000 ms"  # 1 second = 1000ms
+    assert enum_validator.format_to_enum(1) == "1000 ms"  # 1 second = 1000ms
 
 
-def test_validate_and_format_valid_time(picolo_base):
+def test_validate_and_format_valid_time(enum_validator):
     """Test if valid acquisition time is validated and formatted correctly."""
     valid_time = 0.1  # 100 ms
-    formatted_time = picolo_base.validate_and_format(valid_time)
+    formatted_time = enum_validator.validate_and_format(valid_time)
     assert formatted_time == "100 ms"
 
 
-def test_validate_and_format_invalid_time(picolo_base):
+def test_validate_and_format_invalid_time(enum_validator):
     """Test if invalid acquisition time raises an error."""
     invalid_time = 0.03  # Not in enum values
     with pytest.raises(ValueError):
-        picolo_base.validate_and_format(invalid_time)
+        enum_validator.validate_and_format(invalid_time)

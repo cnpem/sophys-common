@@ -22,19 +22,8 @@ class EnumAcquisitionTimeValidator(IEnumValidator):
     def __init__(self, enum_string):
         self._enums = [float(item.replace(" ms", "")) / 1000 for item in enum_string]
 
-    def is_valid(self, enum_value: float) -> bool:
-        return enum_value in self._enums
-
-
-class PicoloAcquisitionTimeBase:
-    """Base class for handling acquisition time."""
-
-    def __init__(self, validator: IEnumValidator):
-        self.validator = validator
-
-    def format_acquisition_time(self, acquisition_time: float) -> str:
-        """Convert float acquisition time to formatted string."""
-        ms_value = acquisition_time * 1000  # Convert seconds to milliseconds
+    def format_to_enum(self, value):
+        ms_value = value * 1000  # Convert seconds to milliseconds
 
         if ms_value == int(ms_value):
             return f"{int(ms_value)} ms"
@@ -43,11 +32,14 @@ class PicoloAcquisitionTimeBase:
 
     def validate_and_format(self, acquisition_time: float):
         """Validate and format acquisition time."""
-        if not self.validator.is_valid(acquisition_time):
+        if not self.is_valid(acquisition_time):
             raise ValueError(
                 f"The acquisition time '{acquisition_time}' ms is not a valid option."
             )
-        return self.format_acquisition_time(acquisition_time)
+        return self.format_to_enum(acquisition_time)
+
+    def is_valid(self, enum_value: float) -> bool:
+        return enum_value in self._enums
 
 
 class PicoloAcquisitionTimeBaseMixin:
@@ -56,9 +48,7 @@ class PicoloAcquisitionTimeBaseMixin:
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.wait_for_connection(DEFAULT_CONNECTION_TIMEOUT)
-        self._time_base_validator = PicoloAcquisitionTimeBase(
-            EnumAcquisitionTimeValidator(self.enum_strs)
-        )
+        self._time_base_validator = EnumAcquisitionTimeValidator(self.enum_strs)
 
     def set(self, acquisition_time: float, *args, **kwargs):
         try:
