@@ -13,8 +13,3 @@ class IEnumValidator(ABC):
     def format_to_enum(self, value) -> str:
         """Format an input value to its enum correspondent"""
         pass
-
-    @abstractmethod
-    def validate_and_format(self, value: float) -> bool:
-        """Validate and format acquisition time."""
-        pass
