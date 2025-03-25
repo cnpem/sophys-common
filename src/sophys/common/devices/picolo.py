@@ -43,7 +43,14 @@ class EnumAcquisitionTimeValidator(IEnumValidator):
 
 
 class PicoloAcquisitionTimeMixin:
-    """A base mix-in class for picolo AcquisitionTime."""
+    """A mix-in class for handling acquisition time configuration.
+
+    This mix-in assumes the presence of a base interface that provides
+    the methods `wait_for_connection` and `set`, which are expected to be
+    inherited from another class. Upon initialization, it ensures a connection
+    is established and validates acquisition time values using an
+    enumeration-based validator before passing them to the base `set` method.
+    """
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
