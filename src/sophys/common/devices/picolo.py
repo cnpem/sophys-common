@@ -51,7 +51,7 @@ class PicoloAcquisitionTimeBase:
 
 
 class PicoloAcquisitionTimeBaseMixin:
-    """Simple variant of PicoloAcquisitionTime using EpicsSignal."""
+    """A base mix-in class for picolo AcquisitionTime."""
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
