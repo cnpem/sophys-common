@@ -1,5 +1,8 @@
 from types import SimpleNamespace
-from ophyd.sim import SynAxis, SynGauss, Syn2DGauss, SynPeriodicSignal
+
+import numpy as np
+
+from ophyd.sim import SynAxis, SynGauss, Syn2DGauss, SynPeriodicSignal, MockFlyer
 
 
 def instantiate_sim_devices():
@@ -27,6 +30,9 @@ def instantiate_sim_devices():
         sigma=1,
         noise_multiplier=0.1,
         labels={"detectors"},
+    )
+    simulated_hardware.flyer = MockFlyer(
+        "flyer", simulated_hardware.det, simulated_hardware.motor, 1, 5, 20
     )
 
     simulated_hardware.motor1 = SynAxis(name="motor1", labels={"motors"})
@@ -69,6 +75,21 @@ def instantiate_sim_devices():
         "delayed_motor2",
         center=(0, 0),
         Imax=1,
+        labels={"detectors"},
+    )
+
+    simulated_hardware.jittery_motor = SynAxis(
+        name="jittery_motor",
+        readback_func=lambda x: x + np.random.rand(),
+        labels={"motors"},
+    )
+    simulated_hardware.jittery_det = SynGauss(
+        "jittery_det",
+        simulated_hardware.jittery_motor,
+        "jittery_motor",
+        center=0,
+        Imax=1,
+        sigma=1,
         labels={"detectors"},
     )
 
