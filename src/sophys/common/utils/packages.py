@@ -13,6 +13,7 @@ def install_packages(
     extra_index_url: typing.Optional[list[str]] = None,
     force_reinstall: bool = False,
     disable_cache: bool = False,
+    debug: bool = False,
     backend: PackageManagementBackend = PackageManagementBackend.PIP,
     custom_python_executable: typing.Optional[str] = None,
 ):
@@ -31,6 +32,9 @@ def install_packages(
         Force reinstallation of the package in case it's already installed.
     disable_cache : bool, optional
         Disable caching of package wheels and HTTP responses by the backend.
+    debug : bool, optional
+        Enable debug mode, in which all the output from the backend subprocess
+        is printed in real-time.
     backend : PackageManagementBackend, optional
         Select which backend to use for package installation. Defaults to pip.
     """
@@ -61,6 +65,22 @@ def install_packages(
 
     for spec in package_specs:
         command.append(spec)
+
+    if debug:
+        _proc = subprocess.Popen(
+            command, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, text=True
+        )
+
+        for line in _proc.stdout:
+            print(line, end="")
+
+        return_code = _proc.wait()
+        if return_code != 0:
+            raise RuntimeError(
+                f"Package installation failed: {" ".join(package_specs)}"
+            )
+
+        return
 
     try:
         subprocess.run(command, check=True, capture_output=True, text=True)
