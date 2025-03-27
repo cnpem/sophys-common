@@ -35,7 +35,7 @@ class PicoloChannel(Device):
         EpicsSignalWithRBV, "AcquireMode", string=True, kind="config"
     )
     state = Component(EpicsSignalRO, "State", string=True, kind="config")
-    analog_bw = Component(EpicsSignalRO, "AnalogBW_RBV", kind="omitted")
+    # analog_bw = Component(EpicsSignalR    O, "AnalogBW_RBV", kind="omitted")
 
     user_offset = Component(EpicsSignalWithRBV, "UserOffset", kind="config")
     exp_offset = Component(EpicsSignalWithRBV, "ExpOffset", kind="config")
@@ -46,7 +46,7 @@ class PicoloChannel(Device):
         super().__init__(prefix=prefix, **kwargs)
 
 
-class PicoloAcquisitionTime(EpicsSignalWithRBV):
+class PicoloAcquisitionTime(EpicsSignal):
     """Device that handles set enum acquisition time using a float value in ms."""
 
     def set(self, acquisition_time: float, **kwargs):
@@ -88,9 +88,7 @@ class Picolo(Device):
     acquisition_time = Component(
         PicoloAcquisitionTime, "AcquisitionTime", string=True, kind="config"
     )
-    sample_rate = Component(
-        EpicsSignalWithRBV, "SampleRate", string=True, kind="config"
-    )
+    sample_rate = Component(EpicsSignal, "SampleRate", string=True, kind="config")
     acquire_mode = Component(EpicsSignal, "AcquireMode", string=True, kind="config")
     samples_per_trigger = Component(EpicsSignalWithRBV, "NumAcquire", kind="config")
     data_reset = Component(DataResetSignal, "DataReset", kind="omitted")
