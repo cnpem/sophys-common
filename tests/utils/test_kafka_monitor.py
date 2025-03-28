@@ -174,3 +174,35 @@ def test_basic_custom_plan_with_two_descriptor_documents(
 
     # One start doc, two descriptor doc, three event doc, one stop doc
     assert len(docs) == 7, docs.get_raw_data()
+
+
+def test_basic_custom_plan_with_two_nested_runs(
+    good_monitor, run_engine_without_md, incomplete_documents, save_queue: queue.Queue
+):
+    _hw = hw()
+    det = _hw.det
+
+    def custom_plan():
+        yield from bps.open_run({})
+        yield from bps.declare_stream(det, name="primary")
+        yield from bps.create()
+        yield from bps.read(det)
+        yield from bps.save()
+        yield from bpp.set_run_key_wrapper(bp.count([det], num=2), "inner")
+        yield from bps.close_run("success")
+
+    uid, *_ = run_engine_without_md(custom_plan())
+
+    _wait(lambda: uid not in incomplete_documents)
+
+    docs = save_queue.get(True, timeout=2.0)
+    assert docs is not None
+
+    # One start doc, one descriptor doc, two event doc, one stop doc
+    assert len(docs) == 5, docs.get_raw_data()
+
+    docs = save_queue.get(True, timeout=2.0)
+    assert docs is not None
+
+    # One start doc, one descriptor doc, one event doc, one stop doc
+    assert len(docs) == 4, docs.get_raw_data()
