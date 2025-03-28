@@ -9,8 +9,6 @@ from ophyd import (
 from ophyd.flyers import FlyerInterface
 from sophys.common.utils.status import PremadeStatus
 
-from .crio import CRIO_9403
-
 
 class TatuInput(Device):
     """
@@ -250,7 +248,7 @@ class Tatu9401V2(Tatu9401):
         super().__init__(prefix, **kwargs)
 
 
-class Tatu9403(TatuBase, CRIO_9403):
+class Tatu9403(TatuBase):
     """
     TATU device adapted to work with the C-Series module 9403.
 
