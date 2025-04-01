@@ -116,3 +116,19 @@ High Voltage Power Supply (HVPS)
         sophys.common.devices.hvps.HVPS
 
 .. include:: _generated/sophys.common.devices.hvps.HVPS.rst
+
+PMT
+---
+
+Photomultiplier
+~~~~~~~~~~~~~~~
+
+.. container:: hidden
+
+    .. autosummary::
+        :toctree: _generated
+        :template: device_attr_list_embed.rst
+
+        sophys.common.devices.pmt.Photomultiplier
+
+.. include:: _generated/sophys.common.devices.pmt.Photomultiplier.rst
