@@ -4,7 +4,7 @@ import sys
 
 from unittest.mock import patch
 
-from sophys.common.utils.packages import install_packages
+from sophys.common.utils.packages import install_packages, PackageManagementBackend
 
 
 @pytest.fixture
@@ -67,6 +67,7 @@ def test_simple_pip_installation(mocked_subprocess, in_args, in_kwargs, out_args
     ("in_args", "in_kwargs", "out_args"),
     (
         (["sophys-common"], {"backend": "uv"}, []),
+        (["sophys-common"], {"backend": PackageManagementBackend.UV}, []),
         (["sophys-common==1.2.3"], {"backend": "uv"}, []),
         (["sophys-common~=1.2.3"], {"backend": "uv"}, []),
         (
