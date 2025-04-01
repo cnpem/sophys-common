@@ -155,3 +155,14 @@ def test_install_package_uv(mocked_venv):
         )
         assert "requests" in mocked_venv.installed_packages()
         assert "numpy" in mocked_venv.installed_packages()
+
+
+def test_install_failure(mocked_subprocess):
+    from subprocess import CalledProcessError
+
+    mocked_subprocess.side_effect = CalledProcessError(1, "pip install")
+
+    with pytest.raises(
+        RuntimeError, match="Package installation failed: sophys-common"
+    ):
+        install_packages("sophys-common")
