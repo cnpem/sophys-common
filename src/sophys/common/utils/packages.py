@@ -76,9 +76,8 @@ def install_packages(
 
         return_code = _proc.wait()
         if return_code != 0:
-            raise RuntimeError(
-                f"Package installation failed: {" ".join(package_specs)}"
-            )
+            packages_str = " ".join(package_specs)
+            raise RuntimeError(f"Package installation failed: {packages_str}")
 
         return
 
@@ -91,6 +90,5 @@ def install_packages(
         print("  Standard error:")
         print(e.stderr)
 
-        raise RuntimeError(
-            f"Package installation failed: {" ".join(package_specs)}"
-        ) from e
+        packages_str = " ".join(package_specs)
+        raise RuntimeError(f"Package installation failed: {packages_str}") from e
