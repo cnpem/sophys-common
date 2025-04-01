@@ -15,7 +15,7 @@ jobs:
           fetch-tags: true
       - name: Acquire changed files
         id: changed_files
-        uses: tj-actions/changed-files@v45.0.5
+        uses: tj-actions/changed-files@v46.0.1
       - name: Run pre-commit on the changed files
         uses: pre-commit/action@v3.0.1
         with:
