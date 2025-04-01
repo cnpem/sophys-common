@@ -170,7 +170,7 @@ class TatuBase(Device, TatuFlyScan):
             "number": (EpicsSignal, "MasterPulseNumber", {"kind": "config"}),
             "period": (EpicsSignal, "MasterPulsePeriod", {"kind": "config"}),
             "length": (EpicsSignal, "MasterPulseLength", {"kind": "config"}),
-            # "active": (EpicsSignalRO, "MasterPulsing", {"kind": "config"}),
+            "active": (EpicsSignalRO, "MasterPulsing", {"kind": "config"}),
             "count": (EpicsSignalRO, "IssuedMasterPulses", {"kind": "config"}),
         }
     )
