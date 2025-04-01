@@ -6,6 +6,8 @@ from ophyd import (
     EpicsSignal,
     EpicsSignalRO,
 )
+from ophyd.flyers import FlyerInterface
+from sophys.common.utils.status import PremadeStatus
 
 from .crio import CRIO_9403
 
@@ -137,7 +139,22 @@ class TatuOutput(Device):
         super().__init__(prefix=prefix, **kwargs)
 
 
-class TatuBase(Device):
+class TatuFlyScan(FlyerInterface):
+
+    def kickoff(self):
+        return self.activate.set(1)
+
+    def complete(self):
+        return PremadeStatus(success=True)
+
+    def describe_collect(self):
+        return {}
+
+    def collect(self):
+        return []
+
+
+class TatuBase(Device, TatuFlyScan):
     """
     Base device for the TATU software, which produces or a distribute digital
     signals to coordinate events and actions to achieve a synchronized operation at a beamline.

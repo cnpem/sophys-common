@@ -101,11 +101,11 @@ Pimega
 
 ----
 
-Vortex
-------
+Vortex / Xspress
+----------------
 
 .. tags:: AreaDetector
 
-.. automodule:: sophys.common.devices.vortex
+.. automodule:: sophys.common.devices.xspress
     :members:
     :show-inheritance:

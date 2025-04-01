@@ -1,5 +1,4 @@
-on:
-  workflow_dispatch:
+on: [pull_request, workflow_dispatch]
 
 jobs:
   documentation-build:
@@ -11,6 +10,9 @@ jobs:
         with:
           python-version: 3.12
       - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          fetch-tags: true
       - name: Install build requirements
         run: |
           pip install .
@@ -19,9 +21,7 @@ jobs:
       - name: Build documentation
         run: |
           cd docs/
-          make html
-          cd source/
-          sphinx-build -b html . ../build
+          ./build_docs.sh
       - name: Upload artifacts
         uses: actions/upload-pages-artifact@v3
         with:
@@ -29,6 +29,7 @@ jobs:
 
   deploy-documentation:
     name: Deploy documentation to GitHub Pages
+    if: github.event_name == 'workflow_dispatch'
     runs-on: ubuntu-22.04
     needs: documentation-build
     permissions:

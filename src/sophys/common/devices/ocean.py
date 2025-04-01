@@ -1,9 +1,9 @@
-from ophyd import Component, Device, EpicsSignal, EpicsSignalRO, \
-    PVPositionerIsClose
+from ophyd import Component, Device, EpicsSignal, EpicsSignalRO, PVPositionerIsClose
+
 
 class OceanInterestRegion(Device):
     waveform = Component(EpicsSignal, "", lazy=True)
-    luminescence = Component(EpicsSignal, ":Luminescence", lazy=True)
+    luminescence = Component(EpicsSignal, ":Luminescence", lazy=True, kind="hinted")
     upper_limit = Component(EpicsSignal, ":UpperLimit", lazy=True)
     lower_limit = Component(EpicsSignal, ":LowerLimit", lazy=True)
 
@@ -36,10 +36,16 @@ class OceanOpticsSpectrometer(Device):
 
     electrical_dark = Component(EpicsSignal, "ElectricalDark", lazy=True, string=True)
     dark_spectrum = Component(EpicsSignalRO, "GetDarkSpectrum", lazy=True, string=True)
-    external_trigger_mode = Component(EpicsSignalRO, "ExternalTriggerMode", lazy=True, string=True)
-    set_external_trigger_mode = Component(EpicsSignalRO, "ExternalTriggerMode:Set", lazy=True)
+    external_trigger_mode = Component(
+        EpicsSignalRO, "ExternalTriggerMode", lazy=True, string=True
+    )
+    set_external_trigger_mode = Component(
+        EpicsSignalRO, "ExternalTriggerMode:Set", lazy=True
+    )
     strobe = Component(EpicsSignal, "SetStrobe", lazy=True)
-    total_luminescence = Component(EpicsSignal, "TotalLuminescence", lazy=True)
+    total_luminescence = Component(
+        EpicsSignal, "TotalLuminescence", lazy=True, kind="hinted"
+    )
     acquisition_mode = Component(EpicsSignal, "AcquisitionMode", lazy=True, string=True)
     acquire = Component(EpicsSignal, "Acquire", lazy=True, string=True)
     acquiring = Component(EpicsSignalRO, "Acquiring", lazy=True, string=True)
@@ -55,7 +61,9 @@ class OceanOpticsSpectrometer(Device):
     integration_time = Component(OceanIntegrationTime, "IntegrationTime:", lazy=True)
 
     external_trigger = Component(EpicsSignal, "ExternalTrigger", lazy=True, string=True)
-    external_trigger_invert = Component(EpicsSignal, "ExternalTrigger:Invert", lazy=True)
+    external_trigger_invert = Component(
+        EpicsSignal, "ExternalTrigger:Invert", lazy=True
+    )
     progress_bar = Component(EpicsSignal, "ProgressBar", lazy=True)
 
     file_path = Component(EpicsSignal, "fileDirectory", lazy=True, string=True)
@@ -67,3 +75,7 @@ class OceanOpticsSpectrometer(Device):
     script_status = Component(EpicsSignal, "scriptStatus", lazy=True, string=True)
 
     det_temperature = Component(OceanDetectorTemperature, "DetectorTemp", lazy=True)
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.lazy_wait_for_connection = False
