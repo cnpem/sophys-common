@@ -303,7 +303,7 @@ class Tatu9403(TatuBase):
     )
 
 
-class Tatu9403V2(TatuBase):
+class Tatu9403V2(Tatu9403):
     """
     TATU V2 device adapted to work with the C-Series module 9403.
 
@@ -318,24 +318,6 @@ class Tatu9403V2(TatuBase):
             "io5": (TatuOutputV2, "", {"output_number": "5"}),
             "io6": (TatuOutputV2, "", {"output_number": "6"}),
             "io7": (TatuOutputV2, "", {"output_number": "7"}),
-        }
-    )
-
-    input2 = DynamicDeviceComponent(
-        {
-            "p8": (TatuInput, "", {"input_number": "8"}),
-            "p9": (TatuInput, "", {"input_number": "9"}),
-            "p10": (TatuInput, "", {"input_number": "10"}),
-            "p11": (TatuInput, "", {"input_number": "11"}),
-        }
-    )
-
-    input3 = DynamicDeviceComponent(
-        {
-            "p16": (TatuInput, "", {"input_number": "16"}),
-            "p17": (TatuInput, "", {"input_number": "17"}),
-            "p18": (TatuInput, "", {"input_number": "18"}),
-            "p19": (TatuInput, "", {"input_number": "19"}),
         }
     )
 
