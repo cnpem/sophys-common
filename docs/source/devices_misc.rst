@@ -117,6 +117,21 @@ High Voltage Power Supply (HVPS)
 
 .. include:: _generated/sophys.common.devices.hvps.HVPS.rst
 
+PMT
+---
+
+Photomultiplier
+~~~~~~~~~~~~~~~
+
+.. container:: hidden
+
+    .. autosummary::
+        :toctree: _generated
+        :template: device_attr_list_embed.rst
+
+        sophys.common.devices.pmt.Photomultiplier
+
+.. include:: _generated/sophys.common.devices.pmt.Photomultiplier.rst
 
 Simulated devices
 -----------------
@@ -139,3 +154,4 @@ Example usage:
 
     RE = RunEngine()
     RE(scan([hw.det, hw.rand], hw.motor, -2, 2, 25))
+    

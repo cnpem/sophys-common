@@ -14,6 +14,7 @@ from .picolo import Picolo, PicoloFlyScan
 from .pilatus_300k import Pilatus, PilatusWithoutHDF5
 from .pimega import Pimega, PimegaFlyScan
 from .power_pmac import PowerPmacScan
+from .pmt import Photomultiplier
 from .simulated import instantiate_sim_devices
 from .slit import HorizontalSlit, KinematicSlit, Slit, VerticalSlit
 from .storage_ring import StorageRing
