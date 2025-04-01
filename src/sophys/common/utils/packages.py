@@ -8,8 +8,11 @@ class PackageManagementBackend(enum.StrEnum):
     UV = "uv"
 
 
+StrSequenceType: typing.TypeAlias = typing.Tuple[str, ...]
+
+
 def install_packages(
-    *package_specs: str | typing.Sequence[str],
+    *package_specs: *StrSequenceType,
     extra_index_url: typing.Optional[list[str]] = None,
     force_reinstall: bool = False,
     disable_cache: bool = False,
@@ -71,8 +74,9 @@ def install_packages(
             command, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, text=True
         )
 
-        for line in _proc.stdout:
-            print(line, end="")
+        if _proc.stdout is not None:
+            for line in _proc.stdout:
+                print(line, end="")
 
         return_code = _proc.wait()
         if return_code != 0:
