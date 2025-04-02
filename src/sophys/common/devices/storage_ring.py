@@ -16,3 +16,21 @@ class StorageRing(Device):
 
     def __init__(self, *, name, **kwargs):
         super().__init__(prefix="", name=name, **kwargs)
+
+    def describe(self):
+        for _ in range(0, 3):
+            try:
+                get_sts = super().describe()
+                break
+            except Exception:
+                print("Describe Connection Error!! Retrying describe function")
+        return get_sts
+
+    def read(self):
+        for _ in range(0, 3):
+            try:
+                get_sts = super().read()
+                break
+            except Exception:
+                print("Read Connection Error!! Retrying read function")
+        return get_sts
