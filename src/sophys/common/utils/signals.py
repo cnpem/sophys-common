@@ -1,6 +1,7 @@
 import copy
 import typing
 
+from collections import OrderedDict
 from contextlib import contextmanager
 
 import numpy as np
@@ -189,6 +190,31 @@ class EpicsSignalWithCustomReadoutRBV(EpicsSignalWithCustomReadout):
 class EpicsSignalMon(EpicsSignalRO):
     def __init__(self, prefix, **kwargs):
         super().__init__(prefix + "-Mon", **kwargs)
+
+
+class EpicsSignalWithRetryRO(EpicsSignalRO):
+
+    def describe(self):
+        for retry in range(0, 3):
+            try:
+                get_sts = super().describe()
+                break
+            except Exception as ex:
+                self.log.warning(f"Describe connection error {ex}...")
+                if retry == 2:
+                    return OrderedDict()
+        return get_sts
+
+    def read(self):
+        for retry in range(0, 3):
+            try:
+                get_sts = super().read()
+                break
+            except Exception as ex:
+                self.log.warning(f"Read connection error {ex}...")
+                if retry == 2:
+                    return OrderedDict()
+        return get_sts
 
 
 class EpicsSignalWithGetSet(EpicsSignal):
