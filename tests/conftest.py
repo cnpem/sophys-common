@@ -6,6 +6,8 @@ import msgpack
 import msgpack_numpy as _m
 
 from kafka.producer import KafkaProducer
+from kafka.consumer import KafkaConsumer
+from kafka.structs import TopicPartition
 
 from bluesky import RunEngine
 
@@ -84,6 +86,24 @@ def kafka_producer(kafka_bootstrap_ip):
 
 
 @pytest.fixture(scope="function")
+def kafka_consumer(kafka_bootstrap_ip, kafka_topic):
+    consumer = KafkaConsumer(
+        bootstrap_servers=[kafka_bootstrap_ip], value_deserializer=msgpack.unpackb
+    )
+
+    # Connect the consumer properly to the topic
+    partition = TopicPartition(kafka_topic, 0)
+    consumer.assign([partition])
+    print("Starting offset:")
+    # Fun fact: this is actually required for the tests to work properly,
+    # because otherwise it doesn't update the current offset before the
+    # producer starts throwing events at the topic. :)))))
+    print(consumer.position(partition))
+
+    return consumer
+
+
+@pytest.fixture(scope="function")
 def base_md(tmp_path_factory):
     return {
         "metadata_save_file_location": str(tmp_path_factory.mktemp("metadata")),
@@ -109,4 +129,7 @@ def run_engine_without_md(kafka_producer, kafka_topic):
 def good_monitor(save_queue, incomplete_documents, kafka_topic) -> ThreadedMonitor:
     mon = ThreadedMonitor(save_queue, incomplete_documents, kafka_topic, "test")
     mon.start()
+
+    mon.running.wait(timeout=2.0)
+
     return mon
