@@ -99,7 +99,7 @@ def _create_virtual_controllable_motor(components):
     return (VirtualControllableMotorClass, {"attr_keys": formattedComponents.keys()})
 
 
-def MotorGroup(prefix, motors_suffixes, name, **kwargs):
+def MotorGroup(prefix, motors_suffixes, **kwargs):
     """
     Function to instantiate several motor devices.
 
@@ -148,4 +148,4 @@ def MotorGroup(prefix, motors_suffixes, name, **kwargs):
 
     devClass = create_device_from_components(name="motor_group", **components)
 
-    return devClass(prefix=prefix, name=name, **kwargs)
+    return devClass(prefix=prefix, **kwargs)

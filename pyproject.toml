@@ -29,6 +29,7 @@ dev = [
   "pre-commit",
   "pytest",
   "pytest-cov",
+  "pytest-virtualenv",
 ]
 kafka = [
   "kafka-python-ng",

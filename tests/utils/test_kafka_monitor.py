@@ -16,6 +16,19 @@ def test_kafka_topic(good_monitor, kafka_topic):
     assert good_monitor.topic() == kafka_topic
 
 
+def test_kafka_properly_configured(kafka_producer, kafka_consumer, kafka_topic):
+    kafka_producer.send(kafka_topic, ("start", {"uid": "1234"}))
+    records = kafka_consumer.poll(timeout_ms=5_000)
+    assert len(records) != 0, "Failed to retrieve any data from the topic."
+
+    partition = list(kafka_consumer.assignment())[0]
+    event = records[partition][0].value
+
+    assert event[0] == "start"
+    assert isinstance(event[1], dict)
+    assert event[1]["uid"] == "1234"
+
+
 def test_start_stop(good_monitor, kafka_topic, kafka_producer, incomplete_documents):
     _wait(lambda: "1234" not in incomplete_documents)
     kafka_producer.send(kafka_topic, ("start", {"uid": "1234"}))
