@@ -194,9 +194,13 @@ class EpicsSignalMon(EpicsSignalRO):
 
 class EpicsSignalWithRetryRO(EpicsSignalRO):
 
+    def __init__(self, *args, retries=3, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.retries = retries
+
     def describe(self):
         res = OrderedDict()
-        for retry_count in range(0, 3):
+        for retry_count in range(0, self.retries):
             try:
                 res = super().describe()
                 break
@@ -208,7 +212,7 @@ class EpicsSignalWithRetryRO(EpicsSignalRO):
 
     def read(self):
         res = OrderedDict()
-        for retry_count in range(0, 3):
+        for retry_count in range(0, self.retries):
             try:
                 res = super().read()
                 break
