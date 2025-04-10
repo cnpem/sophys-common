@@ -195,15 +195,14 @@ class EpicsSignalMon(EpicsSignalRO):
 class EpicsSignalWithRetryRO(EpicsSignalRO):
 
     def describe(self):
-        for retry in range(0, 3):
+        res = OrderedDict()
+        for retry_count in range(0, 3):
             try:
-                get_sts = super().describe()
+                res = super().describe()
                 break
             except Exception as ex:
-                self.log.warning(f"Describe connection error {ex}...")
-                if retry == 2:
-                    return OrderedDict()
-        return get_sts
+                self.log.warning(f"Attempt #{retry_count + 1} - Connection error on 'describe': {ex}")
+        return res
 
     def read(self):
         for retry in range(0, 3):
