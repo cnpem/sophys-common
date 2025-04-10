@@ -201,19 +201,22 @@ class EpicsSignalWithRetryRO(EpicsSignalRO):
                 res = super().describe()
                 break
             except Exception as ex:
-                self.log.warning(f"Attempt #{retry_count + 1} - Connection error on 'describe': {ex}")
+                self.log.warning(
+                    f"Attempt #{retry_count + 1} - Connection error on 'describe': {ex}"
+                )
         return res
 
     def read(self):
-        for retry in range(0, 3):
+        res = OrderedDict()
+        for retry_count in range(0, 3):
             try:
-                get_sts = super().read()
+                res = super().read()
                 break
             except Exception as ex:
-                self.log.warning(f"Read connection error {ex}...")
-                if retry == 2:
-                    return OrderedDict()
-        return get_sts
+                self.log.warning(
+                    f"Attempt #{retry_count + 1} - Connection error on 'read': {ex}"
+                )
+        return res
 
 
 class EpicsSignalWithGetSet(EpicsSignal):
