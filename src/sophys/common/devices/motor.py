@@ -38,7 +38,7 @@ class ControllableMotor(EpicsMotor):
         self.stage_sigs["enable_control"] = 1
 
 
-def VirtualControllableMotor(prefix, components, name, **kwargs):
+def _create_virtual_controllable_motor(components):
     """
     Custom EpicsMotor that enables control of a list of motors
     before a plan and disables them after.
@@ -63,51 +63,50 @@ def VirtualControllableMotor(prefix, components, name, **kwargs):
 
     Parameters
     ----------
-
-    prefix : str
-        The prefix of the virtual motor.
     components : dict of (string, string)
         The real motors that constitute this virtual device, in the form (name, prefix).
-    name : str
-        Name of the created virtual motor.
     """
     formattedComponents = {}
     for key, motorPv in components.items():
-        formattedComponents["cnen_"+key] = FormattedComponent(EpicsSignal, suffix=motorPv+".CNEN")
+        formattedComponents["cnen_" + key] = FormattedComponent(
+            EpicsSignal, suffix=motorPv + ".CNEN"
+        )
 
     devClass = create_device_from_components(
-        name="virtual_motor_class", base_class=EpicsMotor, **formattedComponents)
+        name="virtual_motor_class", base_class=EpicsMotor, **formattedComponents
+    )
 
     class VirtualControllableMotorClass(devClass):
-
-        def __init__(self, attr_keys, **kwargs):
-            super().__init__(**kwargs)
+        def __init__(self, *args, attr_keys, **kwargs):
+            super().__init__(*args, **kwargs)
             self.attr_list = []
             for attr in attr_keys:
                 self.attr_list.append(getattr(self, attr))
 
         def stage(self):
-            super().stage()
+            ret = super().stage()
             for attr in self.attr_list:
                 attr.set(1).wait()
 
+            return ret
+
         def unstage(self):
-            super().unstage()
             for attr in self.attr_list:
                 attr.set(0).wait()
 
-    return VirtualControllableMotorClass(
-        name=name, prefix=prefix, attr_keys=formattedComponents.keys(), **kwargs)
+            return super().unstage()
+
+    return (VirtualControllableMotorClass, {"attr_keys": formattedComponents.keys()})
 
 
-def MotorGroup(prefix, motors_suffixes, name, **kwargs):
+def MotorGroup(prefix, motors_suffixes, **kwargs):
     """
     Function to instantiate several motor devices.
-    
+
     .. admonition:: Usage example
 
         .. code-block:: python
-            
+
             real_motors = {
                 "x": "SWC:MOTOR:m1",
                 "y": "SWC:MOTOR:m2",
@@ -135,16 +134,18 @@ def MotorGroup(prefix, motors_suffixes, name, **kwargs):
         Name of the created motor group.
     """
     components = {}
+
     for key, suffix in motors_suffixes.items():
         args = {}
+        comp_kwargs = {}
         deviceClass = ControllableMotor
         if isinstance(suffix, tuple):
             args["components"] = suffix[1]
             suffix = suffix[0]
-            deviceClass = VirtualControllableMotor
+            deviceClass, comp_kwargs = _create_virtual_controllable_motor(suffix[1])
 
-        components[key] = Component(deviceClass, suffix=suffix, **args)
-    
+        components[key] = Component(deviceClass, suffix=suffix, **comp_kwargs)
+
     devClass = create_device_from_components(name="motor_group", **components)
 
-    return devClass(prefix=prefix, name=name, **kwargs)
+    return devClass(prefix=prefix, **kwargs)
