@@ -229,8 +229,10 @@ class EpicsSignalWithGetSet(EpicsSignal):
     pvname has the 'get' prefix and write_pv has the 'set' prefix.
     """
 
-    def __init__(self, prefix, **kwargs):
-        super().__init__("get" + prefix, write_pv="set" + prefix, **kwargs)
+    def __init__(self, prefix, ssuffix, **kwargs):
+        super().__init__(
+            f"{prefix}get{ssuffix}", write_pv=f"{prefix}set{ssuffix}", **kwargs
+        )
 
 
 class EpicsSignalWithRBSP(EpicsSignal):
