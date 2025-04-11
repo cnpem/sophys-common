@@ -7,8 +7,8 @@ class Photomultiplier(Device):
     Photomultiplier device developed by the group GIE.
     """
 
-    voltage = Component(EpicsSignalWithGetSet, "VoltageDAC")
-    current = Component(EpicsSignalWithGetSet, "CurrentDAC")
-    voltage_ramp = Component(EpicsSignalWithGetSet, "VoltageRampDAC")
+    voltage = Component(EpicsSignalWithGetSet, "", ssuffix="VoltageDAC")
+    current = Component(EpicsSignalWithGetSet, "", ssuffix="CurrentDAC")
+    voltage_ramp = Component(EpicsSignalWithGetSet, "", ssuffix="VoltageRampDAC")
     status = Component(EpicsSignalRO, "Status")
     stop_pmt = Component(EpicsSignalRO, "Stop")
