@@ -19,18 +19,18 @@ class TatuInput(Device):
     trigger_value = FormattedComponent(
         EpicsSignal, "{prefix}InputTriggerIO{input_number}"
     )
-    edges_to_trigger = FormattedComponent(
-        EpicsSignal, "{prefix}EdgestoTrigIO{input_number}", kind="omitted", lazy=True
-    )
-    analog_threshold = FormattedComponent(
-        EpicsSignal,
-        "{prefix}AnalogThresholdCh{input_number}",
-        kind="omitted",
-        lazy=True,
-    )
-    analog_assoc = FormattedComponent(
-        EpicsSignal, "{prefix}AnalogAssocCh{input_number}", kind="omitted", lazy=True
-    )
+    # edges_to_trigger = FormattedComponent(
+    #     EpicsSignal, "{prefix}EdgestoTrigIO{input_number}", kind="omitted", lazy=True
+    # )
+    # analog_threshold = FormattedComponent(
+    #     EpicsSignal,
+    #     "{prefix}AnalogThresholdCh{input_number}",
+    #     kind="omitted",
+    #     lazy=True,
+    # )
+    # analog_assoc = FormattedComponent(
+    #     EpicsSignal, "{prefix}AnalogAssocCh{input_number}", kind="omitted", lazy=True
+    # )
 
     def __init__(self, prefix, input_number, **kwargs):
         self.input_number = input_number
@@ -55,12 +55,12 @@ class TatuOutputBase(Device):
     output_copy = FormattedComponent(
         EpicsSignal, "{prefix}OutputCOPYIO{output_number}:c{condition_number}"
     )
-    delay = FormattedComponent(
-        EpicsSignal,
-        "{prefix}DelayIO{output_number}:c{condition_number}",
-        kind="omitted",
-        lazy=True,
-    )
+    # delay = FormattedComponent(
+    #     EpicsSignal,
+    #     "{prefix}DelayIO{output_number}:c{condition_number}",
+    #     kind="omitted",
+    #     lazy=True,
+    # )
 
     def __init__(self, prefix, condition_number, **kwargs):
         split_prefix = prefix.split("/")
@@ -93,12 +93,12 @@ class TatuOutputCondition(TatuOutputBase):
     Configuration and status PVs for a TATU Output port condition.
     """
 
-    pulse = FormattedComponent(
-        EpicsSignal,
-        "{prefix}PulseIO{output_number}:c{condition_number}",
-        kind="omitted",
-        lazy=True,
-    )
+    # pulse = FormattedComponent(
+    #     EpicsSignal,
+    #     "{prefix}PulseIO{output_number}:c{condition_number}",
+    #     kind="omitted",
+    #     lazy=True,
+    # )
 
     def __init__(self, prefix, condition_number, **kwargs):
         super().__init__(prefix, condition_number, **kwargs)
