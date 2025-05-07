@@ -23,6 +23,7 @@ dependencies = [
   "ophyd",
   "numpy",
   "strenum ; python_version < '3.11'",
+  "ophyd-async",
 ]
 
 [project.optional-dependencies]
@@ -32,6 +33,7 @@ dev = [
   "pytest-cov",
   "pytest-virtualenv",
   "caproto!=1.2.0",
+  "pytest-asyncio",
 ]
 kafka = [
   "kafka-python",
@@ -65,3 +67,6 @@ extend-ignore = ["E203", "E704"]
 
 [tool.numpydoc_validation]
 checks = ["all", "EX01", "SA01", "ES01", "RT01"]
+
+[tool.pytest.ini_options]
+asyncio_mode = "auto"
