@@ -8,6 +8,10 @@ from sophys.common.utils import (
 
 
 class VPU(Device):
+    """
+    Device for controlling the VPU Undulator.
+    """
+
     k_param = Component(EpicsSignalWithMonSP, "KParam")
     taper = Component(EpicsSignalWithMonSP, "Taper")
     taper_velo = Component(EpicsSignalMon, "TaperVelo")
