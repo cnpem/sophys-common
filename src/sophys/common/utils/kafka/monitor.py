@@ -284,7 +284,9 @@ class MonitorBase(KafkaConsumer):
         self.__save_queue = save_queue
 
         self.__incomplete_documents = incomplete_documents
-        self.__incomplete_documents_save_attempts = dict()
+
+        self.__to_save_documents = list()
+        self.__to_save_documents_save_attempts = dict()
 
         self._logger = logging.getLogger(logger_name)
 
@@ -375,6 +377,7 @@ class MonitorBase(KafkaConsumer):
                 )
 
                 self.__documents[data].clear_subscriptions()
+                self.__to_save_documents.append(self.__documents[data].identifier)
 
                 # TODO: Validate number of saved entries via the stop document's num_events
                 # TODO: Validate successful run via the stop document's exit_status
@@ -384,7 +387,7 @@ class MonitorBase(KafkaConsumer):
 
                 # Save documents not yet saved.
                 _completed_documents = list()
-                for id in self.__incomplete_documents:
+                for id in self.__to_save_documents:
                     doc = self.__documents.get_by_identifier(id)
                     try:
                         self.__save_queue.put(doc, block=True, timeout=2.0)
@@ -401,10 +404,10 @@ class MonitorBase(KafkaConsumer):
                         self._logger.error("Exception if you're into that:")
                         self._logger.exception(e)
 
-                        if id in self.__incomplete_documents_save_attempts:
-                            self.__incomplete_documents_save_attempts[id] += 1
+                        if id in self.__to_save_documents_save_attempts:
+                            self.__to_save_documents_save_attempts[id] += 1
 
-                            if self.__incomplete_documents_save_attempts[id] >= 3:
+                            if self.__to_save_documents_save_attempts[id] >= 3:
                                 self._logger.error(
                                     "Failed to save document with id '%s' three times. Giving up.",
                                     id,
@@ -412,19 +415,20 @@ class MonitorBase(KafkaConsumer):
 
                                 self.__incomplete_documents.remove(id)
                                 self.__documents.pop(id)
-                                del self.__incomplete_documents_save_attempts[id]
+                                del self.__to_save_documents_save_attempts[id]
                         else:
-                            self.__incomplete_documents_save_attempts[id] = 1
+                            self.__to_save_documents_save_attempts[id] = 1
 
                     else:
                         _completed_documents.append(id)
 
                 for id in _completed_documents:
                     self.__incomplete_documents.remove(id)
+                    self.__to_save_documents.remove(id)
                     self.__documents.pop(id)
 
-                    if id in self.__incomplete_documents_save_attempts:
-                        del self.__incomplete_documents_save_attempts[id]
+                    if id in self.__to_save_documents_save_attempts:
+                        del self.__to_save_documents_save_attempts[id]
 
         except Exception as e:
             self._logger.error("Unhandled exception. Will try to continue regardless.")
