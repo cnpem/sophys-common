@@ -8,7 +8,7 @@ on:
 jobs:
   test:
     name: Run existing tests
-    runs-on: ubuntu-22.04
+    runs-on: ubuntu-24.04
     steps:
       - name: Setup Python
         uses: actions/setup-python@v5.3.0

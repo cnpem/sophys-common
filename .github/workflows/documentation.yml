@@ -3,7 +3,7 @@ on: [pull_request, workflow_dispatch]
 jobs:
   documentation-build:
     name: Build Sphinx documentation
-    runs-on: ubuntu-22.04
+    runs-on: ubuntu-24.04
     steps:
       - name: Setup Python
         uses: actions/setup-python@v5.3.0
@@ -30,7 +30,7 @@ jobs:
   deploy-documentation:
     name: Deploy documentation to GitHub Pages
     if: github.event_name == 'workflow_dispatch'
-    runs-on: ubuntu-22.04
+    runs-on: ubuntu-24.04
     needs: documentation-build
     permissions:
       id-token: write
