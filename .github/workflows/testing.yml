@@ -9,11 +9,15 @@ jobs:
   test:
     name: Run existing tests
     runs-on: ubuntu-24.04
+    strategy:
+      fail-fast: false
+      matrix:
+        python-version: [3.10, 3.11, 3.12, 3.13]
     steps:
       - name: Setup Python
         uses: actions/setup-python@v5.3.0
         with:
-          python-version: 3.12
+          python-version: ${{ matrix.python-version }}
       - uses: actions/checkout@v4
         with:
           fetch-depth: 0
