@@ -196,12 +196,14 @@ def _create_kinematic_vertical_components(
     if top is not None:
         verticalSlitComponents.update(
             {
-                "top": Component(klass, name=f"{top}"),
+                "top": Component(klass, name=f"{top}", **kwargs),
             }
         )
 
     if bottom is not None:
-        verticalSlitComponents.update({"bottom": Component(klass, name=f"{bottom}")})
+        verticalSlitComponents.update(
+            {"bottom": Component(klass, name=f"{bottom}", **kwargs)}
+        )
 
     return verticalSlitComponents
 
@@ -233,12 +235,14 @@ def _create_kinematic_horizontal_components(
     if left is not None:
         horizontalSlitComponents.update(
             {
-                "left": Component(klass, name=f"{left}"),
+                "left": Component(klass, name=f"{left}", **kwargs),
             }
         )
 
     if right is not None:
-        horizontalSlitComponents.update({"right": Component(klass, name=f"{right}")})
+        horizontalSlitComponents.update(
+            {"right": Component(klass, name=f"{right}", **kwargs)}
+        )
 
     return horizontalSlitComponents
 
