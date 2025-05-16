@@ -1,4 +1,4 @@
-from ophyd import Device, EpicsSignal, EpicsSignalRO, Component
+from ophyd import Device, EpicsSignal, EpicsSignalRO, Component, Kind
 from sophys.common.utils import (
     EpicsSignalWithMonSP,
     EpicsSignalWithRBSP,
@@ -12,7 +12,7 @@ class VPU(Device):
     Device for controlling the VPU Undulator.
     """
 
-    k_param = Component(EpicsSignalWithMonSP, "KParam")
+    k_param = Component(EpicsSignalWithMonSP, "KParam", kind=Kind.hinted)
     taper = Component(EpicsSignalWithMonSP, "Taper")
     taper_velo = Component(EpicsSignalMon, "TaperVelo")
     center_offset = Component(EpicsSignalWithMonSP, "CenterOffset")
