@@ -4,6 +4,7 @@ on:
       - "**.py"
       - "pyproject.toml"
       - "!docs/**"
+      - ".github/workflows/testing.yml"
 
 jobs:
   test:
