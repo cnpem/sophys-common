@@ -123,9 +123,9 @@ def test_simple_uv_installation(mocked_subprocess, in_args, in_kwargs, out_args)
 
 
 def test_install_package_pip(mocked_venv):
-    assert "setuptools" not in mocked_venv.installed_packages()
-    install_packages("setuptools", custom_python_executable=mocked_venv.python)
-    assert "setuptools" in mocked_venv.installed_packages()
+    assert "pytest" not in mocked_venv.installed_packages()
+    install_packages("pytest", custom_python_executable=mocked_venv.python)
+    assert "pytest" in mocked_venv.installed_packages()
 
     assert "requests" not in mocked_venv.installed_packages()
     assert "numpy" not in mocked_venv.installed_packages()
@@ -139,11 +139,11 @@ def test_install_package_uv(mocked_venv):
         # Anything other than None should suffice.
         mock.return_value = True
 
-        assert "setuptools" not in mocked_venv.installed_packages()
+        assert "pytest" not in mocked_venv.installed_packages()
         install_packages(
-            "setuptools", custom_python_executable=mocked_venv.python, backend="uv"
+            "pytest", custom_python_executable=mocked_venv.python, backend="uv"
         )
-        assert "setuptools" in mocked_venv.installed_packages()
+        assert "pytest" in mocked_venv.installed_packages()
 
         assert "requests" not in mocked_venv.installed_packages()
         assert "numpy" not in mocked_venv.installed_packages()
