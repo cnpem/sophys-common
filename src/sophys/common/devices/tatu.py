@@ -55,12 +55,12 @@ class TatuOutputBase(Device):
     output_copy = FormattedComponent(
         EpicsSignal, "{prefix}OutputCOPYIO{output_number}:c{condition_number}"
     )
-    # delay = FormattedComponent(
-    #     EpicsSignal,
-    #     "{prefix}DelayIO{output_number}:c{condition_number}",
-    #     kind="omitted",
-    #     lazy=True,
-    # )
+    delay = FormattedComponent(
+        EpicsSignal,
+        "{prefix}DelayIO{output_number}:c{condition_number}",
+        kind="omitted",
+        lazy=True,
+     )
 
     def __init__(self, prefix, condition_number, **kwargs):
         split_prefix = prefix.split("/")
