@@ -21,7 +21,7 @@ class Channel(Device):
     current = Cpt(EpicsSignalRO, "Current", kind=Kind.hinted)
 
     current_full_scale_label = Cpt(EpicsSignalRO, "GetCurrentFSLbl", kind=Kind.config)
-    current_sensitivity_label = Cpt(EpicsSignalRO, "GetCurrentSTLbl", kind=Kind.config)
+    current_sensitivity_label = Cpt(EpicsSignalRO, "GetCurrentSTLbl", kind=Kind.hinted)
 
     serial_number = Cpt(EpicsSignal, "SN", kind=Kind.omitted)
     voltage_full_scale = Cpt(EpicsSignal, "VoltFS", kind=Kind.omitted)
