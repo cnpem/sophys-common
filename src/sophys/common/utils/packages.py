@@ -1,11 +1,15 @@
-import enum
 import importlib
 import typing
 
 from typing_extensions import Unpack
 
+try:
+    from enum import StrEnum
+except ImportError:
+    from strenum import StrEnum
 
-class PackageManagementBackend(enum.StrEnum):
+
+class PackageManagementBackend(StrEnum):
     PIP = "pip"
     UV = "uv"
 

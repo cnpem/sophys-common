@@ -21,7 +21,8 @@ dynamic = ["version"]
 dependencies = [
   "bluesky",
   "ophyd",
-  "numpy==1.26.4"
+  "numpy==1.26.4",
+  "strenum ; python_version < '3.11'",
 ]
 
 [project.optional-dependencies]
