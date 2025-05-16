@@ -2,6 +2,8 @@ import enum
 import importlib
 import typing
 
+from typing_extensions import Unpack
+
 
 class PackageManagementBackend(enum.StrEnum):
     PIP = "pip"
@@ -12,7 +14,7 @@ StrSequenceType: typing.TypeAlias = typing.Tuple[str, ...]
 
 
 def install_packages(
-    *package_specs: *StrSequenceType,
+    *package_specs: Unpack[StrSequenceType],
     extra_index_url: typing.Optional[list[str]] = None,
     force_reinstall: bool = False,
     disable_cache: bool = False,
