@@ -49,7 +49,7 @@ def make_kafka_callback(
     # NOTE: These should be here so that not having the packages installed doesn't break a client that doesn't need them.
     from kafka import KafkaProducer
     from kafka.errors import NoBrokersAvailable
-    from msgpack import dumps
+    from msgpack_numpy import dumps
 
     i = 0
     while True:
