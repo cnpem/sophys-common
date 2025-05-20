@@ -158,6 +158,10 @@ def create_energy_trajectory(
                 # NOTE: This assumes every range's 'edge' is the same. It should be, right?
                 start = energy2k(start - range_config["edge"])
 
+            assert (
+                start < stop
+            ), f"Could not generate a k-space range, as the calculated starting position {start} is greater than the end position {stop}."
+
         return range_config["edge"] + k2energy(np.arange(start, stop, step))
 
     energy_conf = _create_energy_configuration(energy_ranges, k_ranges, edge_energy)

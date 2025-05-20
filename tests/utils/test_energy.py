@@ -231,6 +231,14 @@ def test_create_energy_configuration(
             id="overriding energy ranges",
         ),
         pytest.param(
+            [(0, 30, 60, 10)],
+            [(1, None, 2, 0.5)],
+            0,
+            np.array([]),
+            marks=pytest.mark.xfail,
+            id="invalid automatic k-space range (start > stop)",
+        ),
+        pytest.param(
             [],
             [(1, 2, 0.5)],
             10,
