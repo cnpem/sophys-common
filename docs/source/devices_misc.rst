@@ -69,6 +69,19 @@ Storage Ring
 
 .. include:: _generated/sophys.common.devices.storage_ring.StorageRing.rst
 
+VPU
+---
+
+.. container:: hidden
+
+    .. autosummary::
+        :toctree: _generated
+        :template: device_attr_list_embed.rst
+
+        sophys.common.devices.vpu.VPU
+
+.. include:: _generated/sophys.common.devices.vpu.VPU.rst
+
 DCM Lite
 --------
 

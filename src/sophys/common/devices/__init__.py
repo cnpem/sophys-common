@@ -20,3 +20,4 @@ from .slit import HorizontalSlit, KinematicSlit, Slit, VerticalSlit
 from .storage_ring import StorageRing
 from .tatu import Tatu9401, Tatu9401V2, Tatu9403, TatuFlyScan
 from .xspress import Xspress
+from .vpu import VPU
