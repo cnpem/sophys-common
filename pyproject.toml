@@ -31,6 +31,7 @@ dev = [
   "pytest",
   "pytest-cov",
   "pytest-virtualenv",
+  "caproto!=1.2.0",
 ]
 kafka = [
   "kafka-python-ng",

@@ -62,12 +62,13 @@ def VerticalSlit(
     bottom: str,
     gap: typing.Optional[str] = None,
     offset: typing.Optional[str] = None,
+    has_kinematic: bool = True,
     **kwargs,
 ) -> Device:
     """Create a slit device that can only be moved vertically."""
 
     verticalSlitComponents = _create_vertical_components(
-        prefix, top, bottom, gap, offset
+        prefix, top, bottom, gap, offset, has_kinematic
     )
 
     verticalSlitClass = create_device_from_components(
@@ -124,12 +125,13 @@ def HorizontalSlit(
     right: str,
     gap: typing.Optional[str] = None,
     offset: typing.Optional[str] = None,
+    has_kinematic: bool = True,
     **kwargs,
 ) -> Device:
     """Create a slit device that can only be moved horizontally."""
 
     horizontalSlitComponents = _create_horizontal_components(
-        prefix, left, right, gap, offset
+        prefix, left, right, gap, offset, has_kinematic
     )
 
     horizontalSlitClass = create_device_from_components(

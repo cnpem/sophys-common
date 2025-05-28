@@ -38,6 +38,10 @@ class ControllableMotor(EpicsMotor):
         self.stage_sigs["enable_control"] = 1
 
 
+class VirtualControllableMotorBaseClass(EpicsMotor):
+    pass
+
+
 def _create_virtual_controllable_motor(components):
     """
     Custom EpicsMotor that enables control of a list of motors
@@ -73,7 +77,9 @@ def _create_virtual_controllable_motor(components):
         )
 
     devClass = create_device_from_components(
-        name="virtual_motor_class", base_class=EpicsMotor, **formattedComponents
+        name="virtual_motor_class",
+        base_class=VirtualControllableMotorBaseClass,
+        **formattedComponents,
     )
 
     class VirtualControllableMotorClass(devClass):
