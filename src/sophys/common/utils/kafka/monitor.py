@@ -179,6 +179,15 @@ class DocumentDictionary(dict):
             else None
         )
 
+    @property
+    def event_documents(self):
+        """Return all 'event' documents (flattened from event_page if necessary)."""
+        return [
+            doc
+            for doc in self.values()
+            if isinstance(doc, dict) and doc.get("document_type") == "event"
+        ]
+
 
 class MultipleDocumentDictionary(dict):
     """
