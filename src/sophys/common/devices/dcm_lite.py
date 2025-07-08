@@ -41,10 +41,10 @@ class Goniometer(PVPositionerIsClose):
     """
 
     readback = FormattedComponent(
-        EpicsSignal, "{prefix}GonRx{device_number}_SP_RBV", kind="hinted"
+        EpicsSignalRO, "{prefix}GonRx{device_number}_SP_RBV", kind="hinted"
     )
     setpoint = FormattedComponent(
-        EpicsSignalRO, "{prefix}GonRx{device_number}_SP", kind="config"
+        EpicsSignal, "{prefix}GonRx{device_number}_SP", kind="config"
     )
     actuate = Component(EpicsSignal, "GonRxUpdate_SP", kind="omitted")
 
@@ -69,10 +69,10 @@ class UncoupledShortStroke(PVPositionerIsClose):
     """
 
     readback = FormattedComponent(
-        EpicsSignal, "{prefix}Shs{shs_axis}_S_RBV", kind="hinted"
+        EpicsSignalRO, "{prefix}Shs{shs_axis}_S_RBV", kind="hinted"
     )
     setpoint = FormattedComponent(
-        EpicsSignalRO, "{prefix}Shs{shs_axis}_SP", kind="config"
+        EpicsSignal, "{prefix}Shs{shs_axis}_SP", kind="config"
     )
     actuate = FormattedComponent(
         EpicsSignal, "{prefix}ShsUpdate_{shs_axis}_SP", kind="omitted"
@@ -89,10 +89,10 @@ class CoupledShortStroke(PVPositionerIsClose):
     """
 
     readback = FormattedComponent(
-        EpicsSignal, "{prefix}Shs{shs_axis}_Offset_RBV", kind="hinted"
+        EpicsSignalRO, "{prefix}Shs{shs_axis}_Offset_RBV", kind="hinted"
     )
     setpoint = FormattedComponent(
-        EpicsSignalRO, "{prefix}Shs{shs_axis}_Offset", kind="config"
+        EpicsSignal, "{prefix}Shs{shs_axis}_Offset", kind="config"
     )
     actuate = FormattedComponent(
         EpicsSignal, "{prefix}ShsUpdate_{shs_axis}_SP", kind="omitted"
