@@ -195,7 +195,9 @@ class PimegaFlyScan(Pimega, FlyerInterface):
         return num2capture == num_captured
 
     def complete(self):
-        return SubscriptionStatus(self.cam.acquire, callback=self._fly_scan_complete)
+        return SubscriptionStatus(
+            self.cam.num_captured, callback=self._fly_scan_complete
+        )
 
     def describe_collect(self):
         descriptor = {"pimega": {}}
