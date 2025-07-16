@@ -37,10 +37,10 @@ class OceanOpticsSpectrometer(Device):
     electrical_dark = Component(EpicsSignal, "ElectricalDark", lazy=True, string=True)
     dark_spectrum = Component(EpicsSignalRO, "GetDarkSpectrum", lazy=True, string=True)
     external_trigger_mode = Component(
-        EpicsSignalRO, "ExternalTriggerMode", lazy=True, string=True
+        EpicsSignal, "ExternalTriggerMode", lazy=True, string=True
     )
     set_external_trigger_mode = Component(
-        EpicsSignalRO, "ExternalTriggerMode:Set", lazy=True
+        EpicsSignal, "ExternalTriggerMode:Set", lazy=True
     )
     strobe = Component(EpicsSignal, "SetStrobe", lazy=True)
     total_luminescence = Component(
