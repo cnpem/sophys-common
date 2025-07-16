@@ -69,7 +69,7 @@ class PimegaAcquire(Device):
             return self.capture.set(0)
         else:
             # Start backend
-            self.capture.set(1, **kwargs)
+            self.capture.set(1, **kwargs).wait(timeout=30.0)
             # Send start signal to chips. This also checks that the Capture one has finished.
             return self.acquire.set(1, **kwargs)
 
