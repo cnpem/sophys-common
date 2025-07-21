@@ -69,7 +69,7 @@ class PimegaAcquire(Device):
             return self.capture.set(0)
         else:
             # Start backend
-            self.capture.set(1, **kwargs)
+            self.capture.set(1, **kwargs).wait(timeout=30.0)
             # Send start signal to chips. This also checks that the Capture one has finished.
             return self.acquire.set(1, **kwargs)
 
@@ -195,7 +195,9 @@ class PimegaFlyScan(Pimega, FlyerInterface):
         return num2capture == num_captured
 
     def complete(self):
-        return SubscriptionStatus(self.cam.acquire, callback=self._fly_scan_complete)
+        return SubscriptionStatus(
+            self.cam.num_captured, callback=self._fly_scan_complete
+        )
 
     def describe_collect(self):
         descriptor = {"pimega": {}}
