@@ -32,12 +32,19 @@ def read_many(devices, md=None):
 
 
 @parameter_annotation_decorator(_ANNOTATION)
-def mov(*args, md=None):
-    """Move many devices, and bundle their start and end positions in Bluesky documents."""
+def mov(*args, extra_device_readings=None, md=None):
+    """
+    Move many devices, and bundle their start and end positions in Bluesky documents.
+
+    You can also specify extra devices to read the value of before / after the
+    movement with the 'extra_device_readings' parameter.
+    """
 
     @bpp.run_decorator(md=md)
     def __inner():
         devices = [d for i, d in enumerate(args) if i % 2 == 0]
+        if extra_device_readings is not None:
+            devices.extend(extra_device_readings)
 
         yield from _read_many(devices)
         yield from mv(*args)
@@ -47,12 +54,19 @@ def mov(*args, md=None):
 
 
 @parameter_annotation_decorator(_ANNOTATION)
-def rmov(*args, md=None):
-    """Move many devices, and bundle their start and end positions in Bluesky documents."""
+def rmov(*args, extra_device_readings=None, md=None):
+    """
+    Move many devices, and bundle their start and end positions in Bluesky documents.
+
+    You can also specify extra devices to read the value of before / after the
+    movement with the 'extra_device_readings' parameter.
+    """
 
     @bpp.run_decorator(md=md)
     def __inner():
         devices = [d for i, d in enumerate(args) if i % 2 == 0]
+        if extra_device_readings is not None:
+            devices.extend(extra_device_readings)
 
         yield from _read_many(devices)
         yield from mvr(*args)
