@@ -1,6 +1,6 @@
 import bluesky.preprocessors as bpp
-from .annotated_default_plans import scan, DETECTORS_TYPE, \
-    PER_STEP_TYPE, MD_TYPE
+from .annotated_default_plans import scan, DETECTORS_TYPE, PER_STEP_TYPE, MD_TYPE
+
 try:
     # cytools is a drop-in replacement for toolz, implemented in Cython
     from cytools import partition
@@ -12,7 +12,13 @@ __all__ = [
 ]
 
 
-def cumulative_rel_scan(detectors: DETECTORS_TYPE, *args, num:int=None, per_step:PER_STEP_TYPE=None, md:MD_TYPE=None):
+def cumulative_rel_scan(
+    detectors: DETECTORS_TYPE,
+    *args,
+    num: int = None,
+    per_step: PER_STEP_TYPE = None,
+    md: MD_TYPE = None,
+):
     """
     Scan over one multi-motor trajectory relative to current position.
     Without reseting the position after the end of the scan.
@@ -50,15 +56,13 @@ def cumulative_rel_scan(detectors: DETECTORS_TYPE, *args, num:int=None, per_step
     :func:`bluesky.plans.inner_product_scan`
     :func:`bluesky.plans.scan_nd`
     """
-    _md = {'plan_name': 'rel_linear_scan'}
+    _md = {"plan_name": "rel_linear_scan"}
     md = md or {}
     _md.update(md)
     motors = [motor for motor, start, stop in partition(3, args)]
 
     @bpp.relative_set_decorator(motors)
     def inner_rel_scan():
-        return (yield from scan(detectors, *args, num=num,
-                                per_step=per_step, md=_md))
-
+        return (yield from scan(detectors, *args, num=num, per_step=per_step, md=_md))
 
     return (yield from inner_rel_scan())
