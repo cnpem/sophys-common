@@ -1,13 +1,19 @@
 from ophyd import ADComponent
-from ophyd.areadetector import SingleTrigger, DetectorBase, EpicsSignalWithRBV, \
-    EpicsSignalRO, EpicsSignal, Device
+from ophyd.areadetector import (
+    SingleTrigger,
+    DetectorBase,
+    EpicsSignalWithRBV,
+    EpicsSignalRO,
+    EpicsSignal,
+    Device,
+)
 from ophyd.areadetector.plugins import ImagePlugin_V34
 from sophys.common.utils import HDF5PluginWithFileStoreV34
 from .cam import CamBase_V33
 
 
 class ADAravis(Device):
-    
+
     frames_completed = ADComponent(EpicsSignalRO, "ARFramesCompleted")
     frames_underruns = ADComponent(EpicsSignalRO, "ARFrameUnderruns")
     missing_packets = ADComponent(EpicsSignalRO, "ARMissingPackets")
@@ -18,7 +24,9 @@ class ADAravis(Device):
     reset_camera = ADComponent(EpicsSignal, "ARResetCamera")
     connect_camera = ADComponent(EpicsSignal, "ARConnectCamera")
     check_connection = ADComponent(EpicsSignal, "ARCheckConnection")
-    convert_pixel_format = ADComponent(EpicsSignalWithRBV, "ARConvertPixelFormat", string=True)
+    convert_pixel_format = ADComponent(
+        EpicsSignalWithRBV, "ARConvertPixelFormat", string=True
+    )
     shift_dir = ADComponent(EpicsSignalWithRBV, "ARShiftDir", string=True)
     shift_bits = ADComponent(EpicsSignalWithRBV, "ARShiftBits")
 
@@ -27,7 +35,7 @@ class ADGenICam(Device):
 
     frame_rate = ADComponent(EpicsSignalWithRBV, "FrameRate")
     frame_rate_enable = ADComponent(EpicsSignalWithRBV, "FrameRateEnable")
-    trigger_source = ADComponent(EpicsSignalWithRBV , "TriggerSource", string=True)
+    trigger_source = ADComponent(EpicsSignalWithRBV, "TriggerSource", string=True)
     trigger_overlap = ADComponent(EpicsSignalWithRBV, "TriggerOverlap", string=True)
     trigger_software = ADComponent(EpicsSignal, "TriggerSoftware", string=True)
     exposure_mode = ADComponent(EpicsSignalWithRBV, "ExposureMode")

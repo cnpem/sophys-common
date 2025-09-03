@@ -4,11 +4,16 @@ from bluesky.plan_stubs import mv
 
 
 def configure_picolo_acquisition(
-        picolo: protocols.Readable,
-        ch1: typing.Optional[bool] = False, ch2: typing.Optional[bool] = False, 
-        ch3: typing.Optional[bool] = False, ch4: typing.Optional[bool] = False,
-        sample_per_trigger: typing.Optional[int] = 1, sample_rate: typing.Optional[int] = None, 
-        acquisition_time: typing.Optional[float] = None, auto_range: typing.Optional[bool] = True):
+    picolo: protocols.Readable,
+    ch1: typing.Optional[bool] = False,
+    ch2: typing.Optional[bool] = False,
+    ch3: typing.Optional[bool] = False,
+    ch4: typing.Optional[bool] = False,
+    sample_per_trigger: typing.Optional[int] = 1,
+    sample_rate: typing.Optional[int] = None,
+    acquisition_time: typing.Optional[float] = None,
+    auto_range: typing.Optional[bool] = True,
+):
     """
     Configure picoammeter to execute the acquisition.
 
@@ -44,20 +49,27 @@ def configure_picolo_acquisition(
         picolo_channels.append(picolo.ch3)
     if ch4:
         picolo_channels.append(picolo.ch4)
-        
+
     # Enabling pico channels and setting their acquisition mode as continuous
     yield from mv(
-        picolo.ch1.enable, 0,
-        picolo.ch2.enable, 0,
-        picolo.ch3.enable, 0,
-        picolo.ch4.enable, 0
+        picolo.ch1.enable,
+        0,
+        picolo.ch2.enable,
+        0,
+        picolo.ch3.enable,
+        0,
+        picolo.ch4.enable,
+        0,
     )
 
     for channel in picolo_channels:
         yield from mv(
-            channel.enable, 1,
-            channel.auto_range, 1 if auto_range else 0,
-            channel.acquire_mode, 1
+            channel.enable,
+            1,
+            channel.auto_range,
+            1 if auto_range else 0,
+            channel.acquire_mode,
+            1,
         )
 
     yield from mv(picolo.samples_per_trigger, sample_per_trigger)
