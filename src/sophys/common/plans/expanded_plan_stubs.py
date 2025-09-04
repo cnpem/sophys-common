@@ -40,12 +40,14 @@ def mov(*args, extra_device_readings=None, md=None):
     movement with the 'extra_device_readings' parameter.
     """
 
+    devices = [d for i, d in enumerate(args) if i % 2 == 0]
+    if extra_device_readings is not None:
+        devices.extend(extra_device_readings)
+
+    md["detectors"] = devices
+
     @bpp.run_decorator(md=md)
     def __inner():
-        devices = [d for i, d in enumerate(args) if i % 2 == 0]
-        if extra_device_readings is not None:
-            devices.extend(extra_device_readings)
-
         yield from _read_many(devices)
         yield from mv(*args)
         yield from _read_many(devices)
