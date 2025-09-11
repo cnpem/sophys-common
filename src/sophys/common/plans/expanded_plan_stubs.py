@@ -44,11 +44,10 @@ def mov(*args, extra_device_readings=None, md=None):
     if extra_device_readings is not None:
         devices.extend(extra_device_readings)
 
-    if md is None:
-        md = dict()
-    md["detectors"] = devices
+    _md = md or dict()
+    _md["detectors"] = [device.name for device in devices]
 
-    @bpp.run_decorator(md=md)
+    @bpp.run_decorator(md=_md)
     def __inner():
         yield from _read_many(devices)
         yield from mv(*args)
