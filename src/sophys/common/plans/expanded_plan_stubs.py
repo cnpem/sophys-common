@@ -44,6 +44,8 @@ def mov(*args, extra_device_readings=None, md=None):
     if extra_device_readings is not None:
         devices.extend(extra_device_readings)
 
+    if md is None:
+        md = dict()
     md["detectors"] = devices
 
     @bpp.run_decorator(md=md)
