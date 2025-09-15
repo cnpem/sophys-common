@@ -182,7 +182,7 @@ class Pimega(SingleTrigger, PimegaDetector):
 class PimegaFlyScan(Pimega, FlyerInterface):
 
     def kickoff(self):
-        return self.cam.acquire.set(1)
+        return self.cam.acquire.set(1, timeout=15)
 
     def _fly_scan_complete(self, **kwargs):
         """

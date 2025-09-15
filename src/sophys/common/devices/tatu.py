@@ -142,7 +142,7 @@ class TatuOutput(Device):
 class TatuFlyScan(FlyerInterface):
 
     def kickoff(self):
-        return self.activate.set(1)
+        return self.activate.set(1, timeout=10)
 
     def complete(self):
         return PremadeStatus(success=True)
