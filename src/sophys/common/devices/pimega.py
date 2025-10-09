@@ -178,6 +178,14 @@ class Pimega(SingleTrigger, PimegaDetector):
             self._status.set_exception(exc)
             return
 
+    def pause(self):
+        super().pause()
+        self.cam.acquire.set(0).wait()
+
+    def stop(self):
+        super().stop()
+        self.cam.acquire.set(0).wait()
+
 
 class PimegaFlyScan(Pimega, FlyerInterface):
 
