@@ -163,6 +163,14 @@ class Picolo(Device):
     ch3 = Component(PicoloChannel, "Current3:")
     ch4 = Component(PicoloChannel, "Current4:")
 
+    def pause(self):
+        super().pause()
+        self.continuous_mode.stop_acq.set(1).wait()
+
+    def stop(self):
+        super().stop()
+        self.continuous_mode.stop_acq.set(1).wait()
+
 
 class PicoloFlyScan(Picolo, FlyerInterface):
 
