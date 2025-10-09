@@ -210,6 +210,7 @@ class PimegaFlyScan(Pimega, FlyerInterface):
             self.cam.num_captured,
             callback=self._fly_scan_complete,
             timeout=self.complete_timeout,
+            settle_time=3
         )
 
     def describe_collect(self):
