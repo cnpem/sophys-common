@@ -165,7 +165,7 @@ class Picolo(Device):
 
 
 class PicoloFlyScan(Picolo, FlyerInterface):
-    
+
     # 1 week timeout
     complete_timeout = 604800
 
@@ -192,7 +192,8 @@ class PicoloFlyScan(Picolo, FlyerInterface):
 
     def complete(self):
         return SubscriptionStatus(
-            self, callback=self._fly_scan_complete, timeout=self.complete_timeout)
+            self, callback=self._fly_scan_complete, timeout=self.complete_timeout
+        )
 
     def describe_collect(self):
         descriptor = {"picolo": {}}

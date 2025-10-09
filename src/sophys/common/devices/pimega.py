@@ -180,7 +180,7 @@ class Pimega(SingleTrigger, PimegaDetector):
 
 
 class PimegaFlyScan(Pimega, FlyerInterface):
-    
+
     # 1 week timeout
     complete_timeout = 604800
 
@@ -199,7 +199,9 @@ class PimegaFlyScan(Pimega, FlyerInterface):
 
     def complete(self):
         return SubscriptionStatus(
-            self.cam.num_captured, callback=self._fly_scan_complete, timeout=self.complete_timeout
+            self.cam.num_captured,
+            callback=self._fly_scan_complete,
+            timeout=self.complete_timeout,
         )
 
     def describe_collect(self):
