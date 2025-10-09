@@ -165,11 +165,11 @@ class Picolo(Device):
 
     def pause(self):
         super().pause()
-        self.continuous_mode.stop_acq.set(1).wait()
+        self.continuous_mode.stop_acq.set(1)
 
     def stop(self):
         super().stop()
-        self.continuous_mode.stop_acq.set(1).wait()
+        self.continuous_mode.stop_acq.set(1)
 
 
 class PicoloFlyScan(Picolo, FlyerInterface):
