@@ -1,5 +1,3 @@
-# TODO: Substitute for sophys-common implementation
-
 import time
 from enum import Enum
 from typing import Dict, Generator
@@ -80,7 +78,7 @@ class UncoupledShortStroke(PVPositionerIsClose):
     setpoint = FormattedComponent(
         EpicsSignal, "{prefix}Shs{shs_axis}_SP", kind="config"
     )
-    # done = FormattedComponent(EpicsSignalRO, '{prefix}Shs_DesVelZero_RBV', kind="hinted")
+
     atol = 0.02
 
     def __init__(self, prefix, shs_axis, **kwargs):
@@ -121,7 +119,7 @@ class HardwareAcquisition(Device):
     )
     hardware_acquisition_mode = Component(
         EpicsSignalWithRBV, "DCM01:HWAcquisition_Mode", kind="config"
-    )  # Implementar depois write e read pv para formatted
+    )
     file_name = Component(
         EpicsSignalWithRBV, "DCM01:HWAcquisition_FileName", kind="config"
     )
@@ -254,9 +252,6 @@ class _BaseFlyerStep(
 
     def collect(self) -> Generator[Dict, None, None]:
         return self._collect_from_config("step_scan")
-
-
-# Temporary solution, still WIP!
 
 
 class _BaseFlyer(
