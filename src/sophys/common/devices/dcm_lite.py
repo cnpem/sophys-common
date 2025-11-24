@@ -11,6 +11,13 @@ from ophyd import (
 )
 from .motor import ControllableMotor
 
+from warnings import deprecated
+
+# warnings.warn(
+#    "Importing DcmLite and its components is deprecated"
+#    "The new recommended class can be instatiated using the factory provided."
+#    "New module located at sophys.common.devices.hd_dcm", stacklevel=2)
+
 
 class DcmGranite(Device):
     """
@@ -137,6 +144,7 @@ class DcmScan(Device):
     periods_scan = Component(EpicsSignalWithRBV, "Periods")
 
 
+@deprecated("Deprecated use the HD DCM class from sophys.common.devices.hd_dcm instead")
 class DcmLite(Device):
     """
     Device for controlling the DCM Lite monochromator.
