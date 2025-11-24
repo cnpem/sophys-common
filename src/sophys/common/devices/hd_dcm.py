@@ -69,7 +69,15 @@ class GoniometerGantry(PVPositionerIsClose):
     atol = 8e-5
 
 
-class UncoupledShortStroke(PVPositionerIsClose):
+class BaseShs(PVPositionerIsClose):
+    """Base class for HD-DCM short-stroke"""
+
+    error_rms = FormattedComponent(
+        EpicsSignalRO, "{prefix}Shs{shs_axis}_RMSError_RBV", kind="config"
+    )
+
+
+class UncoupledShortStroke(BaseShs):
     """Uncoupled mode positioner for a short stroke axis of the DCM Lite."""
 
     readback = FormattedComponent(
@@ -91,7 +99,7 @@ class UncoupledShortStroke(PVPositionerIsClose):
         super().__init__(prefix=prefix, **kwargs)
 
 
-class CoupledShortStroke(PVPositionerIsClose):
+class CoupledShortStroke(BaseShs):
     """Coupled mode positioner for a short stroke axis of the DCM Lite."""
 
     readback = FormattedComponent(
