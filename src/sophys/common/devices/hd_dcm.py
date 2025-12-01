@@ -244,7 +244,7 @@ class RequiresTatu:
     """Mixin that enforces the presence of a Tatu instance."""
 
     def _require_tatu(self):
-        if not getattr(self, "tatu", None):
+        if getattr(self, "tatu", None) is None:
             raise RuntimeError(
                 f"{self.__class__.__name__} requires a valid 'tatu' instance."
             )
