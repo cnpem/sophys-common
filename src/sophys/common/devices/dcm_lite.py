@@ -11,6 +11,15 @@ from ophyd import (
 )
 from .motor import ControllableMotor
 
+import warnings
+
+warnings.warn(
+    "Importing DcmLite and its components is deprecated"
+    "The new recommended class can be instatiated using the factory provided."
+    "New module located at sophys.common.devices.hd_dcm",
+    stacklevel=2,
+)
+
 
 class DcmGranite(Device):
     """
