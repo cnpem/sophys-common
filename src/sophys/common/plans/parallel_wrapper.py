@@ -19,10 +19,9 @@ def parallel_plans_wrapper(*args):
     current_event = {}
     current_thread = {}
 
-    # Initialize dictionaries to store the thread, event and has_finished data
+    # Initialize dictionaries to store the thread and has_finished data
     for list_id, _ in enumerate(parallel_plan_list):
         plan_has_finished_list[list_id] = Event()
-        current_event[list_id] = parallel_plan_list[list_id]
         current_thread[list_id] = None
 
     # Iterate through all the bluesky messages from all the plans
