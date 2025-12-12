@@ -6,11 +6,8 @@ from threading import Event, Thread
 async def yield_msg(msg):
     await asyncio.wait_for(RE._command_registry[msg[0]](msg), timeout=10**10)
 
-def has_running_plan(plan_has_finished_list):
-    for plan_finished in plan_has_finished_list.values():
-        if not plan_finished.is_set():
-            return True
-    return False
+def all_plans_have_finished(plan_has_finished_list):
+    return all(plan_finished.is_set() for plan_finished in plan_has_finished_list.values())
     
 def parallel_plans_wrapper(*args):
     parallel_plan_list = list(args)
@@ -25,7 +22,7 @@ def parallel_plans_wrapper(*args):
         current_thread[list_id] = None
 
     # Iterate through all the bluesky messages from all the plans
-    while has_running_plan(plan_has_finished_list):
+    while not all_plans_have_finished(plan_has_finished_list):
         for list_id, _ in enumerate(parallel_plan_list):
             try:
                 if not plan_has_finished_list[list_id].is_set():
