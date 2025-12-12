@@ -29,7 +29,7 @@ def parallel_plans_wrapper(*args):
                     if current_thread[list_id] == None:
                         # Yield one message or yield it in a thread in case of a 'wait' message
                         current_event[list_id] = next(parallel_plan_list[list_id])
-                        if current_event[list_id][0] == 'wait' or current_event[list_id][0] == 'sleep':
+                        if current_event[list_id][0] in ['wait', 'wait_for', 'sleep']:
                             current_thread[list_id] = Thread(
                                 target=asyncio.run, args=(yield_msg(current_event[list_id]), ))
                             current_thread[list_id].start()
