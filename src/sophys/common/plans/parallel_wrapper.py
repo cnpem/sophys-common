@@ -3,7 +3,7 @@ import asyncio
 from threading import Event, Thread
 
 
-async def yield_msg(msg):
+async def wait_msg_to_complete(msg):
     await asyncio.wait_for(RE._command_registry[msg[0]](msg), timeout=10**10)
 
 def all_plans_have_finished(plan_has_finished_list):
@@ -31,7 +31,7 @@ def parallel_plans_wrapper(*args):
                         current_event[list_id] = next(parallel_plan_list[list_id])
                         if current_event[list_id][0] in ['wait', 'wait_for', 'sleep']:
                             current_thread[list_id] = Thread(
-                                target=asyncio.run, args=(yield_msg(current_event[list_id]), ))
+                                target=asyncio.run, args=(wait_msg_to_complete(current_event[list_id]), ))
                             current_thread[list_id].start()
                         else:
                             yield current_event[list_id]
