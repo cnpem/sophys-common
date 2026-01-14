@@ -159,7 +159,7 @@ class HDDCML(Device):
     """Main device abstraction for the HDDCM (High-Dynamic Double Crystal Monochromator)."""
 
     bragg = Component(GoniometerGantry, "DCM01:", name="bragg", kind="config")
-    energy = Component(Energy, "DCM01:", name="energy", kind="hinted", limits=(4.6, 35))
+    energy = Component(Energy, "DCM01:", name="energy", kind="hinted")
 
     shs_uncoupled = Component(EpicsSignal, "DCM01:Shs_UncoupledMode", kind="config")
     shs_coupled = Component(EpicsSignalWithRBV, "DCM01:Shs_CoupledMode", kind="config")
