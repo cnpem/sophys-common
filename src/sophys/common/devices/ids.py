@@ -109,6 +109,7 @@ class UndulatorKymaAPU(Device):
         "",
         lazy=True,
         kind=Kind.hinted,
+        atol=0.01
     )
 
     phase_speed = Component(
