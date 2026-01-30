@@ -400,12 +400,6 @@ class MonitorBase(KafkaConsumer):
                     doc = self.__documents.get_by_identifier(id)
                     try:
                         self.__save_queue.put(doc, block=True, timeout=2.0)
-                    except QueueFullException:
-                        self._logger.warning(
-                            "The save queue is full! Could not push the run '{}' unto it.".format(
-                                id
-                            )
-                        )
                     except Exception as e:
                         self._logger.error(
                             "Unhandled exception while trying to save documents. Will try to continue regardless."
@@ -422,9 +416,7 @@ class MonitorBase(KafkaConsumer):
                                     id,
                                 )
 
-                                self.__incomplete_documents.remove(id)
-                                self.__documents.pop(id)
-                                del self.__to_save_documents_save_attempts[id]
+                                _completed_documents.append(id)
                         else:
                             self.__to_save_documents_save_attempts[id] = 1
 
