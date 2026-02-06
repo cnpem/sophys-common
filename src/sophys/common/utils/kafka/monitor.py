@@ -1,5 +1,6 @@
 import logging
 import json
+from collections import defaultdict
 from functools import wraps, partial
 from typing import Optional
 
@@ -295,7 +296,7 @@ class MonitorBase(KafkaConsumer):
         self.__incomplete_documents = incomplete_documents
 
         self.__to_save_documents = list()
-        self.__to_save_documents_save_attempts = dict()
+        self.__to_save_documents_save_attempts = defaultdict(lambda: 0)
 
         self._logger = logging.getLogger(logger_name)
 
@@ -407,18 +408,15 @@ class MonitorBase(KafkaConsumer):
                         self._logger.error("Exception if you're into that:")
                         self._logger.exception(e)
 
-                        if id in self.__to_save_documents_save_attempts:
-                            self.__to_save_documents_save_attempts[id] += 1
+                        self.__to_save_documents_save_attempts[id] += 1
 
-                            if self.__to_save_documents_save_attempts[id] >= 3:
-                                self._logger.error(
-                                    "Failed to save document with id '%s' three times. Giving up.",
-                                    id,
-                                )
+                        if self.__to_save_documents_save_attempts[id] >= 3:
+                            self._logger.error(
+                                "Failed to save document with id '%s' three times. Giving up.",
+                                id,
+                            )
 
-                                _completed_documents.append(id)
-                        else:
-                            self.__to_save_documents_save_attempts[id] = 1
+                            _completed_documents.append(id)
 
                     else:
                         _completed_documents.append(id)
