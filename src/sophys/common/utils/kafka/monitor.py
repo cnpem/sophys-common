@@ -400,7 +400,7 @@ class MonitorBase(KafkaConsumer):
                 for id in self.__to_save_documents:
                     doc = self.__documents.get_by_identifier(id)
                     try:
-                        self.__save_queue.put(doc, block=True, timeout=2.0)
+                        self.__save_queue.put(doc, block=True, timeout=1.0)
                     except Exception as e:
                         self._logger.error(
                             "Unhandled exception while trying to save documents. Will try to continue regardless."
@@ -410,7 +410,7 @@ class MonitorBase(KafkaConsumer):
 
                         self.__to_save_documents_save_attempts[id] += 1
 
-                        if self.__to_save_documents_save_attempts[id] >= 3:
+                        if self.__to_save_documents_save_attempts[id] > 3:
                             self._logger.error(
                                 "Failed to save document with id '%s' three times. Giving up.",
                                 id,
