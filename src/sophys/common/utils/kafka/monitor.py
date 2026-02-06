@@ -347,38 +347,38 @@ class MonitorBase(KafkaConsumer):
         if self.__save_queue is None:
             return
 
-        _completed_documents = list()
-        for id in self.__to_save_documents:
-            doc = self.__documents.get_by_identifier(id)
-            try:
-                self.__save_queue.put(doc, block=True, timeout=1.0)
-            except Exception as e:
-                self._logger.error(
-                    "Unhandled exception while trying to save documents. Will try to continue regardless."
-                )
-                self._logger.error("Exception if you're into that:")
-                self._logger.exception(e)
-
-                self.__to_save_documents_save_attempts[id] += 1
-
-                if self.__to_save_documents_save_attempts[id] > 3:
+        while len(self.__to_save_documents) > 0:
+            _completed_documents = list()
+            for id in self.__to_save_documents:
+                doc = self.__documents.get_by_identifier(id)
+                try:
+                    self.__save_queue.put(doc, block=True, timeout=1.0)
+                except Exception as e:
                     self._logger.error(
-                        "Failed to save document with id '%s' three times. Giving up.",
-                        id,
+                        "Unhandled exception while trying to save documents. Will try to continue regardless."
                     )
+                    self._logger.error("Exception if you're into that:")
+                    self._logger.exception(e)
 
+                    self.__to_save_documents_save_attempts[id] += 1
+
+                    if self.__to_save_documents_save_attempts[id] > 3:
+                        self._logger.error(
+                            "Failed to save document with id '%s' three times. Giving up.",
+                            id,
+                        )
+
+                        _completed_documents.append(id)
+                else:
                     _completed_documents.append(id)
 
-            else:
-                _completed_documents.append(id)
+            for id in _completed_documents:
+                self.__incomplete_documents.remove(id)
+                self.__to_save_documents.remove(id)
+                self.__documents.pop(id)
 
-        for id in _completed_documents:
-            self.__incomplete_documents.remove(id)
-            self.__to_save_documents.remove(id)
-            self.__documents.pop(id)
-
-            if id in self.__to_save_documents_save_attempts:
-                del self.__to_save_documents_save_attempts[id]
+                if id in self.__to_save_documents_save_attempts:
+                    del self.__to_save_documents_save_attempts[id]
 
     def handle_event(self, event):
         self._logger.debug("Event received.")
