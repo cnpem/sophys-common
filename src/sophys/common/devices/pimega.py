@@ -124,6 +124,22 @@ class PimegaCam(CamBase_V33):
     backend_status_message = ADComponent(
         EpicsSignalRO, "ServerStatusMessage_RBV", string=True, kind="omitted"
     )
+    all_modules = ADComponent(
+        EpicsSignalWithRBV, "AllModules", kind="config"
+    )  # Define configuration type of chips and modules (0 -> individual chip; 1 -> all chips one module; 2 -> one chip all modules; 3 -> all chips all modules)
+    sensor_bias = ADComponent(EpicsSignalWithRBV, "SensorBias", kind="config")
+    mb_send_mode = ADComponent(
+        EpicsSignalWithRBV, "MB_SendMode"
+    )  # Medipix Board Send Mode
+    load_equalization = ADComponent(
+        EpicsSignalWithRBV, "LoadEqualization", kind="config"
+    )
+    load_equalization_start = ADComponent(
+        EpicsSignal, "LoadEqualizationStart", kind="config"
+    )
+    dac_defaults_files = ADComponent(
+        EpicsSignalWithRBV, "dac_defaults_files", kind="config"
+    )
 
     def __init__(self, prefix, name, **kwargs):
         super(PimegaCam, self).__init__(prefix, name=name, **kwargs)
