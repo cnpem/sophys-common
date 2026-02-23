@@ -19,9 +19,7 @@ class EpicsSignalIDs(PVPositionerIsClose):
 class PhaseEpicsSignal(PVPositionerIsClose):
     setpoint = Component(EpicsSignal, "Phase-SP")
     readback = Component(EpicsSignalMon, "Phase")
-    actuate = FormattedComponent(
-        EpicsSignal, "{prefix}DevCtrl-Cmd"
-    )
+    actuate = Component(EpicsSignal, "DevCtrl-Cmd")
     actuate_value = 3
 
 
@@ -104,13 +102,7 @@ class UndulatorKymaAPU(Device):
 
     home_axis = Component(EpicsSignal, "HomeAxis-Sel", lazy=True, kind=Kind.omitted)
 
-    phase = Component(
-        PhaseEpicsSignal,
-        "",
-        lazy=True,
-        kind=Kind.hinted,
-        atol=0.01
-    )
+    phase = Component(PhaseEpicsSignal, "", lazy=True, kind=Kind.hinted, atol=0.01)
 
     phase_speed = Component(
         EpicsSignalIDs,
