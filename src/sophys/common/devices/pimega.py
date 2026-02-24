@@ -150,7 +150,7 @@ class Pimega(SingleTrigger, PimegaDetector):
         super(Pimega, self).__init__(prefix, name=name, **kwargs)
 
     def stop(self, *, success=False):
-        self.cam.acquire.set(0).wait()
+        self.cam.acquire.set(0)
         super().stop(success=success)
 
     def stage(self):
