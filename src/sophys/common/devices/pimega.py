@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
 from time import time
+from enum import IntEnum
 from ophyd import (
     ADComponent,
     EpicsSignal,
@@ -16,6 +17,25 @@ from ophyd.areadetector.trigger_mixins import ADTriggerStatus, SingleTrigger
 from .cam import CamBase_V33
 
 from ..utils.status import PremadeStatus
+
+
+class ChipsModulesMode(IntEnum):
+    """Enumeration of options for the `AllModules` PV"""
+
+    INDIVIDUAL_CHIP = 0
+    ALL_CHIPS_ONE_MODULE = 1
+    ONE_CHIP_ALL_MODULES = 2
+    ALL_CHIPS_ALL_MODULES = 3
+
+
+class MedipixBoardSendMode(IntEnum):
+    """Enumeration of options for the `MB_SendMode` PV"""
+
+    ONE_MB_LOW_FLEX = 0
+    ONE_MB_HIGH_FLEX = 1
+    ONE_MB_ALL_FLEX = 2
+    ALL_FLEX_ONE_MODULE = 3
+    ALL_FLEX_ALL_MODULES = 4
 
 
 class Digital2AnalogConverter(Device):
