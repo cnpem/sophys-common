@@ -206,17 +206,10 @@ def test_basic_plan_overflowing_save_queue(
     # Should be in incomplete_documents until we take from the save queue
     uid_1, *_ = run_engine_without_md(bp.count([_hw.det], num=1))
 
+    _wait(lambda: uid_1 in incomplete_documents)
+    # Make some room for the pending run
     assert save_queue.get(True, timeout=2.0) is not None
-    assert save_queue.get(True, timeout=2.0) is not None
-
-    assert uid_1 in incomplete_documents
-
-    # We need to do another run to add everything to the queue
-    uid_2, *_ = run_engine_without_md(bp.count([_hw.det], num=1))
-
-    # Now both should be added
     _wait(lambda: uid_1 not in incomplete_documents)
-    _wait(lambda: uid_2 not in incomplete_documents)
 
 
 def test_concurrent_plan_overflowing_save_queue(
@@ -234,22 +227,14 @@ def test_concurrent_plan_overflowing_save_queue(
 
     for uid in uids:
         _wait(lambda: uid not in incomplete_documents)
-    time.sleep(1.0)
 
     # Should be in incomplete_documents until we take from the save queue
     uid_1, *_ = run_engine_without_md(bp.count([_hw.det], num=1))
 
+    _wait(lambda: uid_1 in incomplete_documents)
+    # Make some room for the pending run
     assert save_queue.get(True, timeout=2.0) is not None
-    assert save_queue.get(True, timeout=2.0) is not None
-
-    assert uid_1 in incomplete_documents
-
-    # We need to do another run to add everything to the queue
-    uid_2, *_ = run_engine_without_md(bp.count([_hw.det], num=1))
-
-    # Now both should be added
     _wait(lambda: uid_1 not in incomplete_documents)
-    _wait(lambda: uid_2 not in incomplete_documents)
 
 
 def test_concurrent_plan_overflowing_save_queue_with_data_loss(
@@ -270,35 +255,9 @@ def test_concurrent_plan_overflowing_save_queue_with_data_loss(
 
     # Should be in incomplete_documents until we take from the save queue
     uid_1, *_ = run_engine_without_md(bp.count([_hw.det], num=1))
-    _wait(lambda: uid_1 in incomplete_documents, timeout=2.0)
-    uid_2, *_ = run_engine_without_md(
-        bp.count([_hw.det], num=1)
-    )  # First retry for uid_1
-    _wait(lambda: uid_2 in incomplete_documents, timeout=3.0)
-    uid_3, *_ = run_engine_without_md(
-        bp.count([_hw.det], num=1)
-    )  # Second retry for uid_1
-    _wait(lambda: uid_3 in incomplete_documents, timeout=4.0)
-    uid_4, *_ = run_engine_without_md(
-        bp.count([_hw.det], num=1)
-    )  # Third (final) retry for uid_1
-    _wait(lambda: uid_4 in incomplete_documents, timeout=5.0)
-
-    _wait(lambda: uid_1 not in incomplete_documents)
-
-    assert save_queue.get(True, timeout=2.0) is not None  # uid_2
-    assert save_queue.get(True, timeout=2.0) is not None  # uid_3
-    assert save_queue.get(True, timeout=2.0) is not None  # uid_4
-    assert save_queue.get(True, timeout=2.0) is not None  # uid_5
-
-    # We need to do another run to add everything to the queue
-    uid_5, *_ = run_engine_without_md(bp.count([_hw.det], num=1))
-
-    # Now all should be added
-    _wait(lambda: uid_2 not in incomplete_documents)
-    _wait(lambda: uid_3 not in incomplete_documents)
-    _wait(lambda: uid_4 not in incomplete_documents)
-    _wait(lambda: uid_5 not in incomplete_documents)
+    _wait(lambda: uid_1 in incomplete_documents)
+    # We didn't make new room for it, so it retries until it gives up.
+    _wait(lambda: uid_1 not in incomplete_documents, timeout=10.0)
 
 
 def test_basic_plan_with_save_metadata(
