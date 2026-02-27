@@ -149,6 +149,10 @@ class Pimega(SingleTrigger, PimegaDetector):
     def __init__(self, name, prefix, **kwargs):
         super(Pimega, self).__init__(prefix, name=name, **kwargs)
 
+    def stop(self, *, success=False):
+        self.cam.acquire.set(0)
+        super().stop(success=success)
+
     def stage(self):
         # Make sure the current acquisition status is 'Done'
         self._acquisition_signal.set(0).wait(timeout=30.0)
