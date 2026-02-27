@@ -1,5 +1,6 @@
 import logging
 import json
+from collections import defaultdict
 from functools import wraps, partial
 from typing import Optional
 
@@ -295,7 +296,7 @@ class MonitorBase(KafkaConsumer):
         self.__incomplete_documents = incomplete_documents
 
         self.__to_save_documents = list()
-        self.__to_save_documents_save_attempts = dict()
+        self.__to_save_documents_save_attempts = defaultdict(lambda: 0)
 
         self._logger = logging.getLogger(logger_name)
 
@@ -399,13 +400,7 @@ class MonitorBase(KafkaConsumer):
                 for id in self.__to_save_documents:
                     doc = self.__documents.get_by_identifier(id)
                     try:
-                        self.__save_queue.put(doc, block=True, timeout=2.0)
-                    except QueueFullException:
-                        self._logger.warning(
-                            "The save queue is full! Could not push the run '{}' unto it.".format(
-                                id
-                            )
-                        )
+                        self.__save_queue.put(doc, block=True, timeout=1.0)
                     except Exception as e:
                         self._logger.error(
                             "Unhandled exception while trying to save documents. Will try to continue regardless."
@@ -413,20 +408,15 @@ class MonitorBase(KafkaConsumer):
                         self._logger.error("Exception if you're into that:")
                         self._logger.exception(e)
 
-                        if id in self.__to_save_documents_save_attempts:
-                            self.__to_save_documents_save_attempts[id] += 1
+                        self.__to_save_documents_save_attempts[id] += 1
 
-                            if self.__to_save_documents_save_attempts[id] >= 3:
-                                self._logger.error(
-                                    "Failed to save document with id '%s' three times. Giving up.",
-                                    id,
-                                )
+                        if self.__to_save_documents_save_attempts[id] > 3:
+                            self._logger.error(
+                                "Failed to save document with id '%s' three times. Giving up.",
+                                id,
+                            )
 
-                                self.__incomplete_documents.remove(id)
-                                self.__documents.pop(id)
-                                del self.__to_save_documents_save_attempts[id]
-                        else:
-                            self.__to_save_documents_save_attempts[id] = 1
+                            _completed_documents.append(id)
 
                     else:
                         _completed_documents.append(id)

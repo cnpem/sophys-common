@@ -131,8 +131,16 @@ def run_engine_without_md(kafka_producer, kafka_topic):
 
 
 @pytest.fixture(scope="function")
-def good_monitor(save_queue, incomplete_documents, kafka_topic) -> ThreadedMonitor:
-    mon = ThreadedMonitor(save_queue, incomplete_documents, kafka_topic, "test")
+def good_monitor(
+    save_queue, incomplete_documents, kafka_topic, kafka_bootstrap_ip
+) -> ThreadedMonitor:
+    mon = ThreadedMonitor(
+        save_queue,
+        incomplete_documents,
+        kafka_topic,
+        "test",
+        bootstrap_servers=[kafka_bootstrap_ip],
+    )
     mon.start()
 
     mon.running.wait(timeout=2.0)
@@ -242,6 +250,55 @@ def test_concurrent_plan_overflowing_save_queue(
     # Now both should be added
     _wait(lambda: uid_1 not in incomplete_documents)
     _wait(lambda: uid_2 not in incomplete_documents)
+
+
+def test_concurrent_plan_overflowing_save_queue_with_data_loss(
+    good_monitor,
+    run_engine_without_md,
+    incomplete_documents,
+    save_queue: queue.Queue,
+    save_queue_size,
+):
+    _hw = hw()
+    uids = []
+    for _ in range(save_queue_size):
+        uid, *_ = run_engine_without_md(bp.count([_hw.det], num=10))
+        uids.append(uid)
+
+    for uid in uids:
+        _wait(lambda: uid not in incomplete_documents)
+
+    # Should be in incomplete_documents until we take from the save queue
+    uid_1, *_ = run_engine_without_md(bp.count([_hw.det], num=1))
+    _wait(lambda: uid_1 in incomplete_documents, timeout=2.0)
+    uid_2, *_ = run_engine_without_md(
+        bp.count([_hw.det], num=1)
+    )  # First retry for uid_1
+    _wait(lambda: uid_2 in incomplete_documents, timeout=3.0)
+    uid_3, *_ = run_engine_without_md(
+        bp.count([_hw.det], num=1)
+    )  # Second retry for uid_1
+    _wait(lambda: uid_3 in incomplete_documents, timeout=4.0)
+    uid_4, *_ = run_engine_without_md(
+        bp.count([_hw.det], num=1)
+    )  # Third (final) retry for uid_1
+    _wait(lambda: uid_4 in incomplete_documents, timeout=5.0)
+
+    _wait(lambda: uid_1 not in incomplete_documents)
+
+    assert save_queue.get(True, timeout=2.0) is not None  # uid_2
+    assert save_queue.get(True, timeout=2.0) is not None  # uid_3
+    assert save_queue.get(True, timeout=2.0) is not None  # uid_4
+    assert save_queue.get(True, timeout=2.0) is not None  # uid_5
+
+    # We need to do another run to add everything to the queue
+    uid_5, *_ = run_engine_without_md(bp.count([_hw.det], num=1))
+
+    # Now all should be added
+    _wait(lambda: uid_2 not in incomplete_documents)
+    _wait(lambda: uid_3 not in incomplete_documents)
+    _wait(lambda: uid_4 not in incomplete_documents)
+    _wait(lambda: uid_5 not in incomplete_documents)
 
 
 def test_basic_plan_with_save_metadata(
