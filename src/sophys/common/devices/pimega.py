@@ -1,11 +1,13 @@
 #!/usr/bin/env python3
 from time import time
+from enum import IntEnum
 from ophyd import (
     ADComponent,
     EpicsSignal,
     EpicsSignalRO,
     EpicsSignalWithRBV,
     Device,
+    EpicsSignalNoValidation,
 )
 from ophyd.status import SubscriptionStatus
 from ophyd.flyers import FlyerInterface
@@ -16,6 +18,25 @@ from ophyd.areadetector.trigger_mixins import ADTriggerStatus, SingleTrigger
 from .cam import CamBase_V33
 
 from ..utils.status import PremadeStatus
+
+
+class ChipsModulesMode(IntEnum):
+    """Enumeration of options for the `AllModules` PV"""
+
+    INDIVIDUAL_CHIP = 0
+    ALL_CHIPS_ONE_MODULE = 1
+    ONE_CHIP_ALL_MODULES = 2
+    ALL_CHIPS_ALL_MODULES = 3
+
+
+class MedipixBoardSendMode(IntEnum):
+    """Enumeration of options for the `MB_SendMode` PV"""
+
+    ONE_MB_LOW_FLEX = 0
+    ONE_MB_HIGH_FLEX = 1
+    ONE_MB_ALL_FLEX = 2
+    ALL_FLEX_ONE_MODULE = 3
+    ALL_FLEX_ALL_MODULES = 4
 
 
 class Digital2AnalogConverter(Device):
@@ -123,6 +144,26 @@ class PimegaCam(CamBase_V33):
     )
     backend_status_message = ADComponent(
         EpicsSignalRO, "ServerStatusMessage_RBV", string=True, kind="omitted"
+    )
+    all_modules = ADComponent(
+        EpicsSignalWithRBV, "AllModules", kind="config"
+    )  # Define configuration type of chips and modules (0 -> individual chip; 1 -> all chips one module; 2 -> one chip all modules; 3 -> all chips all modules)
+    sensor_bias = ADComponent(
+        EpicsSignalWithRBV, "SensorBias", tolerance=2, kind="config"
+    )
+    medipix_board_send_mode = ADComponent(
+        EpicsSignalWithRBV, "MB_SendMode"
+    )  # Medipix Board Send Mode
+    load_equalization = ADComponent(
+        EpicsSignalWithRBV,
+        "LoadEqualization",
+        kind="config",  # TODO: Change to an EpicsSingalWithRBV once the IOC is updated
+    )
+    load_equalization_start = ADComponent(
+        EpicsSignalNoValidation, "LoadEqualizationStart", kind="config"
+    )
+    dac_defaults_files = ADComponent(
+        EpicsSignalWithRBV, "dac_defaults_files", kind="config"
     )
 
     def __init__(self, prefix, name, **kwargs):
