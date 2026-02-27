@@ -7,6 +7,7 @@ from ophyd import (
     EpicsSignalRO,
     EpicsSignalWithRBV,
     Device,
+    EpicsSignalNoValidation,
 )
 from ophyd.status import SubscriptionStatus
 from ophyd.flyers import FlyerInterface
@@ -152,10 +153,12 @@ class PimegaCam(CamBase_V33):
         EpicsSignalWithRBV, "MB_SendMode"
     )  # Medipix Board Send Mode
     load_equalization = ADComponent(
-        EpicsSignalWithRBV, "LoadEqualization", kind="config"
+        EpicsSignalWithRBV,
+        "LoadEqualization",
+        kind="config",  # TODO: Change to an EpicsSingalWithRBV once the IOC is updated
     )
     load_equalization_start = ADComponent(
-        EpicsSignal, "LoadEqualizationStart", kind="config"
+        EpicsSignalNoValidation, "LoadEqualizationStart", kind="config"
     )
     dac_defaults_files = ADComponent(
         EpicsSignalWithRBV, "dac_defaults_files", kind="config"
