@@ -148,7 +148,9 @@ class PimegaCam(CamBase_V33):
     all_modules = ADComponent(
         EpicsSignalWithRBV, "AllModules", kind="config"
     )  # Define configuration type of chips and modules (0 -> individual chip; 1 -> all chips one module; 2 -> one chip all modules; 3 -> all chips all modules)
-    sensor_bias = ADComponent(EpicsSignalWithRBV, "SensorBias", kind="config")
+    sensor_bias = ADComponent(
+        EpicsSignalWithRBV, "SensorBias", tolerance=2, kind="config"
+    )
     medipix_board_send_mode = ADComponent(
         EpicsSignalWithRBV, "MB_SendMode"
     )  # Medipix Board Send Mode
