@@ -346,7 +346,8 @@ class MonitorBase(KafkaConsumer):
             TopicPartition(topic, partition_id), offset - event_data["seq_num"] - 1
         )
 
-    def _save_pending_documents(self):
+    def _commit_pending_documents(self):
+        """Commit pending documents to the save queue, when possible."""
         if self.__save_queue is None:
             return
 
@@ -434,7 +435,7 @@ class MonitorBase(KafkaConsumer):
                 # TODO: Validate number of saved entries via the stop document's num_events
                 # TODO: Validate successful run via the stop document's exit_status
 
-                self._save_pending_documents()
+                self._commit_pending_documents()
 
         except Exception as e:
             self._logger.error("Unhandled exception. Will try to continue regardless.")
