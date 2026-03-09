@@ -155,7 +155,7 @@ class FlyScan(Device):
     end = Component(EpicsSignal, "Scan_Stop", kind="config")
 
 
-class HDDCML(Device):
+class HDDCMLBase(Device):
     """Main device abstraction for the HDDCM (High-Dynamic Double Crystal Monochromator)."""
 
     bragg = Component(GoniometerGantry, "DCM01:", name="bragg", kind="config")
@@ -163,8 +163,6 @@ class HDDCML(Device):
 
     shs_uncoupled = Component(EpicsSignal, "DCM01:Shs_UncoupledMode", kind="config")
     shs_coupled = Component(EpicsSignalWithRBV, "DCM01:Shs_CoupledMode", kind="config")
-
-    base = Component(DcmGranite, "PB01:", name="base", kind="config")
 
     gap_coupled = Component(CoupledShortStroke, "DCM01:", shs_axis="Uy", kind="config")
     pitch_coupled = Component(
@@ -214,6 +212,14 @@ class HDDCML(Device):
         """
         self.tatu = tatu
         super().__init__(prefix, **kwargs)
+
+
+class HDDCML(HDDCMLBase):
+    base = FormattedComponent(DcmGranite, "{prefix}{granite_prefix}", name="base", kind="config")
+
+    def __init__(self, prefix="", tatu=None, granite_prefix="PB01:", **kwargs):
+        self.granite_prefix = granite_prefix
+        super().__init__(prefix, tatu, **kwargs)
 
 
 class _BaseDCMFlyerCommon:
