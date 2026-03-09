@@ -61,14 +61,6 @@ class Energy(PVPositionerIsClose):
     atol = 1e-3
 
 
-class GoniometerGantry(PVPositionerIsClose):
-    """Positioner for controlling the Bragg angle (gantry axis) in the DCM."""
-
-    setpoint = Component(EpicsSignal, "GonRx_SP", kind="omitted")
-    readback = Component(EpicsSignalRO, "GonRx_S_RBV", kind="hinted")
-    atol = 8e-5
-
-
 class BaseShs(PVPositionerIsClose):
     """Base class for HD-DCM short-stroke"""
 
@@ -158,7 +150,7 @@ class FlyScan(Device):
 class HDDCMLBase(Device):
     """Main device abstraction for the HDDCM (High-Dynamic Double Crystal Monochromator)."""
 
-    bragg = Component(GoniometerGantry, "DCM01:", name="bragg", kind="config")
+    bragg = Component(EpicsSignalRO, "DCM01:GonRx_S_RBV", name="bragg", kind="hinted")
     energy = Component(Energy, "DCM01:", name="energy", kind="hinted")
 
     shs_uncoupled = Component(EpicsSignal, "DCM01:Shs_UncoupledMode", kind="config")
