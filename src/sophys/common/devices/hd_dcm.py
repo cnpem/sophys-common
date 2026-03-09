@@ -150,29 +150,29 @@ class FlyScan(Device):
 class HDDCMLBase(Device):
     """Main device abstraction for the HDDCM (High-Dynamic Double Crystal Monochromator)."""
 
-    bragg = Component(EpicsSignalRO, "DCM01:GonRx_S_RBV", name="bragg", kind="hinted")
-    energy = Component(Energy, "DCM01:", name="energy", kind="hinted")
+    bragg = Component(EpicsSignalRO, "GonRx_S_RBV", name="bragg", kind="hinted")
+    energy = Component(Energy, "", name="energy", kind="hinted")
 
-    shs_uncoupled = Component(EpicsSignal, "DCM01:Shs_UncoupledMode", kind="config")
-    shs_coupled = Component(EpicsSignalWithRBV, "DCM01:Shs_CoupledMode", kind="config")
+    shs_uncoupled = Component(EpicsSignal, "Shs_UncoupledMode", kind="config")
+    shs_coupled = Component(EpicsSignalWithRBV, "Shs_CoupledMode", kind="config")
 
     shs_enable = Component(EpicsSignalRO, "Shs_Enable_RBV", kind="config")
     gon_enable = Component(EpicsSignalRO, "GonRx_Enable_RBV", kind="config")
 
-    gap_coupled = Component(CoupledShortStroke, "DCM01:", shs_axis="Uy", kind="config")
+    gap_coupled = Component(CoupledShortStroke, "", shs_axis="Uy", kind="config")
     pitch_coupled = Component(
-        CoupledShortStroke, "DCM01:", shs_axis="Rx", kind="config"
+        CoupledShortStroke, "", shs_axis="Rx", kind="config"
     )
-    roll_coupled = Component(CoupledShortStroke, "DCM01:", shs_axis="Rz", kind="config")
+    roll_coupled = Component(CoupledShortStroke, "", shs_axis="Rz", kind="config")
 
     gap_uncoupled = Component(
-        UncoupledShortStroke, "DCM01:", shs_axis="Uy", kind="config"
+        UncoupledShortStroke, "", shs_axis="Uy", kind="config"
     )
     pitch_uncoupled = Component(
-        UncoupledShortStroke, "DCM01:", shs_axis="Rx", kind="config"
+        UncoupledShortStroke, "", shs_axis="Rx", kind="config"
     )
     roll_uncoupled = Component(
-        UncoupledShortStroke, "DCM01:", shs_axis="Rz", kind="config"
+        UncoupledShortStroke, "", shs_axis="Rz", kind="config"
     )
 
     @property
@@ -211,12 +211,12 @@ class HDDCMLBase(Device):
 
 class HDDCML(HDDCMLBase):
     base = FormattedComponent(
-        DcmGranite, "{prefix}{granite_prefix}", name="base", kind="config"
+        DcmGranite, "{granite_prefix}", name="base", kind="config"
     )
 
     def __init__(self, prefix="", tatu=None, granite_prefix="PB01:", **kwargs):
-        self.granite_prefix = granite_prefix
-        super().__init__(prefix, tatu, **kwargs)
+        self.granite_prefix = prefix + granite_prefix
+        super().__init__(f"{prefix}DCM01:", tatu, **kwargs)
 
 
 class _BaseDCMFlyerCommon:
