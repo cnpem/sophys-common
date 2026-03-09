@@ -1,5 +1,5 @@
 from bluesky.plans import scan
-from bluesky.plan_stubs import move_per_step, sleep, trigger_and_read 
+from bluesky.plan_stubs import move_per_step, sleep, trigger_and_read
 from sophys.common.plans.annotated_default_plans import (
     DETECTORS_TYPE,
     PER_STEP_TYPE,
@@ -65,6 +65,4 @@ def scan_with_delay(
     if per_step is not None:
         per_step_scan = per_step
 
-    yield from scan(
-        detectors, *args, num=num, per_step=per_step_scan, md=md
-    )
+    yield from scan(detectors, *args, num=num, per_step=per_step_scan, md=md)
