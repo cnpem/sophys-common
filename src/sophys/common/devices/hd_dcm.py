@@ -156,6 +156,9 @@ class HDDCMLBase(Device):
     shs_uncoupled = Component(EpicsSignal, "DCM01:Shs_UncoupledMode", kind="config")
     shs_coupled = Component(EpicsSignalWithRBV, "DCM01:Shs_CoupledMode", kind="config")
 
+    shs_enable = Component(EpicsSignalRO, "Shs_Enable_RBV", kind="config")
+    gon_enable = Component(EpicsSignalRO, "GonRx_Enable_RBV", kind="config")
+
     gap_coupled = Component(CoupledShortStroke, "DCM01:", shs_axis="Uy", kind="config")
     pitch_coupled = Component(
         CoupledShortStroke, "DCM01:", shs_axis="Rx", kind="config"
