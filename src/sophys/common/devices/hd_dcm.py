@@ -207,7 +207,9 @@ class HDDCMLBase(Device):
 
 
 class HDDCML(HDDCMLBase):
-    base = FormattedComponent(DcmGranite, "{prefix}{granite_prefix}", name="base", kind="config")
+    base = FormattedComponent(
+        DcmGranite, "{prefix}{granite_prefix}", name="base", kind="config"
+    )
 
     def __init__(self, prefix="", tatu=None, granite_prefix="PB01:", **kwargs):
         self.granite_prefix = granite_prefix
