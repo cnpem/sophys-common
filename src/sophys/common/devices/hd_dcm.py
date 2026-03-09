@@ -160,20 +160,12 @@ class HDDCMLBase(Device):
     gon_enable = Component(EpicsSignalRO, "GonRx_Enable_RBV", kind="config")
 
     gap_coupled = Component(CoupledShortStroke, "", shs_axis="Uy", kind="config")
-    pitch_coupled = Component(
-        CoupledShortStroke, "", shs_axis="Rx", kind="config"
-    )
+    pitch_coupled = Component(CoupledShortStroke, "", shs_axis="Rx", kind="config")
     roll_coupled = Component(CoupledShortStroke, "", shs_axis="Rz", kind="config")
 
-    gap_uncoupled = Component(
-        UncoupledShortStroke, "", shs_axis="Uy", kind="config"
-    )
-    pitch_uncoupled = Component(
-        UncoupledShortStroke, "", shs_axis="Rx", kind="config"
-    )
-    roll_uncoupled = Component(
-        UncoupledShortStroke, "", shs_axis="Rz", kind="config"
-    )
+    gap_uncoupled = Component(UncoupledShortStroke, "", shs_axis="Uy", kind="config")
+    pitch_uncoupled = Component(UncoupledShortStroke, "", shs_axis="Rx", kind="config")
+    roll_uncoupled = Component(UncoupledShortStroke, "", shs_axis="Rz", kind="config")
 
     @property
     def gap(self):
