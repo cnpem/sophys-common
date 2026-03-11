@@ -388,6 +388,9 @@ class MonitorBase(KafkaConsumer):
 
     def handle_event(self, event):
         self._logger.debug("Event received.")
+
+        seek_start = False
+
         try:
             data = event.value
 
@@ -413,10 +416,12 @@ class MonitorBase(KafkaConsumer):
             try:
                 if len(self.__documents[data]) == 0:
                     # In the middle of a run, try to go back to the beginning
-                    self.seek_start(event.topic, event.partition, event.offset, data[1])
-                    return
+                    seek_start = True
             except KeyError:
                 # In the middle of a run, try to go back to the beginning
+                seek_start = True
+
+            if seek_start:
                 self.seek_start(event.topic, event.partition, event.offset, data[1])
                 return
 
@@ -441,6 +446,9 @@ class MonitorBase(KafkaConsumer):
             self._logger.error("Unhandled exception. Will try to continue regardless.")
             self._logger.error("Exception if you're into that:")
             self._logger.exception(e)
+
+            self._logger.error("The full document that caused the issue:")
+            self._logger.error(event)
 
     def run(self):
         """Start monitoring the Kafka topic."""
