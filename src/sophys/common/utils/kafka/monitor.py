@@ -447,6 +447,9 @@ class MonitorBase(KafkaConsumer):
             self._logger.error("Exception if you're into that:")
             self._logger.exception(e)
 
+            self._logger.error("The full document that caused the issue:")
+            self._logger.error(event)
+
     def run(self):
         """Start monitoring the Kafka topic."""
         partition_number = list(self.partitions_for_topic(self.topic()))[0]
