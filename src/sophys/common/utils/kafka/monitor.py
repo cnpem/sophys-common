@@ -377,11 +377,16 @@ class MonitorBase(KafkaConsumer):
                     self.__save_queue.put(doc, block=True, timeout=1.0)
                     self.__saved_document_uids.add(id)
                 except Exception as e:
-                    self._logger.error(
-                        "Unhandled exception while trying to save documents. Will try to continue regardless."
-                    )
-                    self._logger.error("Exception if you're into that:")
-                    self._logger.exception(e)
+                    if isinstance(e, QueueFullException):
+                        self._logger.warning(
+                            "Save queue is full. Failed to add run '%s'.", id
+                        )
+                    else:
+                        self._logger.error(
+                            "Unhandled exception while trying to save documents. Will try to continue regardless."
+                        )
+                        self._logger.error("Exception if you're into that:")
+                        self._logger.exception(e)
 
                     self.__to_save_documents_save_attempts[id] += 1
 
