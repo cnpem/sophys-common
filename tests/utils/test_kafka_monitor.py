@@ -1,38 +1,13 @@
 import pytest
 
 import queue
-from datetime import datetime, timezone
-
-import msgpack
-import msgpack_numpy as _m
-
-from kafka.producer import KafkaProducer
-from kafka.consumer import KafkaConsumer
-from kafka.structs import TopicPartition
-
-import numpy as np
 
 from ophyd.sim import hw
 from bluesky import RunEngine, plans as bp, plan_stubs as bps, preprocessors as bpp
 
 from sophys.common.utils.kafka.monitor import ThreadedMonitor
 
-from sophys.common.utils.kafka.monitor import seek_start, seek_back_in_time
-
 from . import _wait
-
-
-_m.patch()
-
-
-@pytest.fixture(scope="session")
-def kafka_bootstrap_ip():
-    return "localhost:9092"
-
-
-@pytest.fixture(scope="session")
-def kafka_topic():
-    return "test_bluesky_raw_docs"
 
 
 @pytest.fixture(scope="function")
@@ -85,30 +60,6 @@ def incomplete_documents(_incomplete_documents):
 
 
 @pytest.fixture(scope="function")
-def kafka_producer(kafka_bootstrap_ip):
-    producer = KafkaProducer(
-        bootstrap_servers=[kafka_bootstrap_ip], value_serializer=msgpack.dumps
-    )
-    yield producer
-    producer.flush()
-    producer.close()
-
-
-@pytest.fixture(scope="function")
-def kafka_consumer(kafka_bootstrap_ip, kafka_topic):
-    consumer = KafkaConsumer(
-        kafka_topic,
-        bootstrap_servers=[kafka_bootstrap_ip],
-        value_deserializer=msgpack.unpackb,
-    )
-
-    # Connect the consumer properly to the topic
-    consumer.poll(timeout_ms=100, max_records=1, update_offsets=False)
-
-    return consumer
-
-
-@pytest.fixture(scope="function")
 def base_md(tmp_path_factory):
     return {
         "metadata_save_file_location": str(tmp_path_factory.mktemp("metadata")),
@@ -119,13 +70,6 @@ def base_md(tmp_path_factory):
 @pytest.fixture(scope="function")
 def run_engine_with_md(base_md, kafka_producer, kafka_topic):
     RE = RunEngine(base_md)
-    RE.subscribe(lambda name, doc: kafka_producer.send(kafka_topic, (name, doc)))
-    return RE
-
-
-@pytest.fixture(scope="function")
-def run_engine_without_md(kafka_producer, kafka_topic):
-    RE = RunEngine()
     RE.subscribe(lambda name, doc: kafka_producer.send(kafka_topic, (name, doc)))
     return RE
 
@@ -378,62 +322,6 @@ def test_basic_custom_plan_with_two_nested_runs(
     assert len(docs) == 4, docs.get_raw_data()
 
 
-def test_seek_start(
-    kafka_producer, kafka_consumer: KafkaConsumer, kafka_topic, run_engine_without_md
-):
-    partition_number = list(kafka_consumer.partitions_for_topic(kafka_topic))[0]
-    topic_partition = TopicPartition(kafka_topic, partition_number)
-    original_offset = kafka_consumer.position(topic_partition)
-
-    uid, *_ = run_engine_without_md(bp.count([hw().det], num=10))
-
-    def seek_and_assert_positions(offset: int, seeked_event_name: str):
-        kafka_consumer.seek(topic_partition, offset)
-
-        records = kafka_consumer.poll(
-            timeout_ms=1_000, max_records=1, update_offsets=False
-        )
-        event_name, event_data = records[topic_partition][0].value
-
-        assert event_name == seeked_event_name
-
-        seek_start(
-            kafka_consumer,
-            kafka_topic,
-            partition_number,
-            offset,
-            event_name,
-            event_data,
-        )
-
-        records = kafka_consumer.poll(
-            timeout_ms=1_000, max_records=1, update_offsets=False
-        )
-        event_name, _ = records[topic_partition][0].value
-
-        assert event_name == "start"
-
-    kafka_producer.flush(timeout=1.0)
-    while kafka_consumer.poll(timeout_ms=100) != {}:
-        pass
-
-    new_offset = kafka_consumer.position(topic_partition)
-    # start (1) + descriptor (1) + events (10) + stop (1)
-    assert new_offset - original_offset == 13
-
-    # From stop to start
-    seek_and_assert_positions(new_offset - 1, "stop")
-
-    # From start to start (do nothing)
-    seek_and_assert_positions(original_offset, "start")
-
-    # From event in the middle to start
-    seek_and_assert_positions(original_offset + 5, "event")
-
-    # From descriptor to start
-    seek_and_assert_positions(original_offset + 1, "descriptor")
-
-
 def test_seek_start_in_monitor(
     run_engine_without_md,
     incomplete_documents,
@@ -476,46 +364,3 @@ def test_seek_start_in_monitor(
         )
 
     run_engine_without_md(custom_plan())
-
-
-def test_seek_back_in_time(
-    kafka_producer, kafka_consumer: KafkaConsumer, kafka_topic, run_engine_without_md
-):
-    partition_number = list(kafka_consumer.partitions_for_topic(kafka_topic))[0]
-    topic_partition = TopicPartition(kafka_topic, partition_number)
-
-    kafka_consumer.seek_to_beginning()
-    oldest_offset = kafka_consumer.position(topic_partition)
-
-    kafka_consumer.seek_to_end()
-    newest_offset = kafka_consumer.position(topic_partition)
-
-    if newest_offset - oldest_offset < 5:
-        # Add some new time-spaced data.
-        for _ in range(5):
-            run_engine_without_md(bp.count([hw().det], num=2, delay=1))
-        while kafka_consumer.poll(timeout_ms=100) != {}:
-            pass
-        newest_offset = kafka_consumer.position(topic_partition)
-
-    offsets = [round(x) for x in np.linspace(oldest_offset, newest_offset - 1, num=5)]
-    timestamps = list()
-    for offset in offsets:
-        kafka_consumer.seek(topic_partition, offset)
-
-        record = kafka_consumer.poll(
-            timeout_ms=1_000, max_records=1, update_offsets=False
-        )[topic_partition][0]
-        timestamps.append(record.timestamp // 1000)
-
-    for expected_timestamp in timestamps:
-        time_delta = datetime.now(timezone.utc) - datetime.fromtimestamp(
-            expected_timestamp, tz=timezone.utc
-        )
-        seek_back_in_time(kafka_consumer, time_delta)
-
-        record = kafka_consumer.poll(
-            timeout_ms=1_000, max_records=1, update_offsets=False
-        )[topic_partition][0]
-
-        assert np.isclose(record.timestamp // 1000, expected_timestamp, atol=1)

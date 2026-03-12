@@ -1,7 +1,7 @@
 import logging
 import json
 from collections import defaultdict
-from datetime import datetime, timedelta, timezone, tzinfo
+from datetime import timedelta
 from functools import wraps, partial
 from typing import Optional
 
@@ -11,9 +11,10 @@ from queue import Full as QueueFullException, Queue
 import msgpack_numpy as _m
 
 from kafka import KafkaConsumer
-from kafka.structs import TopicPartition
 
 from event_model import EventPage, unpack_event_page
+
+from .consumer import seek_start_document, seek_back_in_time
 
 
 def _get_uid_from_event_data(event_data: dict):
@@ -35,60 +36,6 @@ def _get_descriptor_uid_from_event_data(event_data: dict):
 def _get_start_uid_from_event_data(event_data: dict):
     # TODO: Deal with non stop documents.
     return event_data.get("run_start", None)
-
-
-def seek_start(
-    consumer: KafkaConsumer,
-    topic: str,
-    partition_id: int,
-    offset: int,
-    event_name: str,
-    event_data: dict,
-) -> int:
-    """Attempt to seek into the start document of the current run."""
-    topic_partition = TopicPartition(topic, partition_id)
-
-    beginning_offset = consumer.beginning_offsets([topic_partition])[topic_partition]
-    while event_name != "start" and offset != beginning_offset:
-        if "seq_num" in event_data:
-            offset = offset - event_data["seq_num"] - 1
-        else:
-            offset -= 1
-        consumer.seek(topic_partition, offset)
-
-        records = consumer.poll(timeout_ms=5_000, max_records=1, update_offsets=False)
-        assert (
-            topic_partition in records
-        ), "Could not retrieve data from Kafka in seek_start."
-
-        event_name, event_data = records[topic_partition][0].value
-
-    return offset
-
-
-def seek_back_in_time(
-    consumer: KafkaConsumer,
-    rewind_time: timedelta,
-    server_timezone: tzinfo = timezone.utc,
-):
-    """Rewind the consumer by 'rewind_time'."""
-    now = datetime.now(server_timezone)
-
-    all_partitions = [
-        TopicPartition(topic_name, p)
-        for topic_name in consumer.subscription()
-        for p in consumer.partitions_for_topic(topic_name)
-    ]
-
-    # NOTE: offsets_for_times expects timestamps in ms, so we multiply by 1000.
-    rewind_timestamp = int((now - rewind_time).timestamp() * 1000)
-    timestamp_offsets = consumer.offsets_for_times(
-        {p: rewind_timestamp for p in all_partitions}
-    )
-
-    for partition, offset_ts in timestamp_offsets.items():
-        if offset_ts is not None:
-            consumer.seek(partition, offset_ts.offset)
 
 
 class DocumentDictionary(dict):
@@ -404,7 +351,7 @@ class MonitorBase(KafkaConsumer):
             should_seek_start = True
 
         if should_seek_start:
-            seek_start(self, event.topic, event.partition, event.offset, *event.value)
+            seek_start_document(self, event)
 
         return should_seek_start
 
