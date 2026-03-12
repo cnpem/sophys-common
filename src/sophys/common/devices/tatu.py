@@ -140,6 +140,14 @@ class TatuOutput(Device):
 
 
 class TatuFlyScan(FlyerInterface):
+    
+    def pause(self):
+        super().pause()
+        self.activate.set(0).wait()
+
+    def stop(self):
+        super().stop()
+        self.activate.set(0).wait()
 
     def kickoff(self):
         return self.activate.set(1, timeout=10)
