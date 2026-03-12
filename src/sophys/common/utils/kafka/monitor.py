@@ -321,6 +321,7 @@ class MonitorBase(KafkaConsumer):
         incomplete_documents: list,
         topic_name: str,
         logger_name: str,
+        hour_offset: Optional[float] = None,
         **configs,
     ):
         """
@@ -337,6 +338,8 @@ class MonitorBase(KafkaConsumer):
             The Kafka topic to monitor.
         logger_name : str, optional
             Name of the logger to use for info / debug during the monitor processing.
+        hour_offset : float, optional
+            Time in hours to look back in Kafka right after the start of monitoring.
         **configs : dict or keyword arguments
             Extra arguments to pass to the KafkaConsumer's constructor.
         """
@@ -344,6 +347,8 @@ class MonitorBase(KafkaConsumer):
 
         self.name = repr(self)
         self.running = Event()
+
+        self.__hour_offset = hour_offset
 
         self.__documents = MultipleDocumentDictionary()
         self.__save_queue = save_queue
@@ -507,6 +512,9 @@ class MonitorBase(KafkaConsumer):
         #     The timeout time here doesn't matter too much, as we don't care
         #     whether we received new data or not.
         self.poll(timeout_ms=100, max_records=1, update_offsets=False)
+
+        if self.__hour_offset is not None:
+            seek_back_in_time(self, timedelta(hours=self.__hour_offset))
 
         self.running.set()
         while not self._closed:
