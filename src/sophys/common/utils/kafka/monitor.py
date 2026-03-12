@@ -401,10 +401,13 @@ class MonitorBase(KafkaConsumer):
                 return
 
             if data[0] == "start":
-                self._logger.info("Received a 'start' document.")
-
                 self.__documents.append(data)
+
                 new_run_uid = self.__documents[data].identifier
+                self._logger.info(
+                    "Run '{}': Received a 'start' document.".format(new_run_uid)
+                )
+
                 self.__incomplete_documents.append(new_run_uid)
 
                 self.__documents[data].subscribe(
