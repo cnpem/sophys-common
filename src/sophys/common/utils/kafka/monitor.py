@@ -361,6 +361,22 @@ class MonitorBase(KafkaConsumer):
         """Get the name of the Kafka topic monitored by this object."""
         return "".join(self.subscription())
 
+    def _seek_start_if_needed(self, event) -> bool:
+        should_seek_start = False
+
+        try:
+            if event.value[0] != "start" and len(self.__documents[event.value]) == 0:
+                # In the middle of a run, try to go back to the beginning
+                should_seek_start = True
+        except KeyError:
+            # In the middle of a run, try to go back to the beginning
+            should_seek_start = True
+
+        if should_seek_start:
+            seek_start(self, event.topic, event.partition, event.offset, *event.value)
+
+        return should_seek_start
+
     def _commit_pending_documents(self):
         """Commit pending documents to the save queue, when possible."""
         if self.__save_queue is None:
@@ -406,64 +422,50 @@ class MonitorBase(KafkaConsumer):
                 if id in self.__to_save_documents_save_attempts:
                     del self.__to_save_documents_save_attempts[id]
 
-    def handle_event(self, event):
-        self._logger.debug("Event received.")
-
-        should_seek_start = False
+    def _handle_kafka_event(self, event):
+        data = event.value
+        if len(data) != 2:
+            self._logger.warning(
+                "Event data does not have two elements.\n {}".format(str(data))
+            )
+            return
 
         try:
-            data = event.value
-
-            if len(data) != 2:
-                self._logger.warning(
-                    "Event data does not have two elements.\n {}".format(str(data))
-                )
+            if self._seek_start_if_needed(event):
                 return
 
-            if data[0] == "start":
-                self.__documents.append(data)
+            match data:
+                case ("start", _):
+                    self.__documents.append(data)
 
-                new_run_uid = self.__documents[data].identifier
-                self._logger.info(
-                    "Run '{}': Received a 'start' document.".format(new_run_uid)
-                )
-
-                self.__incomplete_documents.append(new_run_uid)
-
-                self.__documents[data].subscribe(
-                    partial(self._run_subscriptions, new_run_uid)
-                )
-
-                return
-
-            try:
-                if len(self.__documents[data]) == 0:
-                    # In the middle of a run, try to go back to the beginning
-                    should_seek_start = True
-            except KeyError:
-                # In the middle of a run, try to go back to the beginning
-                should_seek_start = True
-
-            if should_seek_start:
-                seek_start(self, event.topic, event.partition, event.offset, *data)
-                return
-
-            self.__documents[data].append(*data)
-
-            if data[0] == "stop":
-                self._logger.info(
-                    "Run '{}': Received a 'stop' document.".format(
-                        self.__documents[data].identifier
+                    new_run_uid = self.__documents[data].identifier
+                    self._logger.info(
+                        "Run '{}': Received a 'start' document.".format(new_run_uid)
                     )
-                )
 
-                self.__documents[data].clear_subscriptions()
-                self.__to_save_documents.append(self.__documents[data].identifier)
+                    self.__incomplete_documents.append(new_run_uid)
 
-                # TODO: Validate number of saved entries via the stop document's num_events
-                # TODO: Validate successful run via the stop document's exit_status
+                    self.__documents[data].subscribe(
+                        partial(self._run_subscriptions, new_run_uid)
+                    )
+                case ("stop", _):
+                    self._logger.info(
+                        "Run '{}': Received a 'stop' document.".format(
+                            self.__documents[data].identifier
+                        )
+                    )
 
-                self._commit_pending_documents()
+                    self.__documents[data].append(*data)
+
+                    self.__documents[data].clear_subscriptions()
+                    self.__to_save_documents.append(self.__documents[data].identifier)
+
+                    # TODO: Validate number of saved entries via the stop document's num_events
+                    # TODO: Validate successful run via the stop document's exit_status
+
+                    self._commit_pending_documents()
+                case (_, _):
+                    self.__documents[data].append(*data)
 
         except Exception as e:
             self._logger.error("Unhandled exception. Will try to continue regardless.")
@@ -475,15 +477,17 @@ class MonitorBase(KafkaConsumer):
 
     def run(self):
         """Start monitoring the Kafka topic."""
-        partition_number = list(self.partitions_for_topic(self.topic()))[0]
-        self._update_fetch_positions([TopicPartition(self.topic(), partition_number)])
+        # NOTE: Configure the current offset before setting the 'running' flag.
+        #     The timeout time here doesn't matter too much, as we don't care
+        #     whether we received new data or not.
+        self.poll(timeout_ms=100, max_records=1, update_offsets=False)
 
         self.running.set()
         while not self._closed:
             try:
                 for event in self:
-                    self.handle_event(event)
-            except StopIteration:
+                    self._handle_kafka_event(event)
+            except (StopIteration, AssertionError):
                 pass
 
         self.running.clear()

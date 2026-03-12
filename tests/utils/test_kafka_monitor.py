@@ -132,8 +132,7 @@ def run_engine_without_md(kafka_producer, kafka_topic):
     return RE
 
 
-@pytest.fixture(scope="function")
-def good_monitor(
+def _create_good_monitor(
     save_queue, incomplete_documents, kafka_topic, kafka_bootstrap_ip
 ) -> ThreadedMonitor:
     mon = ThreadedMonitor(
@@ -148,6 +147,15 @@ def good_monitor(
     mon.running.wait(timeout=2.0)
 
     return mon
+
+
+@pytest.fixture(scope="function")
+def good_monitor(
+    save_queue, incomplete_documents, kafka_topic, kafka_bootstrap_ip
+) -> ThreadedMonitor:
+    return _create_good_monitor(
+        save_queue, incomplete_documents, kafka_topic, kafka_bootstrap_ip
+    )
 
 
 #
@@ -426,3 +434,47 @@ def test_seek_start(kafka_producer, kafka_consumer, kafka_topic, run_engine_with
 
     # From descriptor to start
     seek_and_assert_positions(original_offset + 1, "descriptor")
+
+
+def test_seek_start_in_monitor(
+    run_engine_without_md,
+    incomplete_documents,
+    save_queue: queue.Queue,
+    kafka_topic,
+    kafka_bootstrap_ip,
+):
+    det = hw().det
+
+    # NOTE: Add another run before this one just to check it doesn't skip into the previous run.
+    run_engine_without_md(bp.count([det], num=1))
+
+    def custom_plan():
+        yield from bps.open_run({})
+        yield from bps.declare_stream(det, name="primary")
+        for _ in range(5):
+            yield from bps.create()
+            yield from bps.read(det)
+            yield from bps.save()
+
+        monitor = _create_good_monitor(
+            save_queue, incomplete_documents, kafka_topic, kafka_bootstrap_ip
+        )
+        assert monitor.is_alive()
+
+        for _ in range(5):
+            yield from bps.create()
+            yield from bps.read(det)
+            yield from bps.save()
+        yield from bps.close_run("success")
+
+        # Only populated if 'monitor' is working properly, and rewinded to the start document.
+        assert save_queue.get(True, timeout=2.0) is not None
+
+        monitor.close()
+        _wait(
+            lambda: not monitor.running.is_set(),
+            timeout=2.0,
+            timeout_msg="Monitor took too long to close.",
+        )
+
+    run_engine_without_md(custom_plan())
