@@ -62,9 +62,6 @@ def seek_start(
 
         event_name, event_data = records[topic_partition][0].value
 
-    if consumer.position(topic_partition) != offset:
-        consumer.seek(topic_partition, offset)
-
     return offset
 
 

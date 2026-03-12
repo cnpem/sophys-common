@@ -376,52 +376,53 @@ def test_seek_start(kafka_producer, kafka_consumer, kafka_topic, run_engine_with
     _hw = hw()
     det = _hw.det
 
+    uid, *_ = run_engine_without_md(bp.count([det], num=10))
+
     partition_number = list(kafka_consumer.partitions_for_topic(kafka_topic))[0]
     topic_partition = TopicPartition(kafka_topic, partition_number)
     original_offset = kafka_consumer.position(topic_partition)
 
-    uid, *_ = run_engine_without_md(bp.count([det], num=10))
+    def seek_and_assert_positions(offset: int, seeked_event_name: str):
+        kafka_consumer.seek(topic_partition, offset)
 
-    kafka_producer.flush(timeout=5.0)
-    kafka_consumer.poll(timeout_ms=5_000)
+        records = kafka_consumer.poll(
+            timeout_ms=1_000, max_records=1, update_offsets=False
+        )
+        event_name, event_data = records[topic_partition][0].value
+
+        assert event_name == seeked_event_name
+
+        seek_start(
+            kafka_consumer,
+            kafka_topic,
+            partition_number,
+            offset,
+            event_name,
+            event_data,
+        )
+
+        records = kafka_consumer.poll(
+            timeout_ms=1_000, max_records=1, update_offsets=False
+        )
+        event_name, _ = records[topic_partition][0].value
+
+        assert event_name == "start"
+
+    kafka_producer.flush(timeout=1.0)
+    kafka_consumer.poll(timeout_ms=1_000)
 
     new_offset = kafka_consumer.position(topic_partition)
     # start (1) + descriptor (1) + events (10) + stop (1)
     assert new_offset - original_offset == 13
 
     # From stop to start
-    new_offset = seek_start(
-        kafka_consumer, kafka_topic, partition_number, new_offset, "stop", {}
-    )
-    assert kafka_consumer.position(topic_partition) == new_offset
-    assert new_offset == original_offset
-
-    # From event in the middle to start
-    kafka_consumer.seek(topic_partition, original_offset + 5)
-    records = kafka_consumer.poll(timeout_ms=5_000, max_records=1)
-    new_offset = seek_start(
-        kafka_consumer,
-        kafka_topic,
-        partition_number,
-        original_offset + 5,
-        *records[topic_partition][0].value,
-    )
-    assert kafka_consumer.position(topic_partition) == new_offset
-    assert new_offset == original_offset
+    seek_and_assert_positions(new_offset - 1, "stop")
 
     # From start to start (do nothing)
-    records = kafka_consumer.poll(timeout_ms=5_000, max_records=1)
-    if topic_partition not in records:
-        # NOTE: This test won't work for kafka-python-ng,
-        # which doesn't return the correct thing here.
-        return
+    seek_and_assert_positions(original_offset, "start")
 
-    new_offset = seek_start(
-        kafka_consumer,
-        kafka_topic,
-        partition_number,
-        original_offset,
-        *records[topic_partition][0].value,
-    )
-    assert kafka_consumer.position(topic_partition) == new_offset
-    assert new_offset == original_offset
+    # From event in the middle to start
+    seek_and_assert_positions(original_offset + 5, "event")
+
+    # From descriptor to start
+    seek_and_assert_positions(original_offset + 1, "descriptor")
