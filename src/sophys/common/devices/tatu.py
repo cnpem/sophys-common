@@ -140,7 +140,7 @@ class TatuOutput(Device):
 
 
 class TatuFlyScan(FlyerInterface):
-
+    
     def kickoff(self):
         return self.activate.set(1, timeout=10)
 
@@ -199,12 +199,13 @@ class TatuBase(Device, TatuFlyScan):
         self.activate.set(0).wait()
 
     def stop(self):
-        self.tatu_stop.set(1)
+        super().stop()
+        self.activate.set(0)
 
     def pause(self):
         self.master_mode_state = self.master_mode.get()
-        self.tatu_stop.set(1)
-
+        self.activate.set(0)
+        
     def resume(self):
         self.master_mode.set(self.master_mode_state).wait()
         self.activate.set(1).wait()
