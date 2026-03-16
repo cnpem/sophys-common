@@ -126,7 +126,7 @@ class DetReadout(Signal):
         super().__init__(name=name, value=value, **kwargs)
 
 
-class AcquireTimePlugin(Device):
+class AcquireTimeWithReadout(Device):
     """Handles the realtionship between Acquire Time and Period and sets both in the correct order."""
 
     det_readout = ADComponent(DetReadout, kind="config")
@@ -194,7 +194,7 @@ class PimegaCam(CamBase_V33):
 
     acquire_time = ADComponent(EpicsSignalWithRBV, "AcquireTime")
     acquire_period = ADComponent(EpicsSignalWithRBV, "AcquirePeriod")
-    acquire_time_with_readout = ADComponent(AcquireTimePlugin, "Acquire")
+    acquire_time_with_readout = ADComponent(AcquireTimeWithReadout, "Acquire")
 
     medipix_mode = ADComponent(EpicsSignalWithRBV, "MedipixMode")
 
