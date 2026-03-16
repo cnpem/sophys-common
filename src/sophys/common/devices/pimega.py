@@ -170,7 +170,7 @@ class PimegaCam(CamBase_V33):
 
     acquire_time = ADComponent(EpicsSignalWithRBV, "AcquireTime")
     acquire_period = ADComponent(EpicsSignalWithRBV, "AcquirePeriod")
-    acquire_time_with_readout = ADComponent(AcquireTimeWithReadout, "Acquire")
+    acquire_time_with_readout = ADComponent(AcquireTimeWithReadout)
 
     medipix_mode = ADComponent(EpicsSignalWithRBV, "MedipixMode")
 
