@@ -8,6 +8,7 @@ from ophyd import (
     EpicsSignalWithRBV,
     Device,
     EpicsSignalNoValidation,
+    Signal,
 )
 from ophyd.status import SubscriptionStatus
 from ophyd.flyers import FlyerInterface
@@ -16,6 +17,7 @@ from ophyd.areadetector.detectors import DetectorBase
 from ophyd.areadetector.paths import EpicsPathSignal
 from ophyd.areadetector.trigger_mixins import ADTriggerStatus, SingleTrigger
 from .cam import CamBase_V33
+from bluesky.utils import FailedStatus
 
 from ..utils.status import PremadeStatus
 
@@ -108,6 +110,80 @@ class PimegaAcquire(Device):
             self.acquire.put(1, **kwargs)
 
 
+class DetReadout(Signal):
+    """
+    Readout signal for `PimegaCam`.
+
+    Parameters
+    ----------
+    value: float
+        Detector's readout value.
+
+
+    """
+
+    def __init__(self, *, name, value=0.01, **kwargs):
+        super().__init__(name=name, value=value, **kwargs)
+
+
+class AcquireTimePlugin(Device):
+    """Handles the realtionship between Acquire Time and Period and sets both in the correct order."""
+
+    det_readout = ADComponent(DetReadout, kind="config")
+
+    def set(self, value, **kwargs):
+        # Here value corresponds to AcquireTime. The AcquirePeriod will be set automatically.
+        if self.parent.acquire_period.get() <= (value - self.det_readout.get()):
+            self.parent.acquire_period.set(
+                value + self.det_readout.get(), **kwargs
+            ).wait(timeout=15.0)
+            return self.parent.acquire_time.set(value)
+        else:
+            self.parent.acquire_time.set(value).wait(timeout=15.0)
+            return self.parent.acquire_period.set(value + self.det_readout.get())
+
+    def put(self, value, **kwargs):
+        if self.parent.acquire_period.get() <= (value - self.det_readout.get()):
+            self.parent.acquire_period.set(
+                value + self.det_readout.get(), **kwargs
+            ).wait(timeout=15.0)
+            self.parent.acquire_time.set(value).wait(timeout=15.0)
+
+        else:
+            self.parent.acquire_time.set(value).wait(timeout=15.0)
+            self.parent.acquire_period.set(value + self.det_readout.get()).wait(
+                timeout=15.0
+            )
+
+    def read(self, *args, **kwargs):
+        res = super().read(*args, **kwargs)
+
+        for component in (self.parent.acquire_time, self.parent.acquire_period):
+            res.update(component.read(*args, **kwargs))
+        return res
+
+
+class FilePathPlugin(Device):
+    """Sets the file path for the Pimega detector and checks for the existance of it. It raises a `FailedStatus` if the path does not exists."""
+
+    def set(self, value, **kwargs):
+        value = str(value)
+        self.parent.file_path.set(value).wait(timeout=15.0)
+        if self.parent.file_path_exists.get() != "Yes":
+            raise FailedStatus(
+                f"The file path ({value}) passed to the Pimega detector doesn't exist!"
+            )
+        else:
+            return PremadeStatus(success=True)
+
+    def read(self, *args, **kwargs):
+        res = super().read(*args, **kwargs)
+
+        for component in (self.parent.file_path, self.parent.file_path_exists):
+            res.update(component.read(*args, **kwargs))
+        return res
+
+
 class PimegaCam(CamBase_V33):
 
     magic_start = ADComponent(EpicsSignal, "MagicStart")
@@ -118,6 +194,7 @@ class PimegaCam(CamBase_V33):
 
     acquire_time = ADComponent(EpicsSignalWithRBV, "AcquireTime")
     acquire_period = ADComponent(EpicsSignalWithRBV, "AcquirePeriod")
+    acquire_time_with_readout = ADComponent(AcquireTimePlugin, "Acquire")
 
     medipix_mode = ADComponent(EpicsSignalWithRBV, "MedipixMode")
 
@@ -130,6 +207,7 @@ class PimegaCam(CamBase_V33):
     dac = ADComponent(Digital2AnalogConverter, "DAC_")
 
     file_name = ADComponent(EpicsSignalWithRBV, "FileName", string=True)
+    file_path_with_validation = ADComponent(FilePathPlugin, kind="config")
     file_path = ADComponent(
         EpicsPathSignal, "FilePath", path_semantics="posix", string=True
     )
