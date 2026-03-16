@@ -17,9 +17,6 @@ from ophyd.areadetector.detectors import DetectorBase
 from ophyd.areadetector.paths import EpicsPathSignal
 from ophyd.areadetector.trigger_mixins import ADTriggerStatus, SingleTrigger
 from .cam import CamBase_V33
-from bluesky.utils import FailedStatus
-
-from ..utils.status import PremadeStatus
 
 
 class ChipsModulesMode(IntEnum):
@@ -163,27 +160,6 @@ class AcquireTimeWithReadout(Device):
         return res
 
 
-class FilePathPlugin(Device):
-    """Sets the file path for the Pimega detector and checks for the existance of it. It raises a `FailedStatus` if the path does not exists."""
-
-    def set(self, value, **kwargs):
-        value = str(value)
-        self.parent.file_path.set(value).wait(timeout=15.0)
-        if self.parent.file_path_exists.get() != "Yes":
-            raise FailedStatus(
-                f"The file path ({value}) passed to the Pimega detector doesn't exist!"
-            )
-        else:
-            return PremadeStatus(success=True)
-
-    def read(self, *args, **kwargs):
-        res = super().read(*args, **kwargs)
-
-        for component in (self.parent.file_path, self.parent.file_path_exists):
-            res.update(component.read(*args, **kwargs))
-        return res
-
-
 class PimegaCam(CamBase_V33):
 
     magic_start = ADComponent(EpicsSignal, "MagicStart")
@@ -207,7 +183,6 @@ class PimegaCam(CamBase_V33):
     dac = ADComponent(Digital2AnalogConverter, "DAC_")
 
     file_name = ADComponent(EpicsSignalWithRBV, "FileName", string=True)
-    file_path_with_validation = ADComponent(FilePathPlugin, kind="config")
     file_path = ADComponent(
         EpicsPathSignal, "FilePath", path_semantics="posix", string=True
     )
