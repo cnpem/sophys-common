@@ -107,26 +107,10 @@ class PimegaAcquire(Device):
             self.acquire.put(1, **kwargs)
 
 
-class DetReadout(Signal):
-    """
-    Readout signal for `PimegaCam`.
-
-    Parameters
-    ----------
-    value: float
-        Detector's readout value.
-
-
-    """
-
-    def __init__(self, *, name, value=0.01, **kwargs):
-        super().__init__(name=name, value=value, **kwargs)
-
-
 class AcquireTimeWithReadout(Device):
     """Handles the realtionship between Acquire Time and Period and sets both in the correct order."""
 
-    det_readout = ADComponent(DetReadout, kind="config")
+    det_readout = ADComponent(Signal, value=0.01, kind="config")
 
     def set(self, value, **kwargs):
         # Here value corresponds to AcquireTime. The AcquirePeriod will be set automatically.
