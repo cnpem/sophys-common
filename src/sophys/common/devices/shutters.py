@@ -1,7 +1,8 @@
-from ophyd import EpicsSignal, EpicsSignalRO, FormattedComponent, Device
+from ophyd import EpicsSignal, EpicsSignalRO, FormattedComponent, Device, OrderedDict
 from ophyd.pv_positioner import PVPositionerComparator
 from ..utils.status import PremadeStatus
 from ophyd.status import AndStatus, SubscriptionStatus
+from time import time
 
 
 class ShutterOpenClose(PVPositionerComparator):
@@ -79,6 +80,15 @@ class ShutterOpenClose(PVPositionerComparator):
 
     def done_comparator(self, readback, setpoint):
         return self.real_setpoint == readback
+
+    def read_configuration(self, *args, **kwargs):
+        if self.permission.connected:
+            return super().read_configuration(*args, **kwargs)
+        else:
+            return {
+                f"{self.setpoint.name}": self.setpoint.get(*args, **kwargs),
+                "timestamp": time(),
+            }
 
 
 class ShutterToggle(Device):
@@ -188,3 +198,12 @@ class ShutterToggle(Device):
             self.phton_status.get() == 1 and self.gamma_status.get() == 1
         )  # NOTE: if one of the status is equal to zero, the shutter can be partially open
         return is_closed if self.setpoint == 0 else not is_closed
+
+    def read_configuration(self):
+        if self.permission.connected:
+            return super().read_configuration()
+        else:
+            res = OrderedDict()
+            for component in (self.open, self.close):
+                res.update({f"{component.name}": component.get(), "timestamp": time()})
+            return res
