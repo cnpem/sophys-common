@@ -200,10 +200,12 @@ class TatuBase(Device, TatuFlyScan):
 
     def stop(self):
         super().stop()
+        self.tatu_stop.set(1)
         self.activate.set(0)
 
     def pause(self):
         self.master_mode_state = self.master_mode.get()
+        self.tatu_stop.set(1)
         self.activate.set(0)
         
     def resume(self):
