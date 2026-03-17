@@ -36,12 +36,14 @@ class ShutterOpenClose(PVPositionerComparator):
     """
 
     real_setpoint = None
-    setpoint = FormattedComponent(EpicsSignal, "{prefix}{setpoint_suffix}")
+    setpoint = FormattedComponent(
+        EpicsSignal, "{prefix}{setpoint_suffix}", kind="config"
+    )
     readback = FormattedComponent(
         EpicsSignalRO, "{prefix}{readback_suffix}", kind="hinted"
     )
     permission = FormattedComponent(
-        EpicsSignalRO, "{prefix}{permission_suffix}", string=True
+        EpicsSignalRO, "{permission_pv}", string=True, kind="config"
     )
 
     def __init__(
@@ -117,16 +119,16 @@ class ShutterToggle(Device):
     """
 
     setpoint = None
-    phton_status = FormattedComponent(
+    photon_status = FormattedComponent(
         EpicsSignalRO, "{prefix}{ps_suffix}", kind="hinted"
     )
     gamma_status = FormattedComponent(
         EpicsSignalRO, "{prefix}{gs_suffix}", kind="hinted"
     )
-    open = FormattedComponent(EpicsSignal, "{prefix}{open_suffix}")
-    close = FormattedComponent(EpicsSignal, "{prefix}{close_suffix}")
+    open = FormattedComponent(EpicsSignal, "{prefix}{open_suffix}", kind="config")
+    close = FormattedComponent(EpicsSignal, "{prefix}{close_suffix}", kind="config")
     permission = FormattedComponent(
-        EpicsSignalRO, "{prefix}{permission_suffix}", string=True
+        EpicsSignalRO, "{permission_pv}", string=True, kind="config"
     )
 
     def __init__(
