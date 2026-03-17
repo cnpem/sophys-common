@@ -5,6 +5,36 @@ from ophyd.status import AndStatus, SubscriptionStatus
 
 
 class ShutterOpenClose(PVPositionerComparator):
+    """
+    Abstraction layer for shutters with one actuation PV (OPENCLOSE) and one readback PV (PG_STATUS). There's an optional parameter for a permission PV.
+
+    Parameters
+    ----------
+    prefix: str
+        Prefix for the shutter's PVs.
+
+    setpoint_suffix: str
+        Suffix for the actuation PV, e.g. OPENCLOSE
+
+    readback_suffix: str
+        Suffix for the readback PV, e.g. PG_STATUS
+
+    permission_suffix: str, optional
+        Suffix for a open permssion PV, if it exists.
+
+    NOTE
+    ----
+    This implemantation considers that the value of the `readback` signal is 0 for an open shutter and 1 for a closed shutter.
+    This is not so intuitive, so the `set` method considers that 1 is for opennig and 0 for closing the shutter.
+
+    Usage Example
+    -------------
+    >>> shutter = ShutterOpenClose(prefix="prefix", setpoint_suffix="setpoint_suffix", readback="readback_suffix", name="shutter")
+    >>> from bluesky.plans_stubs import mv
+    >>> RE(mv(shutter, 0)) # for closing
+    >>> RE(mv(shutter, 1)) # for opennig
+    """
+
     real_setpoint = None
     setpoint = FormattedComponent(EpicsSignal, "{prefix}{setpoint_suffix}")
     readback = FormattedComponent(
@@ -32,7 +62,9 @@ class ShutterOpenClose(PVPositionerComparator):
                     ),
                 )
 
-        if value == self.readback.get():
+        if (
+            value == self.readback.get()
+        ):  # Since we're swapping the readback values (o for closing and 1 for opennig), we actuate when value == readback
             self.real_setpoint = 1 if value == 0 else 0
             return super().set(1, *args, **kwargs)
         else:
@@ -43,6 +75,47 @@ class ShutterOpenClose(PVPositionerComparator):
 
 
 class ShutterToggle(Device):
+    """
+    Abstraction layer for shutters with two actuation PV (OPEN and CLOSE) and two readback PV (PS_STATUS and GS_STATUS). There's an optional parameter for a permission PV.
+
+    Parameters
+    ----------
+    prefix: str
+        Prefix for the shutter's PVs.
+
+    open_suffix: str
+        Suffix for the open actuation PV, e.g. OPEN
+
+    close_suffix: str
+        Suffix for the close actuation PV, e.g. CLOSE
+
+    ps_suffix: str
+        Suffix for one readback PVs, e.g. PS_STATUS
+
+    close_suffix: str
+        Suffix for the second readback PV, e.g. GS_STATUS
+
+    permission_suffix: str, optional
+        Suffix for a open permssion PV, if it exists.
+
+    NOTES
+    -----
+    This implemantation considers that the value of the `readback` signal is 0 for an open shutter and 1 for a closed shutter.
+    This is not so intuitive, so the `set` method considers that 1 is for opennig and 0 for closing the shutter.
+
+    The `return` of the `set` method is an `AndStatus` with both `readback` signals.
+
+    There's a `done_comparator` method that returns the state of the shutter, based in the two `readback` PVs. This method is
+    used as the `callback` for both `readback` signals.
+
+    Usage Example
+    -------------
+    >>> shutter = ShutterToggle(prefix="prefix", open_suffix="open_suffix", close_suffix="close_suffix", ps_suffix="ps_suffix", gs_suffix="gs_suffix", name="shutter")
+    >>> from bluesky.plans_stubs import mv
+    >>> RE(mv(shutter, 0)) # for closing
+    >>> RE(mv(shutter, 1)) # for opennig
+    """
+
     setpoint = None
     phton_status = FormattedComponent(
         EpicsSignalRO, "{prefix}{ps_suffix}", kind="hinted"
