@@ -20,7 +20,7 @@ class ShutterOpenClose(PVPositionerComparator):
         Suffix for the readback PV, e.g. PG_STATUS
 
     permission_suffix: str, optional
-        Suffix for a open permssion PV, if it exists.
+        Permssion PV string, if it exists.
 
     NOTE
     ----
@@ -47,11 +47,16 @@ class ShutterOpenClose(PVPositionerComparator):
     )
 
     def __init__(
-        self, *args, setpoint_suffix, readback_suffix, permission_suffix, **kwargs
+        self,
+        *args,
+        setpoint_suffix: str,
+        readback_suffix: str,
+        permission_pv: str = None,
+        **kwargs,
     ):
         self.setpoint_suffix = setpoint_suffix
         self.readback_suffix = readback_suffix
-        self.permission_suffix = permission_suffix
+        self.permission_pv = permission_pv
         super().__init__(*args, **kwargs)
 
     def set(self, value, *args, **kwargs):
@@ -97,8 +102,8 @@ class ShutterToggle(Device):
     close_suffix: str
         Suffix for the second readback PV, e.g. GS_STATUS
 
-    permission_suffix: str, optional
-        Suffix for a open permssion PV, if it exists.
+    permission_pv: str, optional
+        Permssion PV string, if it exists.
 
     NOTES
     -----
@@ -134,18 +139,18 @@ class ShutterToggle(Device):
     def __init__(
         self,
         *args,
-        open_suffix,
-        close_suffix,
-        ps_suffix,
-        gs_suffix,
-        permission_suffix,
+        open_suffix: str,
+        close_suffix: str,
+        ps_suffix: str,
+        gs_suffix: str,
+        permission_pv: str = None,
         **kwargs,
     ):
         self.open_suffix = open_suffix
         self.close_suffix = close_suffix
         self.ps_suffix = ps_suffix
         self.gs_suffix = gs_suffix
-        self.permission_suffix = permission_suffix
+        self.permission_pv = permission_pv
         super().__init__(*args, **kwargs)
 
     def set(self, value, *args, **kwargs):
