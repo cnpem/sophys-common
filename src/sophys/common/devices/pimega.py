@@ -112,22 +112,25 @@ class AcquireTimeWithReadout(Device):
 
     det_readout = ADComponent(Signal, value=0.01, kind="config")
 
-    def set_acquire_time_period(self, value, **kwargs):
+    def set_acquire_time_period(self, value, method, **kwargs):
         # Here value corresponds to AcquireTime. The AcquirePeriod will be set automatically.
         if self.parent.acquire_period.get() <= (value - self.det_readout.get()):
-            self.parent.acquire_period.set(
+            getattr(self.parent.acquire_period, method)(
                 value + self.det_readout.get(), **kwargs
-            ).wait(timeout=15.0)
-            return self.parent.acquire_time.set(value)
+            )
+            return getattr(self.parent.acquire_time, method)(value, **kwargs)
+
         else:
-            self.parent.acquire_time.set(value).wait(timeout=15.0)
-            return self.parent.acquire_period.set(value + self.det_readout.get())
+            getattr(self.parent.acquire_time, method)(value, **kwargs)
+            return getattr(self.parent.acquire_period, method)(
+                value + self.det_readout.get(), **kwargs
+            )
 
     def set(self, value, **kwargs):
-        return self.set_acquire_time_period(value, **kwargs)
+        return self.set_acquire_time_period(value, method="set", **kwargs)
 
     def put(self, value, **kwargs):
-        self.set_acquire_time_period(value, **kwargs)
+        self.set_acquire_time_period(value, method="put", **kwargs)
 
     def read(self, *args, **kwargs):
         res = super().read(*args, **kwargs)
