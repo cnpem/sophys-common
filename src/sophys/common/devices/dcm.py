@@ -147,7 +147,7 @@ class FlyScan(Device):
     end = Component(EpicsSignal, "Scan_Stop", kind="config")
 
 
-class HDDCMLBase(Device):
+class DCMBase(Device):
     """Main device abstraction for the HDDCM (High-Dynamic Double Crystal Monochromator)."""
 
     bragg = Component(EpicsSignalRO, "GonRx_S_RBV", name="bragg", kind="hinted")
@@ -209,7 +209,7 @@ class GoniometerGantry(PVPositionerIsClose):
     atol = 8e-5
 
 
-class HDDCML(HDDCMLBase):
+class HDDCML(DCMBase):
 
     bragg = Component(GoniometerGantry, "DCM01:", name="bragg", kind="config")
     base = FormattedComponent(
@@ -256,7 +256,7 @@ class RequiresTatu:
 
 
 class _BaseFlyerStep(
-    HDDCML, HardwareAcquisition, FlyerInterface, _BaseDCMFlyerCommon, RequiresTatu
+    DCMBase, HardwareAcquisition, FlyerInterface, _BaseDCMFlyerCommon, RequiresTatu
 ):
     """Base class for step scan flyer, combining DCM device and acquisition logic."""
 
@@ -268,7 +268,7 @@ class _BaseFlyerStep(
 
 
 class _BaseFlyer(
-    HDDCML, HardwareAcquisition, FlyerInterface, _BaseDCMFlyerCommon, RequiresTatu
+    DCMBase, HardwareAcquisition, FlyerInterface, _BaseDCMFlyerCommon, RequiresTatu
 ):
     """Base class for fly scan flyer, combining DCM device and acquisition logic."""
 
@@ -279,8 +279,8 @@ class _BaseFlyer(
         return self._collect_from_config("fly_scan")
 
 
-class _HDDCMLFly(_BaseFlyer):
-    """Fly scan mode implementation for HDDCML."""
+class _DCMFly(_BaseFlyer):
+    """Fly scan mode implementation for DCMBase."""
 
     fly_scan = Component(FlyScan, "DCM01:")
 
@@ -307,8 +307,8 @@ class _HDDCMLFly(_BaseFlyer):
         return self.tatu.resume()
 
 
-class _HDDCMLStep(_BaseFlyerStep):
-    """Step scan mode implementation for HDDCML."""
+class _DCMStep(_BaseFlyerStep):
+    """Step scan mode implementation for DCMBase."""
 
     step_scan = Component(StepScanByHardware, "DCM01:")
 
@@ -340,9 +340,9 @@ class DCMFactory:
     """Factory class for creating DCM scan mode objects."""
 
     @staticmethod
-    def create(scan_mode: ScanType, prefix: str, name: str, **kwargs) -> HDDCML:
+    def create(scan_mode: ScanType, prefix: str, name: str, **kwargs) -> DCMBase:
         """
-        Create an HDDCML object with behavior according to the scan mode.
+        Create an DCMBase object with behavior according to the scan mode.
         How to use:
             dcm = DCMFactory.create(ScanType.FLY_SCAN, prefix='...', name='my_dcm')
             if Tatu is needed, pass tatu=... as a keyword argument.
@@ -352,12 +352,12 @@ class DCMFactory:
             name (str): Device name.
 
         Returns:
-            HDDCML or subclass: Appropriate scan mode implementation.
+            HDDCML or DCMBase or subclass: Appropriate scan mode implementation.
         """
         if scan_mode == ScanType.STEP_SCAN:
-            return _HDDCMLStep(prefix, name="__" + name + "_step", **kwargs)
+            return _DCMStep(prefix, name="__" + name + "_step", **kwargs)
         elif scan_mode == ScanType.FLY_SCAN:
-            return _HDDCMLFly(prefix, name="__" + name + "_fly", **kwargs)
+            return _DCMFly(prefix, name="__" + name + "_fly", **kwargs)
         elif scan_mode == ScanType.EPICS:
             return HDDCML(prefix, name=name, **kwargs)
         else:
