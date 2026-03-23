@@ -201,7 +201,17 @@ class HDDCMLBase(Device):
         super().__init__(prefix, **kwargs)
 
 
+class GoniometerGantry(PVPositionerIsClose):
+    """Positioner for controlling the Bragg angle (gantry axis) in the DCM."""
+
+    setpoint = Component(EpicsSignal, "GonRx_GantrySP", kind="omitted")
+    readback = Component(EpicsSignalRO, "GonRx_S_RBV", kind="hinted")
+    atol = 8e-5
+
+
 class HDDCML(HDDCMLBase):
+
+    bragg = Component(GoniometerGantry, "DCM01:", name="bragg", kind="config")
     base = FormattedComponent(
         DcmGranite, "{granite_prefix}", name="base", kind="config"
     )
