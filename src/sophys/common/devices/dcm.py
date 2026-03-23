@@ -212,7 +212,7 @@ class GoniometerGantry(PVPositionerIsClose):
 
 class HDDCML(DCMBase):
 
-    bragg = Component(GoniometerGantry, "DCM01:", name="bragg", kind="config")
+    bragg = Component(GoniometerGantry, "", name="bragg", kind="config")
     base = FormattedComponent(
         DcmGranite, "{granite_prefix}", name="base", kind="config"
     )
