@@ -42,7 +42,7 @@ def scan_with_delay(
     per_step : callable, optional
         hook for customizing action of inner loop (messages per step).
         See docstring of :func:`bluesky.plan_stubs.one_nd_step` (the default)
-        for details.
+        with and sleep plan after it.
     md : dict, optional
         metadata
 
@@ -60,8 +60,12 @@ def scan_with_delay(
         yield from sleep(delay)
         yield from trigger_and_read(list(detectors) + list(motors))
 
+    def per_step_with_delay(detectors, step, pos_cache):
+        yield from per_step(detectors, step, pos_cache)
+        yield from sleep(delay)
+
     per_step_scan = one_nd_step_with_delay
     if per_step is not None:
-        per_step_scan = per_step
+        per_step_scan = per_step_with_delay
 
     yield from scan(detectors, *args, num=num, per_step=per_step_scan, md=md)
