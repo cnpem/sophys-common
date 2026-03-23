@@ -5,7 +5,7 @@ from ophyd.status import AndStatus, SubscriptionStatus
 from time import time
 
 
-class ShutterOpenClose(PVPositionerComparator):
+class ShutterToggle(PVPositionerComparator):
     """
     Abstraction layer for shutters with one actuation PV (OPENCLOSE) and one readback PV (PG_STATUS). There's an optional parameter for a permission PV.
 
@@ -91,7 +91,7 @@ class ShutterOpenClose(PVPositionerComparator):
             }
 
 
-class ShutterToggle(Device):
+class ShutterOpenClose(Device):
     """
     Abstraction layer for shutters with two actuation PV (OPEN and CLOSE) and two readback PV (PS_STATUS and GS_STATUS). There's an optional parameter for a permission PV.
 
