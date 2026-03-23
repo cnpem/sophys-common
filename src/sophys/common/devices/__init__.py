@@ -3,7 +3,6 @@ from .c400 import C400, OldC400
 from .cam import CamBase_V33, Xspress3DetectorCamV33
 from .compacteras import CompactERAS
 from .crio import CRIO_9215, CRIO_9220, CRIO_9223
-from .dcm_lite import DcmLite
 from .eras import ERAS
 from .hvps import HVPS
 from .ids import UndulatorKymaAPU
@@ -21,4 +20,4 @@ from .storage_ring import StorageRing
 from .tatu import Tatu9401, Tatu9401V2, Tatu9403, TatuFlyScan
 from .xspress import Xspress
 from .vpu import VPU
-from .hd_dcm import DCMFactory
+from .dcm import DCMFactory
