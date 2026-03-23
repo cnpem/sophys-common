@@ -11,8 +11,8 @@ def scan_with_delay(
     detectors: DETECTORS_TYPE,
     /,
     *args,
-    delay: float = 0.2,
     num: int = None,
+    delay: float = 0.2,
     per_step: PER_STEP_TYPE = None,
     md: MD_TYPE = None,
 ):
