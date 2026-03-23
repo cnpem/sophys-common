@@ -26,6 +26,7 @@ class ScanType(str, Enum):
     STEP_SCAN = "step_scan"
     FLY_SCAN = "fly_scan"
     EPICS = "epics"
+    BASE = "base"
 
 
 class DcmGranite(Device):
@@ -360,6 +361,8 @@ class DCMFactory:
             return _DCMFly(prefix, name="__" + name + "_fly", **kwargs)
         elif scan_mode == ScanType.EPICS:
             return HDDCML(prefix, name=name, **kwargs)
+        elif scan_mode == ScanType.BASE:
+            return DCMBase(prefix, name=name, **kwargs)
         else:
             raise ValueError(
                 "Invalid scan mode, available modes are: step_scan, fly_scan, epics"
