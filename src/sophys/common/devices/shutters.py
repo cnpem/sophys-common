@@ -31,9 +31,8 @@ class ShutterToggle(PVPositionerComparator):
     Usage Example
     -------------
     >>> shutter = ShutterOpenClose(prefix="prefix", setpoint_suffix="setpoint_suffix", readback="readback_suffix", name="shutter")
-    >>> from bluesky.plans_stubs import mv
-    >>> RE(mv(shutter, 0)) # for closing
-    >>> RE(mv(shutter, 1)) # for opennig
+    >>> shutter.set(0).wait() # for closing
+    >>> shutter.set(1).wait() # for opening
     """
 
     real_setpoint = None
@@ -128,9 +127,8 @@ class ShutterOpenClose(Device):
     Usage Example
     -------------
     >>> shutter = ShutterToggle(prefix="prefix", open_suffix="open_suffix", close_suffix="close_suffix", ps_suffix="ps_suffix", gs_suffix="gs_suffix", name="shutter")
-    >>> from bluesky.plans_stubs import mv
-    >>> RE(mv(shutter, 0)) # for closing
-    >>> RE(mv(shutter, 1)) # for opennig
+    >>> shutter.set(0).wait() # for closing
+    >>> shutter.set(1).wait() # for opening
     """
 
     setpoint = None
