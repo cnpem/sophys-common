@@ -40,6 +40,8 @@ def scan_with_delay(
         -.-motor,start,stop;the n-th motor to move from slowest to fastest,the starting point in the motor's trajectory relative to the current position,the ending point in the motor's trajectory relative to the current position;__MOVABLE__,typing.Any,typing.Any-.-
     num : integer
         number of points
+    delay : integer
+        Delay between the triggers of the scan.
     per_step : callable, optional
         hook for customizing action of inner loop (messages per step).
         See docstring of :func:`bluesky.plan_stubs.one_nd_step` (the default)
