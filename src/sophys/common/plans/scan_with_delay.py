@@ -17,17 +17,14 @@ def scan_with_delay(
     md: MD_TYPE = None,
 ):
     """
-    Scan over one multi-motor trajectory relative to current position.
-    Without reseting the position after the end of the scan.
+    Scan over one multi-motor trajectory.
 
     Parameters
     ----------
-    detectors : list
+    detectors : list or tuple
         list of 'readable' objects
     *args :
-        For one dimension, ``motor, start, stop``, meaning
-        ``motor`` will go from ``start`` to ``stop``.
-
+        For one dimension, ``motor, start, stop``.
         In general:
 
         .. code-block:: python
@@ -35,7 +32,7 @@ def scan_with_delay(
             motor1, start1, stop1,
             motor2, start2, stop2,
             ...,
-            motorN, startN, stopN,
+            motorN, startN, stopN
 
         -.-motor,start,stop;the n-th motor to move from slowest to fastest,the starting point in the motor's trajectory relative to the current position,the ending point in the motor's trajectory relative to the current position;__MOVABLE__,typing.Any,typing.Any-.-
     num : integer
