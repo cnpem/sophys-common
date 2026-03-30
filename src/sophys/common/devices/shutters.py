@@ -108,7 +108,7 @@ class ShutterOpenClose(Device):
     ps_suffix: str
         Suffix for one readback PVs, e.g. PS_STATUS
 
-    close_suffix: str
+    gs_suffix: str
         Suffix for the second readback PV, e.g. GS_STATUS
 
     permission_pv: str, optional
@@ -186,14 +186,14 @@ class ShutterOpenClose(Device):
         self.setpoint = value
 
         return AndStatus(
-            SubscriptionStatus(self.phton_status, self.done_comparator, settle_time=3),
+            SubscriptionStatus(self.photon_status, self.done_comparator, settle_time=3),
             SubscriptionStatus(self.gamma_status, self.done_comparator, settle_time=3),
             timeout=15,
         )
 
     def done_comparator(self, value, **kwargs):
         is_closed = (
-            self.phton_status.get() == 1 and self.gamma_status.get() == 1
+            self.photon_status.get() == 1 and self.gamma_status.get() == 1
         )  # NOTE: if one of the status is equal to zero, the shutter can be partially open
         return is_closed if self.setpoint == 0 else not is_closed
 
