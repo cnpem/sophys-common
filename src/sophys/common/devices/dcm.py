@@ -26,6 +26,7 @@ class ScanType(str, Enum):
     STEP_SCAN = "step_scan"
     FLY_SCAN = "fly_scan"
     EPICS = "epics"
+    BASE = "base"
 
 
 class DcmGranite(Device):
@@ -59,14 +60,6 @@ class Energy(PVPositionerIsClose):
     readback = Component(EpicsSignalRO, "GonRx_Energy_RBV", kind="hinted")
     actuate = Component(EpicsSignal, "EnergyUpdate_SP", kind="omitted")
     atol = 1e-3
-
-
-class GoniometerGantry(PVPositionerIsClose):
-    """Positioner for controlling the Bragg angle (gantry axis) in the DCM."""
-
-    setpoint = Component(EpicsSignal, "GonRx_SP", kind="omitted")
-    readback = Component(EpicsSignalRO, "GonRx_S_RBV", kind="hinted")
-    atol = 8e-5
 
 
 class BaseShs(PVPositionerIsClose):
@@ -155,32 +148,25 @@ class FlyScan(Device):
     end = Component(EpicsSignal, "Scan_Stop", kind="config")
 
 
-class HDDCML(Device):
+class DCMBase(Device):
     """Main device abstraction for the HDDCM (High-Dynamic Double Crystal Monochromator)."""
 
-    bragg = Component(GoniometerGantry, "DCM01:", name="bragg", kind="config")
-    energy = Component(Energy, "DCM01:", name="energy", kind="hinted")
+    bragg = Component(EpicsSignalRO, "GonRx_S_RBV", name="bragg", kind="hinted")
+    energy = Component(Energy, "", name="energy", kind="hinted")
 
-    shs_uncoupled = Component(EpicsSignal, "DCM01:Shs_UncoupledMode", kind="config")
-    shs_coupled = Component(EpicsSignalWithRBV, "DCM01:Shs_CoupledMode", kind="config")
+    shs_uncoupled = Component(EpicsSignal, "Shs_UncoupledMode", kind="config")
+    shs_coupled = Component(EpicsSignalWithRBV, "Shs_CoupledMode", kind="config")
 
-    base = Component(DcmGranite, "PB01:", name="base", kind="config")
+    shs_enable = Component(EpicsSignalRO, "Shs_Enable_RBV", kind="config")
+    gon_enable = Component(EpicsSignalRO, "GonRx_Enable_RBV", kind="config")
 
-    gap_coupled = Component(CoupledShortStroke, "DCM01:", shs_axis="Uy", kind="config")
-    pitch_coupled = Component(
-        CoupledShortStroke, "DCM01:", shs_axis="Rx", kind="config"
-    )
-    roll_coupled = Component(CoupledShortStroke, "DCM01:", shs_axis="Rz", kind="config")
+    gap_coupled = Component(CoupledShortStroke, "", shs_axis="Uy", kind="config")
+    pitch_coupled = Component(CoupledShortStroke, "", shs_axis="Rx", kind="config")
+    roll_coupled = Component(CoupledShortStroke, "", shs_axis="Rz", kind="config")
 
-    gap_uncoupled = Component(
-        UncoupledShortStroke, "DCM01:", shs_axis="Uy", kind="config"
-    )
-    pitch_uncoupled = Component(
-        UncoupledShortStroke, "DCM01:", shs_axis="Rx", kind="config"
-    )
-    roll_uncoupled = Component(
-        UncoupledShortStroke, "DCM01:", shs_axis="Rz", kind="config"
-    )
+    gap_uncoupled = Component(UncoupledShortStroke, "", shs_axis="Uy", kind="config")
+    pitch_uncoupled = Component(UncoupledShortStroke, "", shs_axis="Rx", kind="config")
+    roll_uncoupled = Component(UncoupledShortStroke, "", shs_axis="Rz", kind="config")
 
     @property
     def gap(self):
@@ -214,6 +200,26 @@ class HDDCML(Device):
         """
         self.tatu = tatu
         super().__init__(prefix, **kwargs)
+
+
+class GoniometerGantry(PVPositionerIsClose):
+    """Positioner for controlling the Bragg angle (gantry axis) in the DCM."""
+
+    setpoint = Component(EpicsSignal, "GonRx_GantrySP", kind="omitted")
+    readback = Component(EpicsSignalRO, "GonRx_S_RBV", kind="hinted")
+    atol = 8e-5
+
+
+class HDDCML(DCMBase):
+
+    bragg = Component(GoniometerGantry, "", name="bragg", kind="config")
+    base = FormattedComponent(
+        DcmGranite, "{granite_prefix}", name="base", kind="config"
+    )
+
+    def __init__(self, prefix="", tatu=None, granite_prefix="PB01:", **kwargs):
+        self.granite_prefix = prefix + granite_prefix
+        super().__init__(f"{prefix}DCM01:", tatu, **kwargs)
 
 
 class _BaseDCMFlyerCommon:
@@ -251,7 +257,7 @@ class RequiresTatu:
 
 
 class _BaseFlyerStep(
-    HDDCML, HardwareAcquisition, FlyerInterface, _BaseDCMFlyerCommon, RequiresTatu
+    DCMBase, HardwareAcquisition, FlyerInterface, _BaseDCMFlyerCommon, RequiresTatu
 ):
     """Base class for step scan flyer, combining DCM device and acquisition logic."""
 
@@ -263,7 +269,7 @@ class _BaseFlyerStep(
 
 
 class _BaseFlyer(
-    HDDCML, HardwareAcquisition, FlyerInterface, _BaseDCMFlyerCommon, RequiresTatu
+    DCMBase, HardwareAcquisition, FlyerInterface, _BaseDCMFlyerCommon, RequiresTatu
 ):
     """Base class for fly scan flyer, combining DCM device and acquisition logic."""
 
@@ -274,8 +280,8 @@ class _BaseFlyer(
         return self._collect_from_config("fly_scan")
 
 
-class _HDDCMLFly(_BaseFlyer):
-    """Fly scan mode implementation for HDDCML."""
+class _DCMFly(_BaseFlyer):
+    """Fly scan mode implementation for DCMBase."""
 
     fly_scan = Component(FlyScan, "DCM01:")
 
@@ -302,8 +308,8 @@ class _HDDCMLFly(_BaseFlyer):
         return self.tatu.resume()
 
 
-class _HDDCMLStep(_BaseFlyerStep):
-    """Step scan mode implementation for HDDCML."""
+class _DCMStep(_BaseFlyerStep):
+    """Step scan mode implementation for DCMBase."""
 
     step_scan = Component(StepScanByHardware, "DCM01:")
 
@@ -335,9 +341,9 @@ class DCMFactory:
     """Factory class for creating DCM scan mode objects."""
 
     @staticmethod
-    def create(scan_mode: ScanType, prefix: str, name: str, **kwargs) -> HDDCML:
+    def create(scan_mode: ScanType, prefix: str, name: str, **kwargs) -> DCMBase:
         """
-        Create an HDDCML object with behavior according to the scan mode.
+        Create an DCMBase object with behavior according to the scan mode.
         How to use:
             dcm = DCMFactory.create(ScanType.FLY_SCAN, prefix='...', name='my_dcm')
             if Tatu is needed, pass tatu=... as a keyword argument.
@@ -347,14 +353,16 @@ class DCMFactory:
             name (str): Device name.
 
         Returns:
-            HDDCML or subclass: Appropriate scan mode implementation.
+            HDDCML or DCMBase or subclass: Appropriate scan mode implementation.
         """
         if scan_mode == ScanType.STEP_SCAN:
-            return _HDDCMLStep(prefix, name="__" + name + "_step", **kwargs)
+            return _DCMStep(prefix, name="__" + name + "_step", **kwargs)
         elif scan_mode == ScanType.FLY_SCAN:
-            return _HDDCMLFly(prefix, name="__" + name + "_fly", **kwargs)
+            return _DCMFly(prefix, name="__" + name + "_fly", **kwargs)
         elif scan_mode == ScanType.EPICS:
             return HDDCML(prefix, name=name, **kwargs)
+        elif scan_mode == ScanType.BASE:
+            return DCMBase(prefix, name=name, **kwargs)
         else:
             raise ValueError(
                 "Invalid scan mode, available modes are: step_scan, fly_scan, epics"
