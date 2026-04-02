@@ -115,11 +115,13 @@ class AcquireTimeWithReadout(Device):
     def set_acquire_time_period(self, value, method, **kwargs):
         # Here value corresponds to AcquireTime. The AcquirePeriod will be set automatically.
         if self.parent.acquire_period.get() <= (value - self.det_readout.get()):
-            self.parent.acquire_period.set(value + self.det_readout.get(), **kwargs)
+            self.parent.acquire_period.set(
+                value + self.det_readout.get(), **kwargs
+            ).wait(**kwargs)
             return getattr(self.parent.acquire_time, method)(value, **kwargs)
 
         else:
-            self.parent.acquire_time.set(value, **kwargs)
+            self.parent.acquire_time.set(value, **kwargs).wait(**kwargs)
             return getattr(self.parent.acquire_period, method)(
                 value + self.det_readout.get(), **kwargs
             )
