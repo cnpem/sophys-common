@@ -8,6 +8,7 @@ from ophyd import (
     EpicsSignalWithRBV,
     Device,
     EpicsSignalNoValidation,
+    Signal,
 )
 from ophyd.status import SubscriptionStatus
 from ophyd.flyers import FlyerInterface
@@ -16,8 +17,6 @@ from ophyd.areadetector.detectors import DetectorBase
 from ophyd.areadetector.paths import EpicsPathSignal
 from ophyd.areadetector.trigger_mixins import ADTriggerStatus, SingleTrigger
 from .cam import CamBase_V33
-
-from ..utils.status import PremadeStatus
 
 
 class ChipsModulesMode(IntEnum):
@@ -108,6 +107,39 @@ class PimegaAcquire(Device):
             self.acquire.put(1, **kwargs)
 
 
+class AcquireTimeWithReadout(Device):
+    """Handles the realtionship between Acquire Time and Period and sets both in the correct order."""
+
+    det_readout = ADComponent(Signal, value=0.01, kind="config")
+
+    def set_acquire_time_period(self, value, method, **kwargs):
+        # Here value corresponds to AcquireTime. The AcquirePeriod will be set automatically.
+        if self.parent.acquire_period.get() <= (value - self.det_readout.get()):
+            self.parent.acquire_period.set(
+                value + self.det_readout.get(), **kwargs
+            ).wait(**kwargs)
+            return getattr(self.parent.acquire_time, method)(value, **kwargs)
+
+        else:
+            self.parent.acquire_time.set(value, **kwargs).wait(**kwargs)
+            return getattr(self.parent.acquire_period, method)(
+                value + self.det_readout.get(), **kwargs
+            )
+
+    def set(self, value, **kwargs):
+        return self.set_acquire_time_period(value, method="set", **kwargs)
+
+    def put(self, value, **kwargs):
+        self.set_acquire_time_period(value, method="put", **kwargs)
+
+    def read(self, *args, **kwargs):
+        res = super().read(*args, **kwargs)
+
+        for component in (self.parent.acquire_time, self.parent.acquire_period):
+            res.update(component.read(*args, **kwargs))
+        return res
+
+
 class PimegaCam(CamBase_V33):
 
     magic_start = ADComponent(EpicsSignal, "MagicStart")
@@ -118,6 +150,7 @@ class PimegaCam(CamBase_V33):
 
     acquire_time = ADComponent(EpicsSignalWithRBV, "AcquireTime")
     acquire_period = ADComponent(EpicsSignalWithRBV, "AcquirePeriod")
+    acquire_time_with_readout = ADComponent(AcquireTimeWithReadout)
 
     medipix_mode = ADComponent(EpicsSignalWithRBV, "MedipixMode")
 
