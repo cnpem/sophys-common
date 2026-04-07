@@ -1,6 +1,7 @@
 import logging
 import json
 from collections import defaultdict
+from datetime import timedelta
 from functools import wraps, partial
 from typing import Optional
 
@@ -10,9 +11,10 @@ from queue import Full as QueueFullException, Queue
 import msgpack_numpy as _m
 
 from kafka import KafkaConsumer
-from kafka.structs import TopicPartition
 
 from event_model import EventPage, unpack_event_page
+
+from .consumer import seek_start_document, seek_back_in_time
 
 
 def _get_uid_from_event_data(event_data: dict):
@@ -266,6 +268,7 @@ class MonitorBase(KafkaConsumer):
         incomplete_documents: list,
         topic_name: str,
         logger_name: str,
+        hour_offset: Optional[float] = None,
         **configs,
     ):
         """
@@ -282,6 +285,8 @@ class MonitorBase(KafkaConsumer):
             The Kafka topic to monitor.
         logger_name : str, optional
             Name of the logger to use for info / debug during the monitor processing.
+        hour_offset : float, optional
+            Time in hours to look back in Kafka right after the start of monitoring.
         **configs : dict or keyword arguments
             Extra arguments to pass to the KafkaConsumer's constructor.
         """
@@ -289,6 +294,8 @@ class MonitorBase(KafkaConsumer):
 
         self.name = repr(self)
         self.running = Event()
+
+        self.__hour_offset = hour_offset
 
         self.__documents = MultipleDocumentDictionary()
         self.__save_queue = save_queue
@@ -332,19 +339,21 @@ class MonitorBase(KafkaConsumer):
         """Get the name of the Kafka topic monitored by this object."""
         return "".join(self.subscription())
 
-    def seek_start(
-        self, topic: str, partition_id: int, offset: int, event_data: dict
-    ) -> None:
-        """Attempt to seek into the start document of the current run. May not seek if the current event does not have a sequence number."""
-        if "seq_num" not in event_data:
-            self._logger.debug(
-                "Sequence numbers are not available! o.O\n {}".format(str(event_data))
-            )
-            # Hopefully a future event will have it!
-            return
-        self.seek(
-            TopicPartition(topic, partition_id), offset - event_data["seq_num"] - 1
-        )
+    def _seek_start_if_needed(self, event) -> bool:
+        should_seek_start = False
+
+        try:
+            if event.value[0] != "start" and len(self.__documents[event.value]) == 0:
+                # In the middle of a run, try to go back to the beginning
+                should_seek_start = True
+        except KeyError:
+            # In the middle of a run, try to go back to the beginning
+            should_seek_start = True
+
+        if should_seek_start:
+            seek_start_document(self, event)
+
+        return should_seek_start
 
     def _commit_pending_documents(self):
         """Commit pending documents to the save queue, when possible."""
@@ -359,11 +368,16 @@ class MonitorBase(KafkaConsumer):
                     self.__save_queue.put(doc, block=True, timeout=1.0)
                     self.__saved_document_uids.add(id)
                 except Exception as e:
-                    self._logger.error(
-                        "Unhandled exception while trying to save documents. Will try to continue regardless."
-                    )
-                    self._logger.error("Exception if you're into that:")
-                    self._logger.exception(e)
+                    if isinstance(e, QueueFullException):
+                        self._logger.warning(
+                            "Save queue is full. Failed to add run '%s'.", id
+                        )
+                    else:
+                        self._logger.error(
+                            "Unhandled exception while trying to save documents. Will try to continue regardless."
+                        )
+                        self._logger.error("Exception if you're into that:")
+                        self._logger.exception(e)
 
                     self.__to_save_documents_save_attempts[id] += 1
 
@@ -386,61 +400,50 @@ class MonitorBase(KafkaConsumer):
                 if id in self.__to_save_documents_save_attempts:
                     del self.__to_save_documents_save_attempts[id]
 
-    def handle_event(self, event):
-        self._logger.debug("Event received.")
-
-        seek_start = False
+    def _handle_kafka_event(self, event):
+        data = event.value
+        if len(data) != 2:
+            self._logger.warning(
+                "Event data does not have two elements.\n {}".format(str(data))
+            )
+            return
 
         try:
-            data = event.value
-
-            if len(data) != 2:
-                self._logger.warning(
-                    "Event data does not have two elements.\n {}".format(str(data))
-                )
+            if self._seek_start_if_needed(event):
                 return
 
-            if data[0] == "start":
-                self._logger.info("Received a 'start' document.")
+            match data:
+                case ("start", _):
+                    self.__documents.append(data)
 
-                self.__documents.append(data)
-                new_run_uid = self.__documents[data].identifier
-                self.__incomplete_documents.append(new_run_uid)
-
-                self.__documents[data].subscribe(
-                    partial(self._run_subscriptions, new_run_uid)
-                )
-
-                return
-
-            try:
-                if len(self.__documents[data]) == 0:
-                    # In the middle of a run, try to go back to the beginning
-                    seek_start = True
-            except KeyError:
-                # In the middle of a run, try to go back to the beginning
-                seek_start = True
-
-            if seek_start:
-                self.seek_start(event.topic, event.partition, event.offset, data[1])
-                return
-
-            self.__documents[data].append(*data)
-
-            if data[0] == "stop":
-                self._logger.info(
-                    "Run '{}': Received a 'stop' document.".format(
-                        self.__documents[data].identifier
+                    new_run_uid = self.__documents[data].identifier
+                    self._logger.info(
+                        "Run '{}': Received a 'start' document.".format(new_run_uid)
                     )
-                )
 
-                self.__documents[data].clear_subscriptions()
-                self.__to_save_documents.append(self.__documents[data].identifier)
+                    self.__incomplete_documents.append(new_run_uid)
 
-                # TODO: Validate number of saved entries via the stop document's num_events
-                # TODO: Validate successful run via the stop document's exit_status
+                    self.__documents[data].subscribe(
+                        partial(self._run_subscriptions, new_run_uid)
+                    )
+                case ("stop", _):
+                    self._logger.info(
+                        "Run '{}': Received a 'stop' document.".format(
+                            self.__documents[data].identifier
+                        )
+                    )
 
-                self._commit_pending_documents()
+                    self.__documents[data].append(*data)
+
+                    self.__documents[data].clear_subscriptions()
+                    self.__to_save_documents.append(self.__documents[data].identifier)
+
+                    # TODO: Validate number of saved entries via the stop document's num_events
+                    # TODO: Validate successful run via the stop document's exit_status
+
+                    self._commit_pending_documents()
+                case (_, _):
+                    self.__documents[data].append(*data)
 
         except Exception as e:
             self._logger.error("Unhandled exception. Will try to continue regardless.")
@@ -452,15 +455,20 @@ class MonitorBase(KafkaConsumer):
 
     def run(self):
         """Start monitoring the Kafka topic."""
-        partition_number = list(self.partitions_for_topic(self.topic()))[0]
-        self._update_fetch_positions([TopicPartition(self.topic(), partition_number)])
+        # NOTE: Configure the current offset before setting the 'running' flag.
+        #     The timeout time here doesn't matter too much, as we don't care
+        #     whether we received new data or not.
+        self.poll(timeout_ms=100, max_records=1, update_offsets=False)
+
+        if self.__hour_offset is not None:
+            seek_back_in_time(self, timedelta(hours=self.__hour_offset))
 
         self.running.set()
         while not self._closed:
             try:
                 for event in self:
-                    self.handle_event(event)
-            except StopIteration:
+                    self._handle_kafka_event(event)
+            except (StopIteration, AssertionError):
                 pass
 
         self.running.clear()
