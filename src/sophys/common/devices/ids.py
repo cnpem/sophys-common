@@ -82,38 +82,38 @@ class UndulatorKymaAPU(Device):
     command = Component(
         EpicsSignal,
         "DevCtrl-Cmd",
-        lazy=True,
+        
         kind=Kind.omitted,
     )
-    state_hw = Component(EpicsSignalMon, "StateHw", lazy=True, kind=Kind.omitted)
-    state = Component(EpicsSignalMon, "State", lazy=True, kind=Kind.omitted)
+    state_hw = Component(EpicsSignalMon, "StateHw",  kind=Kind.omitted)
+    state = Component(EpicsSignalMon, "State",  kind=Kind.omitted)
 
     is_operational = Component(
-        EpicsSignalMon, "IsOperational", lazy=True, kind=Kind.omitted
+        EpicsSignalMon, "IsOperational",  kind=Kind.omitted
     )
     is_motors_on = Component(
-        EpicsSignalMon, "MotorsEnbld", lazy=True, kind=Kind.omitted
+        EpicsSignalMon, "MotorsEnbld",  kind=Kind.omitted
     )
-    is_alarm_set = Component(EpicsSignalMon, "Alarm", lazy=True, kind=Kind.omitted)
-    is_moving_set = Component(EpicsSignalMon, "Moving", lazy=True, kind=Kind.omitted)
+    is_alarm_set = Component(EpicsSignalMon, "Alarm",  kind=Kind.omitted)
+    is_moving_set = Component(EpicsSignalMon, "Moving",  kind=Kind.omitted)
 
-    is_remote = Component(EpicsSignalMon, "IsRemote", lazy=True, kind=Kind.omitted)
-    interface = Component(EpicsSignalMon, "Interface", lazy=True, kind=Kind.omitted)
+    is_remote = Component(EpicsSignalMon, "IsRemote",  kind=Kind.omitted)
+    interface = Component(EpicsSignalMon, "Interface",  kind=Kind.omitted)
 
-    home_axis = Component(EpicsSignal, "HomeAxis-Sel", lazy=True, kind=Kind.omitted)
+    home_axis = Component(EpicsSignal, "HomeAxis-Sel",  kind=Kind.omitted)
 
-    phase = Component(PhaseEpicsSignal, "", lazy=True, kind=Kind.hinted, atol=0.01)
+    phase = Component(PhaseEpicsSignal, "",  kind=Kind.hinted, atol=0.01)
 
     phase_speed = Component(
         EpicsSignalIDs,
         "PhaseSpeed",
-        lazy=True,
+        
         kind=Kind.config,
     )
     phase_max_speed = Component(
         EpicsSignalRO,
         "MaxPhaseSpeed-RB",
-        lazy=True,
+        
         kind=Kind.config,
     )
 
@@ -149,52 +149,52 @@ class UndulatorKymaAPU(Device):
         OpWarning = 0x48
         Op = 0x4C
 
-    phase_alarm = Component(EpicsSignalMon, "AlrmPhase", lazy=True, kind=Kind.omitted)
+    phase_alarm = Component(EpicsSignalMon, "AlrmPhase",  kind=Kind.omitted)
     # Reference:
     # https://infosys.beckhoff.com/english.php?content=../content/1033/tcncerrcode2/index.html
     phase_alarm_errid = Component(
-        EpicsSignalMon, "AlrmPhaseErrID", lazy=True, kind=Kind.omitted
+        EpicsSignalMon, "AlrmPhaseErrID",  kind=Kind.omitted
     )
     phase_alarm_sdw = Component(
-        EpicsSignalMon, "AlrmPhaseSttDW", lazy=True, kind=Kind.omitted
+        EpicsSignalMon, "AlrmPhaseSttDW",  kind=Kind.omitted
     )
     phase_alarm_state = Component(
-        EpicsSignalMon, "AlrmPhaseStt", lazy=True, kind=Kind.omitted
+        EpicsSignalMon, "AlrmPhaseStt",  kind=Kind.omitted
     )
     rack_alarm_estop = Component(
-        EpicsSignalMon, "AlrmRackEStop", lazy=True, kind=Kind.omitted
+        EpicsSignalMon, "AlrmRackEStop",  kind=Kind.omitted
     )
     rack_alarm_kill = Component(
-        EpicsSignalMon, "AlrmRackKill", lazy=True, kind=Kind.omitted
+        EpicsSignalMon, "AlrmRackKill",  kind=Kind.omitted
     )
     rack_alarm_kill_disabled = Component(
-        EpicsSignalMon, "AlrmRackKillDsbld", lazy=True, kind=Kind.omitted
+        EpicsSignalMon, "AlrmRackKillDsbld",  kind=Kind.omitted
     )
     rack_alarm_power_disabled = Component(
-        EpicsSignalMon, "AlrmRackPwrDsbld", lazy=True, kind=Kind.omitted
+        EpicsSignalMon, "AlrmRackPwrDsbld",  kind=Kind.omitted
     )
 
     # Interlock
     interlock_in_stop = Component(
-        EpicsSignalMon, "IntlkInStop", lazy=True, kind=Kind.omitted
+        EpicsSignalMon, "IntlkInStop",  kind=Kind.omitted
     )
     interlock_in_open_gap = Component(
-        EpicsSignalMon, "IntlkInEOpnGap", lazy=True, kind=Kind.omitted
+        EpicsSignalMon, "IntlkInEOpnGap",  kind=Kind.omitted
     )
     interlock_out_gap_opened = Component(
-        EpicsSignalMon, "IntlkOutGapStt", lazy=True, kind=Kind.omitted
+        EpicsSignalMon, "IntlkOutGapStt",  kind=Kind.omitted
     )
     interlock_out_status_ok = Component(
-        EpicsSignalMon, "IntlkOutStsOk", lazy=True, kind=Kind.omitted
+        EpicsSignalMon, "IntlkOutStsOk",  kind=Kind.omitted
     )
     interlock_out_ccps_enabled = Component(
-        EpicsSignalMon, "IntlkOutCCPSEnbld", lazy=True, kind=Kind.omitted
+        EpicsSignalMon, "IntlkOutCCPSEnbld",  kind=Kind.omitted
     )
     interlock_out_power_enabled = Component(
-        EpicsSignalMon, "IntlkOutPwrEnbld", lazy=True, kind=Kind.omitted
+        EpicsSignalMon, "IntlkOutPwrEnbld",  kind=Kind.omitted
     )
 
     # Beamline control
     beamline_control_status = Component(
-        EpicsSignalRO, "BeamLineCtrlEnbl-Sts", lazy=True, kind=Kind.omitted
+        EpicsSignalRO, "BeamLineCtrlEnbl-Sts",  kind=Kind.omitted
     )
