@@ -73,7 +73,7 @@ def _create_virtual_controllable_motor(components):
     formattedComponents = {}
     for key, motorPv in components.items():
         formattedComponents["cnen_" + key] = FormattedComponent(
-            EpicsSignal, suffix=motorPv + ".CNEN"
+            EpicsSignal, suffix=motorPv + ".CNEN", kind="config"
         )
 
     devClass = create_device_from_components(
