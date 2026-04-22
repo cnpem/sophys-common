@@ -14,7 +14,8 @@ class ShutterToggle(PVPositionerComparator):
         Prefix for the shutter's PVs.
 
     setpoint_suffix: str
-        Suffix for the actuation PV, e.g. OPENCLOSE
+        Suffix for the actuation PV. NOTE: This should be place/location of the shutter, e.g. OEA/FOE.
+        The PV will be formatted as "{prefix}{setpoint_suffix}OPENCLOSE".
 
     readback_suffix: str
         Suffix for the readback PV, e.g. PG_STATUS
@@ -36,7 +37,7 @@ class ShutterToggle(PVPositionerComparator):
 
     real_setpoint = None
     setpoint = FormattedComponent(
-        EpicsSignal, "{prefix}{setpoint_suffix}", kind="config"
+        EpicsSignal, "{prefix}{setpoint_suffix}OPENCLOSE", kind="config"
     )
     readback = FormattedComponent(
         EpicsSignalRO, "{prefix}{readback_suffix}", kind="hinted"
@@ -89,11 +90,9 @@ class ShutterOpenClose(Device):
     prefix: str
         Prefix for the shutter's PVs.
 
-    open_suffix: str
-        Suffix for the open actuation PV, e.g. OPEN
-
-    close_suffix: str
-        Suffix for the close actuation PV, e.g. CLOSE
+    shutter_suffix: str
+        Suffix for the OPEN and CLOSE PVs. NOTE: This should be place/location of the shutter, e.g. OEA/FOE.
+        The PVs will be formatted as "{prefix}{shutter_suffix}OPEN" and "{prefix}{shutter_suffix}CLOSE".
 
     ps_suffix: str
         Suffix for one readback PVs, e.g. PS_STATUS
@@ -128,8 +127,12 @@ class ShutterOpenClose(Device):
     gamma_status = FormattedComponent(
         EpicsSignalRO, "{prefix}{gs_suffix}", kind="hinted"
     )
-    open = FormattedComponent(EpicsSignal, "{prefix}{open_suffix}", kind="config")
-    close = FormattedComponent(EpicsSignal, "{prefix}{close_suffix}", kind="config")
+    open = FormattedComponent(
+        EpicsSignal, "{prefix}{shutter_suffix}OPEN", kind="config"
+    )
+    close = FormattedComponent(
+        EpicsSignal, "{prefix}{shutter_suffix}CLOSE", kind="config"
+    )
     permission = FormattedComponent(
         EpicsSignalRO, "{permission_pv}", string=True, kind="omitted"
     )
@@ -137,15 +140,13 @@ class ShutterOpenClose(Device):
     def __init__(
         self,
         *args,
-        open_suffix: str,
-        close_suffix: str,
+        shutter_suffix: str,
         ps_suffix: str,
         gs_suffix: str,
         permission_pv: str = None,
         **kwargs,
     ):
-        self.open_suffix = open_suffix
-        self.close_suffix = close_suffix
+        self.shutter_suffix = shutter_suffix
         self.ps_suffix = ps_suffix
         self.gs_suffix = gs_suffix
         self.permission_pv = permission_pv
