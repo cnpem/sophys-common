@@ -26,7 +26,7 @@ class ShutterToggle(PVPositionerComparator):
     NOTE
     ----
     This implemantation considers that the value of the `readback` signal is 0 for an open shutter and 1 for a closed shutter.
-    This is not so intuitive, so the `set` method considers that 1 is for opennig and 0 for closing the shutter.
+    This is not so intuitive, so the `set` method considers that 1 is for opening and 0 for closing the shutter.
 
     Usage Example
     -------------
@@ -71,7 +71,7 @@ class ShutterToggle(PVPositionerComparator):
 
         if (
             value == self.readback.get()
-        ):  # Since we're swapping the readback values (o for closing and 1 for opennig), we actuate when value == readback
+        ):  # Since we're swapping the readback values (o for closing and 1 for opening), we actuate when value == readback
             self.real_setpoint = 1 if value == 0 else 0
             return super().set(1, *args, **kwargs)
         else:
@@ -106,7 +106,7 @@ class ShutterOpenClose(Device):
     NOTES
     -----
     This implemantation considers that the value of the `readback` signal is 0 for an open shutter and 1 for a closed shutter.
-    This is not so intuitive, so the `set` method considers that 1 is for opennig and 0 for closing the shutter.
+    This is not so intuitive, so the `set` method considers that 1 is for openig and 0 for closing the shutter.
 
     The `return` of the `set` method is an `AndStatus` with both `readback` signals.
 
