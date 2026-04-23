@@ -62,15 +62,17 @@ class ShutterToggle(PVPositionerComparator):
             self.permission_flag = False
 
     def set(self, value, *args, **kwargs):
-        if self.permission.connected:
-            if not self.permission.get():
-                raise PremadeStatus(
-                    success=False,
-                    exception=PermissionError(
-                        f"Shutter open permission is denied: {self.permission.pvname} {self.permission.get()}"
-                    ),
-                )
-
+        if self.permission_flag:
+            try:
+                if not self.permission.get(connection_timeout=2, **kwargs):
+                    raise PremadeStatus(
+                        success=False,
+                        exception=PermissionError(
+                            f"Shutter open permission is denied: {self.permission.pvname} {self.permission.get()}"
+                        ),
+                    )
+            except TimeoutError:
+                raise
         if (
             value == self.readback.get()
         ):  # Since we're swapping the readback values (0 for closing and 1 for opening), we actuate when value == readback
@@ -157,14 +159,17 @@ class ShutterOpenClose(Device):
             self.permission_flag = False
 
     def set(self, value, *args, **kwargs):
-        if self.permission.connected:
-            if not self.permission.get():
-                raise PremadeStatus(
-                    success=False,
-                    exception=PermissionError(
-                        f"Shutter open permission is denied: {self.permission.pvname} {self.permission.get()}"
-                    ),
-                )
+        if self.permission_flag:
+            try:
+                if not self.permission.get(connection_timeout=2, **kwargs):
+                    raise PremadeStatus(
+                        success=False,
+                        exception=PermissionError(
+                            f"Shutter open permission is denied: {self.permission.pvname} {self.permission.get()}"
+                        ),
+                    )
+            except TimeoutError:
+                raise
 
         if value == 0:
             self.close.set(1, *args, **kwargs).wait()
