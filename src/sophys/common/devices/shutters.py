@@ -21,7 +21,7 @@ class ShutterToggle(PVPositionerComparator):
         Suffix for the readback PV, e.g. PG_STATUS
 
     permission_suffix: str, optional
-        Permssion PV string, if it exists.
+        Permission PV string, if it exists.
 
     NOTE
     ----
@@ -42,9 +42,6 @@ class ShutterToggle(PVPositionerComparator):
     readback = FormattedComponent(
         EpicsSignalRO, "{prefix}{readback_suffix}", kind="hinted"
     )
-    permission = FormattedComponent(
-        EpicsSignalRO, "{permission_pv}", string=True, kind="omitted"
-    )
 
     def __init__(
         self,
@@ -58,6 +55,11 @@ class ShutterToggle(PVPositionerComparator):
         self.readback_suffix = readback_suffix
         self.permission_pv = permission_pv
         super().__init__(*args, **kwargs)
+        if self.permission_pv is not None:
+            self.permission = EpicsSignalRO(f"{self.permission_pv}", name="permission")
+            self.permission_flag = True
+        else:
+            self.permission_flag = False
 
     def set(self, value, *args, **kwargs):
         if self.permission.connected:
@@ -71,7 +73,7 @@ class ShutterToggle(PVPositionerComparator):
 
         if (
             value == self.readback.get()
-        ):  # Since we're swapping the readback values (o for closing and 1 for opening), we actuate when value == readback
+        ):  # Since we're swapping the readback values (0 for closing and 1 for opening), we actuate when value == readback
             self.real_setpoint = 1 if value == 0 else 0
             return super().set(1, *args, **kwargs)
         else:
@@ -101,7 +103,7 @@ class ShutterOpenClose(Device):
         Suffix for the second readback PV, e.g. GS_STATUS
 
     permission_pv: str, optional
-        Permssion PV string, if it exists.
+        Permission PV string, if it exists.
 
     NOTES
     -----
@@ -133,9 +135,6 @@ class ShutterOpenClose(Device):
     close = FormattedComponent(
         EpicsSignal, "{prefix}{shutter_suffix}CLOSE", kind="config"
     )
-    permission = FormattedComponent(
-        EpicsSignalRO, "{permission_pv}", string=True, kind="omitted"
-    )
 
     def __init__(
         self,
@@ -151,6 +150,11 @@ class ShutterOpenClose(Device):
         self.gs_suffix = gs_suffix
         self.permission_pv = permission_pv
         super().__init__(*args, **kwargs)
+        if self.permission_pv is not None:
+            self.permission = EpicsSignalRO(f"{self.permission_pv}", name="permission")
+            self.permission_flag = True
+        else:
+            self.permission_flag = False
 
     def set(self, value, *args, **kwargs):
         if self.permission.connected:
