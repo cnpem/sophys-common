@@ -110,7 +110,7 @@ class ShutterOpenClose(Device):
     NOTES
     -----
     This implemantation considers that the value of the `readback` signal is 0 for an open shutter and 1 for a closed shutter.
-    This is not so intuitive, so the `set` method considers that 1 is for openig and 0 for closing the shutter.
+    This is not so intuitive, so the `set` method considers that 1 is for opening and 0 for closing the shutter.
 
     The `return` of the `set` method is an `AndStatus` with both `readback` signals.
 
