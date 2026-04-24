@@ -171,17 +171,14 @@ class ShutterOpenClose(Device):
             except TimeoutError:
                 raise
 
-        if value == 0:
+        if value == 0 and not self._is_closed():
             self.close.set(1, *args, **kwargs).wait()
 
-        elif value == 1:
+        elif value == 1 and self._is_closed():
             self.open.set(1, *args, **kwargs).wait()
 
         else:
-            raise PremadeStatus(
-                success=False,
-                exception=Exception(f"The value {value} is not a valid option!"),
-            )
+            return PremadeStatus(success=True)
 
         self.setpoint = value
 
@@ -191,8 +188,12 @@ class ShutterOpenClose(Device):
             timeout=15,
         )
 
-    def done_comparator(self, value, **kwargs):
-        is_closed = (
-            self.photon_status.get() == 1 and self.gamma_status.get() == 1
+    def _is_closed(self):
+        """Check wheter the shutter is open or closed given the photon and gamma status PVs."""
+        return (self.photon_status.get() == 1) and (
+            self.gamma_status.get() == 1
         )  # NOTE: if one of the status is equal to zero, the shutter can be partially open
+
+    def done_comparator(self, value, **kwargs):
+        is_closed = self._is_closed()
         return is_closed if self.setpoint == 0 else not is_closed
