@@ -53,26 +53,26 @@ class ShutterToggle(PVPositionerComparator):
     ):
         self.setpoint_suffix = setpoint_suffix
         self.readback_suffix = readback_suffix
-        self.permission_pv = permission_pv
+        self._permission_pv_name = permission_pv
         super().__init__(*args, **kwargs)
-        if self.permission_pv is not None:
-            self.permission = EpicsSignalRO(f"{self.permission_pv}", name="permission")
-            self.permission_flag = True
-        else:
-            self.permission_flag = False
+        if self._permission_pv_name is not None:
+            self.permission_signal = EpicsSignalRO(
+                f"{self._permission_pv_name}", name="permission"
+            )
 
     def set(self, value, *args, **kwargs):
-        if self.permission_flag:
-            try:
-                if not self.permission.get(connection_timeout=2, **kwargs):
-                    raise PremadeStatus(
-                        success=False,
-                        exception=PermissionError(
-                            f"Shutter open permission is denied: {self.permission.pvname} {self.permission.get()}"
-                        ),
-                    )
-            except TimeoutError:
-                raise
+        if hasattr(self, "permission_signal"):
+            permission_status = self.permission_signal.get(
+                connection_timeout=2, **kwargs
+            )
+            if not permission_status:
+                raise PremadeStatus(
+                    success=False,
+                    exception=PermissionError(
+                        f"Shutter open permission is denied: {self.permission_signal.pvname} {permission_status}."
+                    ),
+                )
+
         if (
             value == self.readback.get()
         ):  # Since we're swapping the readback values (0 for closing and 1 for opening), we actuate when value == readback
@@ -150,26 +150,25 @@ class ShutterOpenClose(Device):
         self.shutter_suffix = shutter_suffix
         self.ps_suffix = ps_suffix
         self.gs_suffix = gs_suffix
-        self.permission_pv = permission_pv
+        self._permission_pv_name = permission_pv
         super().__init__(*args, **kwargs)
-        if self.permission_pv is not None:
-            self.permission = EpicsSignalRO(f"{self.permission_pv}", name="permission")
-            self.permission_flag = True
-        else:
-            self.permission_flag = False
+        if self._permission_pv_name is not None:
+            self.permission_signal = EpicsSignalRO(
+                f"{self._permission_pv_name}", name="permission"
+            )
 
     def set(self, value, *args, **kwargs):
-        if self.permission_flag:
-            try:
-                if not self.permission.get(connection_timeout=2, **kwargs):
-                    raise PremadeStatus(
-                        success=False,
-                        exception=PermissionError(
-                            f"Shutter open permission is denied: {self.permission.pvname} {self.permission.get()}"
-                        ),
-                    )
-            except TimeoutError:
-                raise
+        if hasattr(self, "permission_signal"):
+            permission_status = self.permission_signal.get(
+                connection_timeout=2, **kwargs
+            )
+            if not permission_status:
+                raise PremadeStatus(
+                    success=False,
+                    exception=PermissionError(
+                        f"Shutter open permission is denied: {self.permission_signal.pvname} {permission_status}"
+                    ),
+                )
 
         if value == 0 and not self._is_closed():
             self.close.set(1, *args, **kwargs).wait()
