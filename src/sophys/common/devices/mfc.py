@@ -1,7 +1,7 @@
 from ophyd import Device, Component, EpicsSignalWithRBV, EpicsSignalRO, EpicsSignal
 from bluesky.utils import FailedStatus
-from sophys.common.utils.status import PremadeStatus
 from enum import StrEnum
+from ophyd.pv_positioner import PVPositionerDone
 
 
 class MixFractionType(StrEnum):
@@ -33,23 +33,15 @@ class MFCMixFluid(Device):
     fraction = Component(EpicsSignalWithRBV, "Fraction", kind="config")
 
 
-class MFCFlow(EpicsSignalWithRBV):
-    def set(self, value, *args, **kwargs):
-        if 0 <= value <= 32000:  # check for the allowed dimensionless flow range
-            return super().set(value, *args, **kwargs)
-        else:
-            return PremadeStatus(success=False, exception=MFCFlowValueError(value))
-
-
-class MFC(Device):
-    setpoint = Component(MFCFlow, "Setpoint", kind="config")
+class MFC(PVPositionerDone):
+    setpoint = Component(EpicsSignalWithRBV, "Setpoint", kind="config")
     readback = Component(
         EpicsSignalRO, "Measure_RBV", kind="hinted"
     )  # Dimensionless metered value of flow
 
     fmeasure = Component(EpicsSignalRO, "FloatMeasure_RBV", kind="hinted")
     fsetpoint = Component(EpicsSignalWithRBV, "FloatSetpoint", kind="config")
-    capacity = Component(EpicsSignalWithRBV, "Capacity", kind="config")  #
+    capacity = Component(EpicsSignalWithRBV, "Capacity", kind="config")
     capacity_unit = Component(
         EpicsSignalWithRBV, "CapacityUnit", string=True, kind="config"
     )
@@ -66,3 +58,6 @@ class MFC(Device):
     temperature = Component(EpicsSignalRO, "Temperature_RBV", kind="config")
 
     init_reset = Component(EpicsSignalWithRBV, "InitReset", string=True, kind="config")
+
+    def __init__(self, *args, limits=(0, 32000), **kwargs):
+        super().__init__(*args, limits=limits, **kwargs)
