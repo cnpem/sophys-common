@@ -1,28 +1,28 @@
 from ophyd import Device, Component, EpicsSignalWithRBV, EpicsSignalRO, EpicsSignal
-from bluesky.utils import FailedStatus
 from enum import StrEnum
 from ophyd.pv_positioner import PVPositionerDone
 
 
 class MixFractionType(StrEnum):
+    """Enumeration of options for the `MixFractionType` PV."""
+
     VOLUME_FRACTION = "Volume fraction"
     MASS_FRACTION = "Mass fraction"
     MOLE_FRACTION = "Mole fraction"
 
 
 class InitResetType(StrEnum):
+    """Enumeration of options for the `InitReset` PV."""
+
     UNLOCKED = "unlocked"
     LOCKED = "locked"
 
 
-class MFCFlowValueError(FailedStatus):
-    def __init__(self, value):
-        super().__init__(
-            f"The flow value {value} is out of range. The allowed range is between 0 and 32000"
-        )
-
-
 class MFCMixFluid(Device):
+    """
+    Device that aggragates the PVs with suffix `Mix` from the MFC's IOC. It's meant to be used as a `Component` for the `MFC` device.
+    """
+
     fluid_name_list = Component(
         EpicsSignal, "FluidNameList", string=True, kind="config"
     )
@@ -34,6 +34,11 @@ class MFCMixFluid(Device):
 
 
 class MFC(PVPositionerDone):
+    """
+    Bronkhorst's Prestige series Mass Flow Controller Ophyd device, with the `PVPositioner` interface.
+    This class is initialized with its flow limits set to (0, 32000), following the manufacturer's recommendation.
+    """
+
     setpoint = Component(EpicsSignalWithRBV, "Setpoint", kind="config")
     readback = Component(
         EpicsSignalRO, "Measure_RBV", kind="hinted"
