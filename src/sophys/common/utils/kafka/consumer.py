@@ -22,10 +22,19 @@ def seek_start_document(consumer: KafkaConsumer, record: ConsumerRecord):
             offset -= 1
         consumer.seek(topic_partition, offset)
 
-        records = consumer.poll(timeout_ms=5_000, max_records=1, update_offsets=False)
-        assert (
-            topic_partition in records
-        ), "Could not retrieve data from Kafka in seek_start."
+        for attempt_number in range(1, 4):
+            timeout = 1_000 * attempt_number
+            records = consumer.poll(
+                timeout_ms=timeout, max_records=1, update_offsets=False
+            )
+
+            if topic_partition in records:
+                break
+
+        if topic_partition not in records:
+            raise RuntimeError(
+                f"Failed to retrieve records for the current partition ('{record.partition}' for '{record.topic}')"
+            )
 
         event_name, event_data = records[topic_partition][0].value
 

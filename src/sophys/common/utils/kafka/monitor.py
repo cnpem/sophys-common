@@ -1,3 +1,4 @@
+import enum
 import logging
 import json
 from collections import defaultdict
@@ -261,6 +262,12 @@ class MultipleDocumentDictionary(dict):
             return super().__getitem__(self.find_with_resource(resource_uid))
 
 
+class SeekStartResult(enum.Enum):
+    NO_SEEK = enum.auto()
+    SEEK_SUCCEEDED = enum.auto()
+    SEEK_FAILED = enum.auto()
+
+
 class MonitorBase(KafkaConsumer):
     def __init__(
         self,
@@ -294,6 +301,8 @@ class MonitorBase(KafkaConsumer):
 
         self.name = repr(self)
         self.running = Event()
+
+        self._runs_to_ignore = set()
 
         self.__hour_offset = hour_offset
 
@@ -339,7 +348,7 @@ class MonitorBase(KafkaConsumer):
         """Get the name of the Kafka topic monitored by this object."""
         return "".join(self.subscription())
 
-    def _seek_start_if_needed(self, event) -> bool:
+    def _seek_start_if_needed(self, event) -> SeekStartResult:
         should_seek_start = False
 
         try:
@@ -350,10 +359,19 @@ class MonitorBase(KafkaConsumer):
             # In the middle of a run, try to go back to the beginning
             should_seek_start = True
 
+        seek_start_succeeded = True
         if should_seek_start:
-            seek_start_document(self, event)
+            try:
+                seek_start_document(self, event)
+            except RuntimeError:
+                self._logger.error("Run '{}': {}", event)
+                seek_start_succeeded = False
 
-        return should_seek_start
+        if not should_seek_start:
+            return SeekStartResult.NO_SEEK
+        if not seek_start_succeeded:
+            return SeekStartResult.SEEK_FAILED
+        return SeekStartResult.SEEK_SUCCEEDED
 
     def _commit_pending_documents(self):
         """Commit pending documents to the save queue, when possible."""
@@ -409,7 +427,19 @@ class MonitorBase(KafkaConsumer):
             return
 
         try:
-            if self._seek_start_if_needed(event):
+            match self._seek_start_if_needed(event):
+                case SeekStartResult.NO_SEEK:
+                    pass
+                case SeekStartResult.SEEK_SUCCEEDED:
+                    return
+                case SeekStartResult.SEEK_FAILED:
+                    start_uid = _get_start_uid_from_event_data(data[1])
+                    if start_uid is not None:
+                        self._runs_to_ignore.add(start_uid)
+                    return
+
+            start_uid = _get_start_uid_from_event_data(data[1])
+            if start_uid in self._runs_to_ignore:
                 return
 
             match data:
@@ -437,6 +467,9 @@ class MonitorBase(KafkaConsumer):
 
                     self.__documents[data].clear_subscriptions()
                     self.__to_save_documents.append(self.__documents[data].identifier)
+
+                    start_uid = self.__documents[data].identifier
+                    self._runs_to_ignore.discard(start_uid)
 
                     # TODO: Validate number of saved entries via the stop document's num_events
                     # TODO: Validate successful run via the stop document's exit_status
