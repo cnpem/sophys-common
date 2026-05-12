@@ -1,14 +1,6 @@
 import pytest
 
 import queue
-import time
-
-import msgpack
-import msgpack_numpy as _m
-
-from kafka.producer import KafkaProducer
-from kafka.consumer import KafkaConsumer
-from kafka.structs import TopicPartition
 
 from ophyd.sim import hw
 from bluesky import RunEngine, plans as bp, plan_stubs as bps, preprocessors as bpp
@@ -16,19 +8,6 @@ from bluesky import RunEngine, plans as bp, plan_stubs as bps, preprocessors as 
 from sophys.common.utils.kafka.monitor import ThreadedMonitor
 
 from . import _wait
-
-
-_m.patch()
-
-
-@pytest.fixture(scope="session")
-def kafka_bootstrap_ip():
-    return "localhost:9092"
-
-
-@pytest.fixture(scope="session")
-def kafka_topic():
-    return "test_bluesky_raw_docs"
 
 
 @pytest.fixture(scope="function")
@@ -81,34 +60,6 @@ def incomplete_documents(_incomplete_documents):
 
 
 @pytest.fixture(scope="function")
-def kafka_producer(kafka_bootstrap_ip):
-    producer = KafkaProducer(
-        bootstrap_servers=[kafka_bootstrap_ip], value_serializer=msgpack.dumps
-    )
-    yield producer
-    producer.flush()
-    producer.close()
-
-
-@pytest.fixture(scope="function")
-def kafka_consumer(kafka_bootstrap_ip, kafka_topic):
-    consumer = KafkaConsumer(
-        bootstrap_servers=[kafka_bootstrap_ip], value_deserializer=msgpack.unpackb
-    )
-
-    # Connect the consumer properly to the topic
-    partition = TopicPartition(kafka_topic, 0)
-    consumer.assign([partition])
-    print("Starting offset:")
-    # Fun fact: this is actually required for the tests to work properly,
-    # because otherwise it doesn't update the current offset before the
-    # producer starts throwing events at the topic. :)))))
-    print(consumer.position(partition))
-
-    return consumer
-
-
-@pytest.fixture(scope="function")
 def base_md(tmp_path_factory):
     return {
         "metadata_save_file_location": str(tmp_path_factory.mktemp("metadata")),
@@ -123,15 +74,7 @@ def run_engine_with_md(base_md, kafka_producer, kafka_topic):
     return RE
 
 
-@pytest.fixture(scope="function")
-def run_engine_without_md(kafka_producer, kafka_topic):
-    RE = RunEngine()
-    RE.subscribe(lambda name, doc: kafka_producer.send(kafka_topic, (name, doc)))
-    return RE
-
-
-@pytest.fixture(scope="function")
-def good_monitor(
+def _create_good_monitor(
     save_queue, incomplete_documents, kafka_topic, kafka_bootstrap_ip
 ) -> ThreadedMonitor:
     mon = ThreadedMonitor(
@@ -146,6 +89,15 @@ def good_monitor(
     mon.running.wait(timeout=2.0)
 
     return mon
+
+
+@pytest.fixture(scope="function")
+def good_monitor(
+    save_queue, incomplete_documents, kafka_topic, kafka_bootstrap_ip
+) -> ThreadedMonitor:
+    return _create_good_monitor(
+        save_queue, incomplete_documents, kafka_topic, kafka_bootstrap_ip
+    )
 
 
 #
@@ -368,3 +320,47 @@ def test_basic_custom_plan_with_two_nested_runs(
 
     # One start doc, one descriptor doc, one event doc, one stop doc
     assert len(docs) == 4, docs.get_raw_data()
+
+
+def test_seek_start_in_monitor(
+    run_engine_without_md,
+    incomplete_documents,
+    save_queue: queue.Queue,
+    kafka_topic,
+    kafka_bootstrap_ip,
+):
+    det = hw().det
+
+    # NOTE: Add another run before this one just to check it doesn't skip into the previous run.
+    run_engine_without_md(bp.count([det], num=1))
+
+    def custom_plan():
+        yield from bps.open_run({})
+        yield from bps.declare_stream(det, name="primary")
+        for _ in range(5):
+            yield from bps.create()
+            yield from bps.read(det)
+            yield from bps.save()
+
+        monitor = _create_good_monitor(
+            save_queue, incomplete_documents, kafka_topic, kafka_bootstrap_ip
+        )
+        assert monitor.is_alive()
+
+        for _ in range(5):
+            yield from bps.create()
+            yield from bps.read(det)
+            yield from bps.save()
+        yield from bps.close_run("success")
+
+        # Only populated if 'monitor' is working properly, and rewinded to the start document.
+        assert save_queue.get(True, timeout=2.0) is not None
+
+        monitor.close()
+        _wait(
+            lambda: not monitor.running.is_set(),
+            timeout=2.0,
+            timeout_msg="Monitor took too long to close.",
+        )
+
+    run_engine_without_md(custom_plan())
