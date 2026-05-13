@@ -5,7 +5,7 @@ import queue
 from ophyd.sim import hw
 from bluesky import RunEngine, plans as bp, plan_stubs as bps, preprocessors as bpp
 
-from sophys.common.utils.kafka.monitor import ThreadedMonitor
+from sophys.common.utils.kafka.monitor import ThreadedMonitor, DocumentDictionary
 
 from . import _wait
 
@@ -238,8 +238,10 @@ def test_basic_custom_plan(
 
     _wait(lambda: uid not in incomplete_documents)
 
-    docs = save_queue.get(True, timeout=2.0)
-    assert docs is not None
+    docs_path = save_queue.get(True, timeout=2.0)
+    assert docs_path is not None
+
+    docs = DocumentDictionary.fromJSON(docs_path)
 
     # One start doc, one descriptor doc, one event doc, one stop doc
     assert len(docs) == 4, docs.get_raw_data()
@@ -256,8 +258,10 @@ def test_basic_fly_plan(
 
     _wait(lambda: uid not in incomplete_documents)
 
-    docs = save_queue.get(True, timeout=2.0)
-    assert docs is not None
+    docs_path = save_queue.get(True, timeout=2.0)
+    assert docs_path is not None
+
+    docs = DocumentDictionary.fromJSON(docs_path)
 
     # One start doc, one descriptor doc, twenty event doc (from 1 EventPage), one stop doc
     assert len(docs) == 23, docs.get_raw_data()
@@ -283,8 +287,10 @@ def test_basic_custom_plan_with_two_descriptor_documents(
 
     _wait(lambda: uid not in incomplete_documents)
 
-    docs = save_queue.get(True, timeout=2.0)
-    assert docs is not None
+    docs_path = save_queue.get(True, timeout=2.0)
+    assert docs_path is not None
+
+    docs = DocumentDictionary.fromJSON(docs_path)
 
     # One start doc, two descriptor doc, three event doc, one stop doc
     assert len(docs) == 7, docs.get_raw_data()
@@ -309,14 +315,18 @@ def test_basic_custom_plan_with_two_nested_runs(
 
     _wait(lambda: uid not in incomplete_documents)
 
-    docs = save_queue.get(True, timeout=2.0)
-    assert docs is not None
+    docs_path = save_queue.get(True, timeout=2.0)
+    assert docs_path is not None
+
+    docs = DocumentDictionary.fromJSON(docs_path)
 
     # One start doc, one descriptor doc, two event doc, one stop doc
     assert len(docs) == 5, docs.get_raw_data()
 
-    docs = save_queue.get(True, timeout=2.0)
-    assert docs is not None
+    docs_path = save_queue.get(True, timeout=2.0)
+    assert docs_path is not None
+
+    docs = DocumentDictionary.fromJSON(docs_path)
 
     # One start doc, one descriptor doc, one event doc, one stop doc
     assert len(docs) == 4, docs.get_raw_data()

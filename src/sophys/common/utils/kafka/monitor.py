@@ -4,6 +4,7 @@ import json
 from collections import defaultdict
 from datetime import timedelta
 from functools import wraps, partial
+from pathlib import Path
 from typing import Optional
 
 from threading import Thread, Event
@@ -134,6 +135,12 @@ class DocumentDictionary(dict):
     def get_raw_data(self):
         """Returns a JSON-formatted string representing the contents of this dictionary."""
         return json.dumps(dict.__repr__(self))
+
+    def save_to_json(self, path: Path):
+        """Save the document list as a JSON file in disk."""
+        path = path.with_suffix(".json")
+        with open(path, "w") as _f:
+            json.dump(self._original_stream, _f)
 
     @classmethod
     def fromJSON(cls, path):
@@ -383,7 +390,10 @@ class MonitorBase(KafkaConsumer):
             for id in self.__to_save_documents:
                 doc = self.__documents.get_by_identifier(id)
                 try:
-                    self.__save_queue.put(doc, block=True, timeout=1.0)
+                    temp_save_path = Path(f"/tmp/{id}.json")
+                    doc.save_to_json(temp_save_path)
+
+                    self.__save_queue.put(temp_save_path, block=True, timeout=1.0)
                     self.__saved_document_uids.add(id)
                 except Exception as e:
                     if isinstance(e, QueueFullException):
