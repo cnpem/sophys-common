@@ -11,12 +11,20 @@ from threading import Thread, Event
 from queue import Full as QueueFullException, Queue
 
 import msgpack_numpy as _m
+import numpy as np
 
 from kafka import KafkaConsumer
 
 from event_model import EventPage, unpack_event_page
 
 from .consumer import seek_start_document, seek_back_in_time
+
+
+class NumpyEncoder(json.JSONEncoder):
+    def default(self, o):
+        if isinstance(o, np.ndarray):
+            return o.tolist()
+        return super().default(o)
 
 
 def _get_uid_from_event_data(event_data: dict):
@@ -140,7 +148,7 @@ class DocumentDictionary(dict):
         """Save the document list as a JSON file in disk."""
         path = path.with_suffix(".json")
         with open(path, "w") as _f:
-            json.dump(self._original_stream, _f)
+            json.dump(self._original_stream, _f, cls=NumpyEncoder)
 
     @classmethod
     def fromJSON(cls, path):
