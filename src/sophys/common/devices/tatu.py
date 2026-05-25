@@ -1,12 +1,13 @@
-from ophyd import (
+from ophyd import (  # numpydoc ignore=GL08
     Component,
-    FormattedComponent,
-    DynamicDeviceComponent,
     Device,
+    DynamicDeviceComponent,
     EpicsSignal,
     EpicsSignalRO,
+    FormattedComponent,
 )
 from ophyd.flyers import FlyerInterface
+
 from sophys.common.utils.status import PremadeStatus
 
 from .crio import CRIO_9403
@@ -15,6 +16,15 @@ from .crio import CRIO_9403
 class TatuInput(Device):
     """
     Base configuration and status PVs for a TATU Input port.
+
+    Parameters
+    ----------
+    prefix : str
+        The PV prefix for all components of the device.
+    input_number : str
+        The number for tatu input port.
+    **kwargs
+        Arbitrary keyword arguments.
     """
 
     current_value = FormattedComponent(EpicsSignal, "{prefix}P{input_number}")
@@ -31,7 +41,7 @@ class TatuInput(Device):
         EpicsSignal, "{prefix}AnalogAssocCh{input_number}"
     )
 
-    def __init__(self, prefix, input_number, **kwargs):
+    def __init__(self, prefix, input_number, **kwargs):  # numpydoc ignore=GL08
         self.input_number = input_number
         super().__init__(prefix=prefix, **kwargs)
 
@@ -39,6 +49,16 @@ class TatuInput(Device):
 class TatuOutputBase(Device):
     """
     Base configuration and status PVs for a TATU Output port condition.
+
+    Parameters
+    ----------
+
+    prefix : str
+        The PV prefix for all components of the device.
+    condition_number : str
+        The number for TATU Output port condition.
+    **kwargs
+        Arbitrary keyword arguments.
     """
 
     changed = FormattedComponent(EpicsSignal, "{prefix}IO{output_number}changed")
@@ -58,7 +78,7 @@ class TatuOutputBase(Device):
         EpicsSignal, "{prefix}DelayIO{output_number}:c{condition_number}"
     )
 
-    def __init__(self, prefix, condition_number, **kwargs):
+    def __init__(self, prefix, condition_number, **kwargs):  # numpydoc ignore=GL08
         split_prefix = prefix.split("/")
         self.condition_number = condition_number
         self.output_number = split_prefix[1]
@@ -68,6 +88,16 @@ class TatuOutputBase(Device):
 class TatuOutputConditionV2(TatuOutputBase):
     """
     Configuration and status PVs for a TATU V2 Output port condition.
+
+    Parameters
+    ----------
+
+    prefix : str
+        The PV prefix for all components of the device.
+    condition_number : str
+        The number for TATU V2 Output port condition.
+    **kwargs
+        Arbitrary keyword arguments.
     """
 
     low = FormattedComponent(
@@ -80,26 +110,46 @@ class TatuOutputConditionV2(TatuOutputBase):
         EpicsSignal, "{prefix}NPulsesIO{output_number}:c{condition_number}"
     )
 
-    def __init__(self, prefix, condition_number, **kwargs):
+    def __init__(self, prefix, condition_number, **kwargs):  # numpydoc ignore=GL08
         super().__init__(prefix, condition_number, **kwargs)
 
 
 class TatuOutputCondition(TatuOutputBase):
     """
     Configuration and status PVs for a TATU Output port condition.
+
+    Parameters
+    ----------
+
+    prefix : str
+        The PV prefix for all components of the device.
+    condition_number : str
+        The number for TATU Output port condition.
+    **kwargs
+        Arbitrary keyword arguments.
     """
 
     pulse = FormattedComponent(
         EpicsSignal, "{prefix}PulseIO{output_number}:c{condition_number}"
     )
 
-    def __init__(self, prefix, condition_number, **kwargs):
+    def __init__(self, prefix, condition_number, **kwargs):  # numpydoc ignore=GL08
         super().__init__(prefix, condition_number, **kwargs)
 
 
 class TatuOutputV2(Device):
     """
     All the conditions PVs for a TATU V2 Output port.
+
+    Parameters
+    ----------
+
+    prefix : str
+        The PV prefix for all components of the device.
+    output_number : str
+        The number for TATU V2 Output port.
+    **kwargs
+        Arbitrary keyword arguments.
     """
 
     c1 = FormattedComponent(
@@ -114,7 +164,7 @@ class TatuOutputV2(Device):
 
     logic = FormattedComponent(EpicsSignal, "{prefix}OutputLogicIO{output_number}")
 
-    def __init__(self, prefix, output_number, **kwargs):
+    def __init__(self, prefix, output_number, **kwargs):  # numpydoc ignore=GL08
         self.output_number = output_number
         super().__init__(prefix=prefix, **kwargs)
 
@@ -122,6 +172,16 @@ class TatuOutputV2(Device):
 class TatuOutput(Device):
     """
     All the conditions PVs for a TATU Output port.
+
+    Parameters
+    ----------
+
+    prefix : str
+        The PV prefix for all components of the device.
+    output_number : str
+        The number for TATU Output port.
+    **kwargs
+        Arbitrary keyword arguments.
     """
 
     c1 = FormattedComponent(
@@ -134,32 +194,58 @@ class TatuOutput(Device):
         TatuOutputCondition, "{prefix}/{output_number}", condition_number="2"
     )
 
-    def __init__(self, prefix, output_number, **kwargs):
+    def __init__(self, prefix, output_number, **kwargs):  # numpydoc ignore=GL08
         self.output_number = output_number
         super().__init__(prefix=prefix, **kwargs)
 
 
 class TatuFlyScan(FlyerInterface):
+    """
+    Flyscan interface for TATU device.
+    """
 
     def kickoff(self):
+        """
+        Start a flyer.
+
+        The status object return is marked as done once flying
+        has started.
+        """
         return self.activate.set(1, timeout=10)
 
     def complete(self):
+        """
+        Wait for flying to be complete.
+        """
         return PremadeStatus(success=True)
 
     def describe_collect(self):
+        """
+        Provide schema & meta-data from :meth:`collect`.
+        """
         return {}
 
     def collect(self):
+        """
+        Retrieve data from the flyer as proto-events.
+        """
         return []
 
 
 class TatuBase(Device, TatuFlyScan):
     """
-    Base device for the TATU software, which produces or a distribute digital
-    signals to coordinate events and actions to achieve a synchronized operation at a beamline.
+    Base device for the TATU software, which produces or a distribute digital signals to coordinate events \
+    and actions to achieve a synchronized operation at a beamline.
 
     Documentation: http://bit.ly/tatu-sirius
+
+    Parameters
+    ----------
+
+    prefix : str
+        The PV prefix for all components of the device.
+    **kwargs
+        Arbitrary keyword arguments.
     """
 
     activate = Component(EpicsSignal, "TatuActive", write_pv="Activate")
@@ -186,29 +272,29 @@ class TatuBase(Device, TatuFlyScan):
         }
     )
 
-    def __init__(self, prefix, **kwargs):
+    def __init__(self, prefix, **kwargs):  # numpydoc ignore=GL08
         self.prefix = prefix
         super().__init__(prefix=prefix, **kwargs)
 
-    def stage(self):
+    def stage(self):  # numpydoc ignore=GL08
         super().stage()
         self.activate.set(1).wait()
 
-    def unstage(self):
+    def unstage(self):  # numpydoc ignore=GL08
         super().unstage()
         self.activate.set(0).wait()
 
-    def stop(self):
+    def stop(self):  # numpydoc ignore=GL08
         super().stop()
         self.tatu_stop.set(1)
         self.activate.set(0)
 
-    def pause(self):
+    def pause(self):  # numpydoc ignore=GL08
         self.master_mode_state = self.master_mode.get()
         self.tatu_stop.set(1)
         self.activate.set(0)
 
-    def resume(self):
+    def resume(self):  # numpydoc ignore=GL08
         self.master_mode.set(self.master_mode_state).wait()
         self.activate.set(1).wait()
 
@@ -235,6 +321,14 @@ class Tatu9401V2(Tatu9401):
     TATU V2 device adapted to work with the C-Series module 9401.
 
     This module consists of four high-speed TTL channels as an input and the other four high-speed TTL channels as an output.
+
+    Parameters
+    ----------
+
+    prefix : str
+        The PV prefix for all components of the device.
+    **kwargs
+        Arbitrary keyword arguments.
     """
 
     output = DynamicDeviceComponent(
@@ -248,7 +342,7 @@ class Tatu9401V2(Tatu9401):
 
     file_name = FormattedComponent(EpicsSignal, "{global_prefix}Filename")
 
-    def __init__(self, prefix, **kwargs):
+    def __init__(self, prefix, **kwargs):  # numpydoc ignore=GL08
         self.global_prefix = prefix[:-1].rpartition(":")[0] + ":"
         super().__init__(prefix, **kwargs)
 
