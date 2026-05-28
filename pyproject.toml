@@ -16,13 +16,12 @@ classifiers = [
     "Operating System :: OS Independent",
 ]
 
-requires-python = ">=3.10"
+requires-python = ">=3.11"
 dynamic = ["version"]
 dependencies = [
   "bluesky",
   "ophyd",
   "numpy",
-  "strenum ; python_version < '3.11'",
   "ophyd-async",
 ]
 
