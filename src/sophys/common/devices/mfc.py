@@ -39,13 +39,13 @@ class MFC(PVPositionerDone):
     This class is initialized with its flow limits set to (0, 32000), following the manufacturer's recommendation.
     """
 
-    setpoint = Component(EpicsSignalWithRBV, "Setpoint", kind="config")
-    readback = Component(
-        EpicsSignalRO, "Measure_RBV", kind="hinted"
+    raw_setpoint = Component(EpicsSignalWithRBV, "Setpoint", kind="config")
+    raw_readback = Component(
+        EpicsSignalRO, "Measure_RBV", kind="config"
     )  # Dimensionless metered value of flow
 
-    fmeasure = Component(EpicsSignalRO, "FloatMeasure_RBV", kind="hinted")
-    fsetpoint = Component(EpicsSignalWithRBV, "FloatSetpoint", kind="config")
+    readback = Component(EpicsSignalRO, "FloatMeasure_RBV", kind="hinted")
+    setpoint = Component(EpicsSignalWithRBV, "FloatSetpoint", kind="config")
     capacity = Component(EpicsSignalWithRBV, "Capacity", kind="config")
     capacity_unit = Component(
         EpicsSignalWithRBV, "CapacityUnit", string=True, kind="config"
