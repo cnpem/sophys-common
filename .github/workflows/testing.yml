@@ -24,7 +24,7 @@ jobs:
           fetch-depth: 0
           fetch-tags: true
       - name: Install package
-        run: pip install ".[all]"
+        run: pip install ".[all]" && pip install aioca
       - name: Run Kafka
         uses: spicyparrot/kafka-kraft-action@v1.1.3
         with:
