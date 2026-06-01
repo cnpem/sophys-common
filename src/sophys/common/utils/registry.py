@@ -339,18 +339,10 @@ def register_async_devices(
 
             try:
                 await wait_for_connection(**coros)
-            except NotConnectedError:
+            except NotConnectedError as exc:
                 add_all_devices = False
-                for device in devices.values():
-                    if device._connect_task is None:
-                        continue
-
-                    success = (
-                        device._connect_task.done()
-                        and device._connect_task.exception() is None
-                    )
-
-                    if success:
+                for name, device in devices.items():
+                    if name not in exc.sub_errors:
                         registry.register(device, labels)
 
                 if raise_on_error:
