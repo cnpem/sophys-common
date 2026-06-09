@@ -1,3 +1,5 @@
+import pytest
+
 from collections import defaultdict
 
 from bluesky import RunEngine, plan_stubs as bps
@@ -50,7 +52,8 @@ def test_mv_with_retry():
     assert signal.get() == 0
 
     def plan_mv_with_retry():
-        yield from mv_with_retry(signal, 3, retry_count=3)
+        with pytest.warns(RuntimeWarning):
+            yield from mv_with_retry(signal, 3, retry_count=3)
         assert signal.get() == 3
 
     RE(plan_mv_with_retry())
@@ -60,12 +63,26 @@ def test_mv_with_retry():
 
     def plan_mv_with_not_enough_retries():
         did_throw = False
-        try:
-            yield from mv_with_retry(signal, 4, retry_count=3)
-        except FailedStatus:
-            did_throw = True
+        with pytest.warns(RuntimeWarning):
+            try:
+                yield from mv_with_retry(signal, 4, retry_count=3)
+            except FailedStatus:
+                did_throw = True
 
         assert signal.get() == 0
         assert did_throw
 
     RE(plan_mv_with_not_enough_retries())
+
+
+@pytest.mark.filterwarnings("error")
+def test_mv_with_retry_ignore_warning():
+    signal = FailfulSignal(name="sig")
+
+    RE = RunEngine()
+
+    def plan_mv_with_retry():
+        yield from mv_with_retry(signal, 3, retry_count=3, ignore_warning=True)
+        assert signal.get() == 3
+
+    RE(plan_mv_with_retry())
