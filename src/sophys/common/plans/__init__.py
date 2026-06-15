@@ -17,7 +17,7 @@ def _with_retry_decorator(func):  # numpydoc ignore=PR01
     from functools import wraps
 
     @wraps(func)
-    def __inner(*args, retry_count=3, ignore_warning=False):  # numpydoc ignore=PR01
+    def __inner(*args, max_attempts=3, ignore_warning=False):  # numpydoc ignore=PR01
         """Inner handler for dealing with plan retries."""
         _ret = None
 
@@ -30,11 +30,11 @@ def _with_retry_decorator(func):  # numpydoc ignore=PR01
         while True:
             try:
                 _ret = yield from func(*args)
-            except FailedStatus as e:
+            except FailedStatus:
                 retries += 1
 
-                if retries >= retry_count:
-                    raise e
+                if retries >= max_attempts:
+                    raise
             else:
                 break
 
@@ -44,7 +44,7 @@ def _with_retry_decorator(func):  # numpydoc ignore=PR01
 
 
 @_with_retry_decorator
-def mv_with_retry(*args):  # numpydoc ignore=PR02
+def mv_with_retry(*args, **kwargs):  # numpydoc ignore=PR02
     """
     A wrapper around ``bps.mv``, retrying the move if it fails.
 
@@ -52,8 +52,10 @@ def mv_with_retry(*args):  # numpydoc ignore=PR02
     ----------
     *args
         Arguments to plan_stubs.mv.
-    retry_count : int, optional
-        Maximum amount of retries before failing the move. Defaults to 3.
+    **kwargs
+        Keyword arguments to plan_stubs.mv.
+    max_attempts : int, optional
+        Maximum amount of attempts before failing the move. Defaults to 3.
     ignore_warning : bool, optional
         Ignore the 'not encouraged' warning on every usage. False by default.
 
@@ -61,4 +63,4 @@ def mv_with_retry(*args):  # numpydoc ignore=PR02
     --------
     bluesky.plan_stubs.mv : Base move plan stub.
     """
-    return (yield from bps.mv(*args))
+    return (yield from bps.mv(*args, **kwargs))
