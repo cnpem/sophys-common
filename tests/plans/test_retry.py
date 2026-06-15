@@ -53,7 +53,7 @@ def test_mv_with_retry():
 
     def plan_mv_with_retry():
         with pytest.warns(RuntimeWarning):
-            yield from mv_with_retry(signal, 3, retry_count=3)
+            yield from mv_with_retry(signal, 3, max_attempts=3)
         assert signal.get() == 3
 
     RE(plan_mv_with_retry())
@@ -65,7 +65,7 @@ def test_mv_with_retry():
         did_throw = False
         with pytest.warns(RuntimeWarning):
             try:
-                yield from mv_with_retry(signal, 4, retry_count=3)
+                yield from mv_with_retry(signal, 4, max_attempts=3)
             except FailedStatus:
                 did_throw = True
 
@@ -82,7 +82,7 @@ def test_mv_with_retry_ignore_warning():
     RE = RunEngine()
 
     def plan_mv_with_retry():
-        yield from mv_with_retry(signal, 3, retry_count=3, ignore_warning=True)
+        yield from mv_with_retry(signal, 3, max_attempts=3, ignore_warning=True)
         assert signal.get() == 3
 
     RE(plan_mv_with_retry())
