@@ -16,13 +16,13 @@ classifiers = [
     "Operating System :: OS Independent",
 ]
 
-requires-python = ">=3.10"
+requires-python = ">=3.11"
 dynamic = ["version"]
 dependencies = [
   "bluesky",
   "ophyd",
   "numpy",
-  "strenum ; python_version < '3.11'",
+  "ophyd-async",
 ]
 
 [project.optional-dependencies]
@@ -32,6 +32,8 @@ dev = [
   "pytest-cov",
   "pytest-virtualenv",
   "caproto!=1.2.0",
+  "pytest-asyncio",
+  "pytest-timeout",
 ]
 kafka = [
   "kafka-python<3",
@@ -58,10 +60,18 @@ version_file = "src/sophys/common/__version__.py"
 [tool.setuptools.packages.find]
 where = ["src"]
 
-# https://black.readthedocs.io/en/stable/the_black_code_style/current_style.html#flake8
-[tool.flake8]
-max-line-length = 88
-extend-ignore = ["E203", "E704"]
+[tool.ruff]
+exclude = ["__version__.py", "docs/*"]
+
+[tool.ruff.lint]
+select = ["E4", "E7", "E9", "F", "N", "B", "UP"]
+ignore = ["E203", "E501", "N806", "N817"]
+
+[tool.ruff.lint.per-file-ignores]
+"tests/*" = ["S101"]  # Ignore assert warnings in test files
 
 [tool.numpydoc_validation]
 checks = ["all", "EX01", "SA01", "ES01", "RT01"]
+
+[tool.pytest.ini_options]
+asyncio_mode = "auto"

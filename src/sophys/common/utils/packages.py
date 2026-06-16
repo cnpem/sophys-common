@@ -1,37 +1,33 @@
+# numpydoc ignore=GL08
 import importlib
 import typing
 
-from typing_extensions import Unpack
-
-try:
-    from enum import StrEnum
-except ImportError:
-    from strenum import StrEnum
+from enum import StrEnum
 
 
-class PackageManagementBackend(StrEnum):
+class PackageManagementBackend(StrEnum):  # numpydoc ignore=GL08
     PIP = "pip"
     UV = "uv"
 
 
-StrSequenceType: typing.TypeAlias = typing.Tuple[str, ...]
+StrSequenceType: typing.TypeAlias = tuple[str, ...]
 
 
 def install_packages(
-    *package_specs: Unpack[StrSequenceType],
-    extra_index_url: typing.Optional[list[str]] = None,
+    *package_specs: *StrSequenceType,
+    extra_index_url: list[str] | None = None,
     force_reinstall: bool = False,
     disable_cache: bool = False,
     debug: bool = False,
     backend: PackageManagementBackend = PackageManagementBackend.PIP,
-    custom_python_executable: typing.Optional[str] = None,
+    custom_python_executable: str | None = None,
 ):
     """
-    Installs a package in the current environment.
+    Install a package in the current environment.
 
     Parameters
     ----------
-    package_specs : str or sequence of strs
+    *package_specs : str or sequence of strs
         Name of the packages to be installed, as is found on the package registry,
         together with an optional version specifier for each of them.
         Also accepts Git URLs (i.e. git+https://...).
@@ -46,6 +42,8 @@ def install_packages(
         is printed in real-time.
     backend : PackageManagementBackend, optional
         Select which backend to use for package installation. Defaults to pip.
+    custom_python_executable : str, optional
+        Custom Python executable to use. Defaults to sys.executable.
     """
 
     import subprocess
