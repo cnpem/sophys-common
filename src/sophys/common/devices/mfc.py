@@ -1,21 +1,5 @@
 from ophyd import Device, Component, EpicsSignalWithRBV, EpicsSignalRO
-from enum import StrEnum
 from ophyd.pv_positioner import PVPositionerIsClose
-
-
-class MixFractionType(StrEnum):
-    """Enumeration of options for the `MixFractionType` PV."""
-
-    VOLUME_FRACTION = "Volume fraction"
-    MASS_FRACTION = "Mass fraction"
-    MOLE_FRACTION = "Mole fraction"
-
-
-class InitResetType(StrEnum):
-    """Enumeration of options for the `InitReset` PV."""
-
-    UNLOCKED = "unlocked"
-    LOCKED = "locked"
 
 
 class MFCMixFluid(Device):
