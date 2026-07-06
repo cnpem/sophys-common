@@ -1,4 +1,9 @@
-from ophyd import Device, Component, EpicsSignalWithRBV, EpicsSignalRO
+from ophyd import (
+    Device,
+    Component,
+    EpicsSignalWithRBV,
+    EpicsSignalRO,
+)  # numpydoc ignore=GL08
 from ophyd.pv_positioner import PVPositionerIsClose
 
 
@@ -16,7 +21,31 @@ class MFCMixFluid(Device):
 
 class MFC(PVPositionerIsClose):
     """
-    Bronkhorst's Prestige series Mass Flow Controller Ophyd device, with the `PVPositionerIsClose` interface.
+    Bronkhorst's Prestige series Mass Flow Controller Ophyd device.
+
+    This device has the `PVPositionerIsClose` interface. The `atol` and `timeout` properties
+    have the defaults `1e-2` and `10` respectively. These can be changed for each equipment
+    or use case. The `egu` is overwritten to show the equipment's capacity unit.
+
+    Parameters
+    ----------
+    prefix : str
+        The device prefix used for all sub-positioners. This is optional as it
+        may be desirable to specify full PV names for PVPositioners.
+    name : str
+        The device name.
+    atol : float, default: 1e-2
+        A measure of absolute tolerance.
+    rtol : float, optional
+        A measure of relative tolerance.
+    timeout : float, default: 10
+        The default timeout to use for motion requests, in seconds.
+    **kwargs
+        Extra keyword arguments passed to `PVPositionerIsClose`.
+
+    See Also
+    --------
+    ophyd.pv_positioner.PVPositionerIsClose: Base class for `PVPositioner` that updates done status based on np.isclose.
     """
 
     raw_setpoint = Component(EpicsSignalWithRBV, "Setpoint", kind="config")
@@ -41,10 +70,12 @@ class MFC(PVPositionerIsClose):
     temperature = Component(EpicsSignalRO, "Temperature_RBV", kind="config")
 
     @property
-    def egu(self):
+    def egu(self):  # numpydoc ignore=GL08
         return self.capacity_unit.get(timeout=5, connection_timeout=5)
 
-    def __init__(self, prefix, *, name, atol=1e-2, rtol=None, timeout=10, **kwargs):
+    def __init__(
+        self, prefix, *, name, atol=1e-2, rtol=None, timeout=10, **kwargs
+    ):  # numpydoc ignore=GL08
         super().__init__(
             prefix, name=name, atol=atol, rtol=rtol, timeout=timeout, **kwargs
         )
