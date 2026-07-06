@@ -43,3 +43,8 @@ class MFC(PVPositionerIsClose):
     @property
     def egu(self):
         return self.capacity_unit.get(timeout=5, connection_timeout=5)
+
+    def __init__(self, prefix, *, name, atol=1e-2, rtol=None, timeout=10, **kwargs):
+        super().__init__(
+            prefix, name=name, atol=atol, rtol=rtol, timeout=timeout, **kwargs
+        )
