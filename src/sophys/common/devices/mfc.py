@@ -1,4 +1,4 @@
-from ophyd import Device, Component, EpicsSignalWithRBV, EpicsSignalRO, EpicsSignal
+from ophyd import Device, Component, EpicsSignalWithRBV, EpicsSignalRO
 from enum import StrEnum
 from ophyd.pv_positioner import PVPositionerIsClose
 
@@ -23,14 +23,11 @@ class MFCMixFluid(Device):
     Device that aggragates the PVs with suffix `Mix` from the MFC's IOC. It's meant to be used as a `Component` for the `MFC` device.
     """
 
-    fluid_name_list = Component(
-        EpicsSignal, "FluidNameList", string=True, kind="config"
-    )
-    fluid_name = Component(EpicsSignalRO, "FluidName_RBV", string=True, kind="config")
+    fluid_name = Component(EpicsSignalRO, "FluidNameList", string=True, kind="config")
     fraction_type = Component(
-        EpicsSignalWithRBV, "FractionType", string=True, kind="config"
+        EpicsSignalRO, "FractionType_RBV", string=True, kind="config"
     )
-    fraction = Component(EpicsSignalWithRBV, "Fraction", kind="config")
+    fraction = Component(EpicsSignalRO, "Fraction_RBV", kind="config")
 
 
 class MFC(PVPositionerIsClose):
@@ -46,23 +43,18 @@ class MFC(PVPositionerIsClose):
     readback = Component(EpicsSignalRO, "FloatMeasure_RBV", kind="hinted")
     setpoint = Component(EpicsSignalWithRBV, "FloatSetpoint", kind="config")
     actuate = Component(EpicsSignalWithRBV, "EnableSetpoint", kind="config")
-    capacity = Component(EpicsSignalWithRBV, "Capacity", kind="config")
+    capacity = Component(EpicsSignalRO, "Capacity_RBV", kind="config")
     capacity_unit = Component(
-        EpicsSignalWithRBV, "CapacityUnit", string=True, kind="config"
+        EpicsSignalRO, "CapacityUnit_RBV", string=True, kind="config"
     )
 
-    fluid_name = Component(EpicsSignalRO, "FluidName_RBV", string=True, kind="config")
-    fluid_name_list = Component(
-        EpicsSignal, "FluidNameList", string=True, kind="config"
-    )
+    fluid_name = Component(EpicsSignalRO, "FluidNameList", string=True, kind="config")
     mix = Component(MFCMixFluid, "Mix", kind="config")
 
-    inlet_pressure = Component(EpicsSignalWithRBV, "InletPressure", kind="config")
-    outlet_pressure = Component(EpicsSignalWithRBV, "OutletPressure", kind="config")
+    inlet_pressure = Component(EpicsSignalRO, "InletPressure_RBV", kind="config")
+    outlet_pressure = Component(EpicsSignalRO, "OutletPressure_RBV", kind="config")
 
     temperature = Component(EpicsSignalRO, "Temperature_RBV", kind="config")
-
-    init_reset = Component(EpicsSignalWithRBV, "InitReset", string=True, kind="config")
 
     @property
     def egu(self):
