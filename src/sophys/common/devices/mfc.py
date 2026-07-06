@@ -1,6 +1,6 @@
 from ophyd import Device, Component, EpicsSignalWithRBV, EpicsSignalRO, EpicsSignal
 from enum import StrEnum
-from ophyd.pv_positioner import PVPositionerDone
+from ophyd.pv_positioner import PVPositionerIsClose
 
 
 class MixFractionType(StrEnum):
@@ -33,10 +33,9 @@ class MFCMixFluid(Device):
     fraction = Component(EpicsSignalWithRBV, "Fraction", kind="config")
 
 
-class MFC(PVPositionerDone):
+class MFC(PVPositionerIsClose):
     """
-    Bronkhorst's Prestige series Mass Flow Controller Ophyd device, with the `PVPositioner` interface.
-    This class is initialized with its flow limits set to (0, 32000), following the manufacturer's recommendation.
+    Bronkhorst's Prestige series Mass Flow Controller Ophyd device, with the `PVPositionerIsClose` interface.
     """
 
     raw_setpoint = Component(EpicsSignalWithRBV, "Setpoint", kind="config")
@@ -46,6 +45,7 @@ class MFC(PVPositionerDone):
 
     readback = Component(EpicsSignalRO, "FloatMeasure_RBV", kind="hinted")
     setpoint = Component(EpicsSignalWithRBV, "FloatSetpoint", kind="config")
+    actuate = Component(EpicsSignalWithRBV, "EnableSetpoint", kind="config")
     capacity = Component(EpicsSignalWithRBV, "Capacity", kind="config")
     capacity_unit = Component(
         EpicsSignalWithRBV, "CapacityUnit", string=True, kind="config"
