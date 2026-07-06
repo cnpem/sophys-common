@@ -64,5 +64,6 @@ class MFC(PVPositionerIsClose):
 
     init_reset = Component(EpicsSignalWithRBV, "InitReset", string=True, kind="config")
 
-    def __init__(self, *args, limits=(0, 32000), **kwargs):
-        super().__init__(*args, limits=limits, **kwargs)
+    @property
+    def egu(self):
+        return self.capacity_unit.get(timeout=5, connection_timeout=5)
