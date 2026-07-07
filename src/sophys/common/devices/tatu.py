@@ -201,7 +201,7 @@ class TatuOutput(Device):
 
 class TatuFlyScan(FlyerInterface):
     """
-    Flyscan interface for TATU device.
+    Tatu Flyscan device. This is a flyer device with kickoff, complete and collect methods.
     """
 
     def kickoff(self):
@@ -216,18 +216,38 @@ class TatuFlyScan(FlyerInterface):
     def complete(self):
         """
         Wait for flying to be complete.
+
+        This can either be a question ("are you done yet") or a
+        command ("please wrap up") to accommodate flyers that have a
+        fixed trajectory (ex. high-speed raster scans) or that are
+        passive collectors (ex MAIA or a hardware buffer).
+
+        In either case, the returned status object should indicate when
+        the device is actually finished flying.
         """
         return PremadeStatus(success=True)
 
     def describe_collect(self):
         """
-        Provide schema & meta-data from :meth:`collect`.
+        Provide schema & meta-data from `collect`.
+
+        This is analogous to `describe`, but nested by stream name.
+
+        This provides schema related information, (ex shape, dtype), the
+        source (ex PV name), and if available, units, limits, precision etc.
+
+        The data_keys are mapped to events from `collect` by matching the
+        keys.
         """
         return {}
 
     def collect(self):
         """
         Retrieve data from the flyer as proto-events.
+
+        The events can be from a mixture of event streams, it is
+        the responsibility of the consumer (ei the RunEngine) to sort
+        them out.
         """
         return []
 
