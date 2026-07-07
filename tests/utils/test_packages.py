@@ -1,10 +1,17 @@
+from pathlib import Path
 import pytest
 
+import shutil
 import sys
 
 from unittest.mock import patch
 
-from sophys.common.utils.packages import install_packages, PackageManagementBackend
+from sophys.common.utils.packages import (
+    install_packages,
+    install_lockfile,
+    PackageManagementBackend,
+    LockfileFormat,
+)
 
 
 @pytest.fixture
@@ -166,3 +173,116 @@ def test_install_failure(mocked_subprocess):
         RuntimeError, match="Package installation failed: sophys-common"
     ):
         install_packages("sophys-common")
+
+
+def test_lockfile_requirements_pip(mocked_venv, tmp_path):
+    with open(tmp_path / "requirements.txt", "w") as _f:
+        _f.writelines(["pytest"])
+
+    assert "pytest" not in mocked_venv.installed_packages()
+    install_lockfile(
+        str(tmp_path),
+        format=LockfileFormat.REQUIREMENTS,
+        custom_python_executable=mocked_venv.python,
+    )
+    assert "pytest" in mocked_venv.installed_packages()
+
+    (tmp_path / "requirements.txt").unlink()
+
+    req_file = tmp_path / "requirements_other.txt"
+    with open(req_file, "w") as _f:
+        _f.writelines(["requests\n", "numpy>2\n"])
+
+    assert "requests" not in mocked_venv.installed_packages()
+    assert "numpy" not in mocked_venv.installed_packages()
+    install_lockfile(
+        str(req_file),
+        format=LockfileFormat.REQUIREMENTS,
+        custom_python_executable=mocked_venv.python,
+    )
+    assert "requests" in mocked_venv.installed_packages()
+    assert "numpy" in mocked_venv.installed_packages()
+
+
+def test_lockfile_requirements_uv(mocked_venv, tmp_path):
+    with patch("importlib.util.find_spec") as mock:
+        # Anything other than None should suffice.
+        mock.return_value = True
+
+        with open(tmp_path / "requirements.txt", "w") as _f:
+            _f.writelines(["importlib-metadata\n", "pytest"])
+
+        assert "pytest" not in mocked_venv.installed_packages()
+        install_lockfile(
+            str(tmp_path),
+            format=LockfileFormat.REQUIREMENTS,
+            backend=PackageManagementBackend.UV,
+            custom_python_executable=mocked_venv.python,
+        )
+        assert "pytest" in mocked_venv.installed_packages()
+
+        (tmp_path / "requirements.txt").unlink()
+
+        req_file = tmp_path / "requirements_other.txt"
+        with open(req_file, "w") as _f:
+            _f.writelines(["importlib-metadata\n", "requests\n", "numpy>2\n"])
+
+        assert "requests" not in mocked_venv.installed_packages()
+        assert "numpy" not in mocked_venv.installed_packages()
+        install_lockfile(
+            str(req_file),
+            format=LockfileFormat.REQUIREMENTS,
+            backend=PackageManagementBackend.UV,
+            custom_python_executable=mocked_venv.python,
+        )
+        assert "requests" in mocked_venv.installed_packages()
+        assert "numpy" in mocked_venv.installed_packages()
+
+
+def test_lockfile_pylock_pip(mocked_venv, tmp_path):
+    source_path = Path(__file__).parent / "test.pylock.toml"
+    test_path: Path = tmp_path / "pylock.toml"
+    shutil.copyfile(source_path, test_path)
+
+    assert "numpy" not in mocked_venv.installed_packages()
+    install_lockfile(str(test_path), custom_python_executable=mocked_venv.python)
+    assert "numpy" in mocked_venv.installed_packages()
+
+
+def test_lockfile_pylock_uv(mocked_venv, tmp_path):
+    with patch("importlib.util.find_spec") as mock:
+        # Anything other than None should suffice.
+        mock.return_value = True
+
+        source_path = Path(__file__).parent / "test.pylock.toml"
+        test_path = tmp_path / "pylock.toml"
+        shutil.copyfile(source_path, test_path)
+
+        assert "numpy" not in mocked_venv.installed_packages()
+        install_lockfile(
+            str(test_path),
+            backend=PackageManagementBackend.UV,
+            custom_python_executable=mocked_venv.python,
+        )
+        assert "numpy" in mocked_venv.installed_packages()
+
+
+def test_lockfile_http(mocked_venv):
+    from io import BytesIO
+    from requests import Response
+
+    mock_res = Response()
+    mock_res.status_code = 200
+    mock_res.headers["Content-Type"] = "plain/text"
+    mock_res.raw = BytesIO(b"requests==2.34.2")
+
+    with patch("sophys.common.utils.packages.http_get") as mock:
+        mock.return_value = mock_res
+
+        assert "requests" not in mocked_venv.installed_packages()
+        install_lockfile(
+            "http://localhost:1234/api/get_requirements?type=plain",
+            format=LockfileFormat.REQUIREMENTS,
+            custom_python_executable=mocked_venv.python,
+        )
+        assert "requests" in mocked_venv.installed_packages()
