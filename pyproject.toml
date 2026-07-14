@@ -23,6 +23,10 @@ dependencies = [
   "ophyd",
   "numpy",
   "strenum ; python_version < '3.11'",
+  "kafka-python<3",
+  "msgpack",
+  "msgpack-numpy",
+  "ophyd-registry",
 ]
 
 [project.optional-dependencies]
@@ -33,19 +37,13 @@ dev = [
   "pytest-virtualenv",
   "caproto!=1.2.0",
 ]
-kafka = [
-  "kafka-python<3",
-  "msgpack",
-  "msgpack-numpy"
-]
-registry = [
-  "ophyd-registry"
-]
+kafka = []
+registry = []
 databroker = [
   "databroker"
 ]
 all = [
-  "sophys-common[dev,kafka,registry,databroker]"
+  "sophys-common[dev,databroker]"
 ]
 
 [project.urls]
