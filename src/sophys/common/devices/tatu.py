@@ -206,49 +206,26 @@ class TatuFlyScan(FlyerInterface):
 
     def kickoff(self):
         """
-        Start a flyer.
+        Kickoff Tatu device.
 
-        The status object return is marked as done once flying
-        has started.
+        Activates the TATU to start sending triggers.
         """
         return self.activate.set(1, timeout=10)
 
     def complete(self):
         """
-        Wait for flying to be complete.
+        Complete method for the TATU.
 
-        This can either be a question ("are you done yet") or a
-        command ("please wrap up") to accommodate flyers that have a
-        fixed trajectory (ex. high-speed raster scans) or that are
-        passive collectors (ex MAIA or a hardware buffer).
-
-        In either case, the returned status object should indicate when
-        the device is actually finished flying.
+        In this case already consider success
+        because the main objective is to activate
+        TATU through kickoff().
         """
         return PremadeStatus(success=True)
 
-    def describe_collect(self):
-        """
-        Provide schema & meta-data from `collect`.
-
-        This is analogous to `describe`, but nested by stream name.
-
-        This provides schema related information, (ex shape, dtype), the
-        source (ex PV name), and if available, units, limits, precision etc.
-
-        The data_keys are mapped to events from `collect` by matching the
-        keys.
-        """
+    def describe_collect(self):  # numpydoc ignore=GL08
         return {}
 
-    def collect(self):
-        """
-        Retrieve data from the flyer as proto-events.
-
-        The events can be from a mixture of event streams, it is
-        the responsibility of the consumer (ei the RunEngine) to sort
-        them out.
-        """
+    def collect(self):  # numpydoc ignore=GL08
         return []
 
 
