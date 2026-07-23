@@ -99,6 +99,7 @@ class PicoloChannel(Device):  # numpydoc ignore=PR01
 
     enable = Component(EpicsSignalWithRBV, "Enable", kind="config")
     engvalue = Component(EpicsSignal, "EngValue", kind="hinted")
+    engunit = Component(EpicsSignalRO, "EngUnit", kind="hinted")
     saturated = Component(EpicsSignal, "Saturated", kind="config")
     range = Component(EpicsSignalWithRBV, "Range", string=True, kind="config")
     auto_range = Component(EpicsSignalWithRBV, "AutoRange", kind="omitted")
