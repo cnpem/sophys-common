@@ -22,6 +22,7 @@ dependencies = [
   "bluesky",
   "ophyd",
   "numpy",
+  "requests",
   "strenum ; python_version < '3.11'",
   "kafka-python<3",
   "msgpack",
@@ -63,3 +64,4 @@ extend-ignore = ["E203", "E704"]
 
 [tool.numpydoc_validation]
 checks = ["all", "EX01", "SA01", "ES01", "RT01"]
+exclude_files = ["^tests/.*"]
