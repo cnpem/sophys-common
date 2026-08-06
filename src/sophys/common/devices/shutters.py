@@ -1,0 +1,198 @@
+from ophyd import EpicsSignal, EpicsSignalRO, FormattedComponent, Device
+from ophyd.pv_positioner import PVPositionerComparator
+from ..utils.status import PremadeStatus
+from ophyd.status import AndStatus, SubscriptionStatus
+
+
+class ShutterToggle(PVPositionerComparator):
+    """
+    Abstraction layer for shutters with one actuation PV (OPENCLOSE) and one readback PV (PG_STATUS). There's an optional parameter for a permission PV.
+
+    Parameters
+    ----------
+    prefix: str
+        Prefix for the shutter's PVs.
+
+    setpoint_suffix: str
+        Suffix for the actuation PV. NOTE: This should be place/location of the shutter, e.g. OEA/FOE.
+        The PV will be formatted as "{prefix}{setpoint_suffix}OPENCLOSE".
+
+    readback_suffix: str
+        Suffix for the readback PV, e.g. PG_STATUS
+
+    permission_suffix: str, optional
+        Permission PV string, if it exists.
+
+    NOTE
+    ----
+    This implemantation considers that the value of the `readback` signal is 0 for an open shutter and 1 for a closed shutter.
+    This is not so intuitive, so the `set` method considers that 1 is for opening and 0 for closing the shutter.
+
+    Usage Example
+    -------------
+    >>> shutter = ShutterOpenClose(prefix="prefix", setpoint_suffix="setpoint_suffix", readback="readback_suffix", name="shutter")
+    >>> shutter.set(0).wait() # for closing
+    >>> shutter.set(1).wait() # for opening
+    """
+
+    real_setpoint = None
+    setpoint = FormattedComponent(
+        EpicsSignal, "{prefix}{setpoint_suffix}OPENCLOSE", kind="config"
+    )
+    readback = FormattedComponent(
+        EpicsSignalRO, "{prefix}{readback_suffix}", kind="hinted"
+    )
+
+    def __init__(
+        self,
+        *args,
+        setpoint_suffix: str,
+        readback_suffix: str,
+        permission_pv: str = None,
+        **kwargs,
+    ):
+        self.setpoint_suffix = setpoint_suffix
+        self.readback_suffix = readback_suffix
+        self._permission_pv_name = permission_pv
+        super().__init__(*args, **kwargs)
+        if self._permission_pv_name is not None:
+            self.permission_signal = EpicsSignalRO(
+                f"{self._permission_pv_name}", name="permission"
+            )
+
+    def set(self, value, *args, **kwargs):
+        if hasattr(self, "permission_signal"):
+            permission_status = self.permission_signal.get(
+                connection_timeout=2, **kwargs
+            )
+            if not permission_status:
+                raise PremadeStatus(
+                    success=False,
+                    exception=PermissionError(
+                        f"Shutter open permission is denied: {self.permission_signal.pvname} {permission_status}."
+                    ),
+                )
+
+        if (
+            value == self.readback.get()
+        ):  # Since we're swapping the readback values (0 for closing and 1 for opening), we actuate when value == readback
+            self.real_setpoint = 1 if value == 0 else 0
+            return super().set(1, *args, **kwargs)
+        else:
+            return PremadeStatus(success=True)
+
+    def done_comparator(self, readback, setpoint):
+        return self.real_setpoint == readback
+
+
+class ShutterOpenClose(Device):
+    """
+    Abstraction layer for shutters with two actuation PV (OPEN and CLOSE) and two readback PV (PS_STATUS and GS_STATUS). There's an optional parameter for a permission PV.
+
+    Parameters
+    ----------
+    prefix: str
+        Prefix for the shutter's PVs.
+
+    shutter_suffix: str
+        Suffix for the OPEN and CLOSE PVs. NOTE: This should be place/location of the shutter, e.g. OEA/FOE.
+        The PVs will be formatted as "{prefix}{shutter_suffix}OPEN" and "{prefix}{shutter_suffix}CLOSE".
+
+    ps_suffix: str
+        Suffix for one readback PVs, e.g. PS_STATUS
+
+    gs_suffix: str
+        Suffix for the second readback PV, e.g. GS_STATUS
+
+    permission_pv: str, optional
+        Permission PV string, if it exists.
+
+    NOTES
+    -----
+    This implemantation considers that the value of the `readback` signal is 0 for an open shutter and 1 for a closed shutter.
+    This is not so intuitive, so the `set` method considers that 1 is for opening and 0 for closing the shutter.
+
+    The `return` of the `set` method is an `AndStatus` with both `readback` signals.
+
+    There's a `done_comparator` method that returns the state of the shutter, based in the two `readback` PVs. This method is
+    used as the `callback` for both `readback` signals.
+
+    Usage Example
+    -------------
+    >>> shutter = ShutterToggle(prefix="prefix", open_suffix="open_suffix", close_suffix="close_suffix", ps_suffix="ps_suffix", gs_suffix="gs_suffix", name="shutter")
+    >>> shutter.set(0).wait() # for closing
+    >>> shutter.set(1).wait() # for opening
+    """
+
+    setpoint = None
+    photon_status = FormattedComponent(
+        EpicsSignalRO, "{prefix}{ps_suffix}", kind="hinted"
+    )
+    gamma_status = FormattedComponent(
+        EpicsSignalRO, "{prefix}{gs_suffix}", kind="hinted"
+    )
+    open = FormattedComponent(
+        EpicsSignal, "{prefix}{shutter_suffix}OPEN", kind="config"
+    )
+    close = FormattedComponent(
+        EpicsSignal, "{prefix}{shutter_suffix}CLOSE", kind="config"
+    )
+
+    def __init__(
+        self,
+        *args,
+        shutter_suffix: str,
+        ps_suffix: str,
+        gs_suffix: str,
+        permission_pv: str = None,
+        **kwargs,
+    ):
+        self.shutter_suffix = shutter_suffix
+        self.ps_suffix = ps_suffix
+        self.gs_suffix = gs_suffix
+        self._permission_pv_name = permission_pv
+        super().__init__(*args, **kwargs)
+        if self._permission_pv_name is not None:
+            self.permission_signal = EpicsSignalRO(
+                f"{self._permission_pv_name}", name="permission"
+            )
+
+    def set(self, value, *args, **kwargs):
+        if hasattr(self, "permission_signal"):
+            permission_status = self.permission_signal.get(
+                connection_timeout=2, **kwargs
+            )
+            if not permission_status:
+                raise PremadeStatus(
+                    success=False,
+                    exception=PermissionError(
+                        f"Shutter open permission is denied: {self.permission_signal.pvname} {permission_status}"
+                    ),
+                )
+
+        if value == 0 and not self._is_closed():
+            self.close.set(1, *args, **kwargs).wait()
+
+        elif value == 1 and self._is_closed():
+            self.open.set(1, *args, **kwargs).wait()
+
+        else:
+            return PremadeStatus(success=True)
+
+        self.setpoint = value
+
+        return AndStatus(
+            SubscriptionStatus(self.photon_status, self.done_comparator, settle_time=3),
+            SubscriptionStatus(self.gamma_status, self.done_comparator, settle_time=3),
+            timeout=15,
+        )
+
+    def _is_closed(self):
+        """Check wheter the shutter is open or closed given the photon and gamma status PVs."""
+        return (self.photon_status.get() == 1) and (
+            self.gamma_status.get() == 1
+        )  # NOTE: if one of the status is equal to zero, the shutter can be partially open
+
+    def done_comparator(self, value, **kwargs):
+        is_closed = self._is_closed()
+        return is_closed if self.setpoint == 0 else not is_closed
