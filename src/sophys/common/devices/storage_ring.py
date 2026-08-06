@@ -13,7 +13,7 @@ class StorageRing(Device):
         connection_timeout=5,
     )
 
-    _default_read_attrs = ["ring_current"]
+    _default_read_attrs = ["ring_current"]  # noqa: RUF012
 
     def __init__(self, *, name, **kwargs):
         super().__init__(prefix="", name=name, **kwargs)
