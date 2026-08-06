@@ -284,12 +284,12 @@ class TatuBase(Device, TatuFlyScan):
     def stop(self):  # numpydoc ignore=GL08
         super().stop()
         self.tatu_stop.set(1)
-        self.activate.set(0)
+        self.activate.set(0).wait()
 
     def pause(self):  # numpydoc ignore=GL08
         self.master_mode_state = self.master_mode.get()
         self.tatu_stop.set(1)
-        self.activate.set(0)
+        self.activate.set(0).wait()
 
     def resume(self):  # numpydoc ignore=GL08
         self.master_mode.set(self.master_mode_state).wait()
