@@ -14,5 +14,6 @@ coverage.xml
 *.cover
 .hypothesis/
 .pytest_cache/
+.vscode
 
 src/sophys/common/__version__.py
