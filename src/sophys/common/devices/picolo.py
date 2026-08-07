@@ -149,6 +149,7 @@ class Picolo(Device):
     common_sample_rate = Component(
         EpicsSignal, "SampleRate", string=True, kind="omitted"
     )
+    reboot = Component(EpicsSignal, "Reboot", kind="omitted")
 
     acquisition_time = Component(
         PicoloAcquisitionTime, "AcquisitionTime", string=True, kind="omitted"
