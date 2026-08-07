@@ -152,7 +152,7 @@ class PimegaCam(CamBase_V33):  # numpydoc ignore=GL08
     acquire_time_with_readout = ADComponent(AcquireTimeWithReadout)
 
     medipix_mode = ADComponent(EpicsSignalWithRBV, "MedipixMode")
-
+    discriminator = ADComponent(EpicsSignalWithRBV, "Discriminator")
     detector_state = ADComponent(EpicsSignalRO, "DetectorState_RBV")
     processed_acquisition_counter = ADComponent(
         EpicsSignalRO, "ProcessedAcquisitionCounter_RBV"
