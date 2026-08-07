@@ -1,26 +1,27 @@
-#!/usr/bin/env python3
+from enum import IntEnum  # numpydoc ignore=GL08
 from time import time
-from enum import IntEnum
+
 from ophyd import (
     ADComponent,
+    Device,
     EpicsSignal,
+    EpicsSignalNoValidation,
     EpicsSignalRO,
     EpicsSignalWithRBV,
-    Device,
-    EpicsSignalNoValidation,
     Signal,
 )
-from ophyd.status import SubscriptionStatus
-from ophyd.flyers import FlyerInterface
-from ophyd.utils.epics_pvs import AlarmSeverity
 from ophyd.areadetector.detectors import DetectorBase
 from ophyd.areadetector.paths import EpicsPathSignal
 from ophyd.areadetector.trigger_mixins import ADTriggerStatus, SingleTrigger
+from ophyd.flyers import FlyerInterface
+from ophyd.status import SubscriptionStatus
+from ophyd.utils.epics_pvs import AlarmSeverity
+
 from .cam import CamBase_V33
 
 
 class ChipsModulesMode(IntEnum):
-    """Enumeration of options for the `AllModules` PV"""
+    """Enumeration of options for the `AllModules` PV."""
 
     INDIVIDUAL_CHIP = 0
     ALL_CHIPS_ONE_MODULE = 1
@@ -29,7 +30,7 @@ class ChipsModulesMode(IntEnum):
 
 
 class MedipixBoardSendMode(IntEnum):
-    """Enumeration of options for the `MB_SendMode` PV"""
+    """Enumeration of options for the `MB_SendMode` PV."""
 
     ONE_MB_LOW_FLEX = 0
     ONE_MB_HIGH_FLEX = 1
@@ -38,8 +39,7 @@ class MedipixBoardSendMode(IntEnum):
     ALL_FLEX_ALL_MODULES = 4
 
 
-class Digital2AnalogConverter(Device):
-
+class Digital2AnalogConverter(Device):  # numpydoc ignore=GL08
     cas = ADComponent(EpicsSignalWithRBV, "CAS")
     delay = ADComponent(EpicsSignalWithRBV, "Delay")
     disc = ADComponent(EpicsSignalWithRBV, "Disc")
@@ -70,18 +70,18 @@ class PimegaAcquire(Device):
     acquire = ADComponent(EpicsSignalWithRBV, "Acquire")
     capture = ADComponent(EpicsSignalWithRBV, "Capture")
 
-    def subscribe(self, callback, event_type=None, run=True):
+    def subscribe(self, callback, event_type=None, run=True):  # numpydoc ignore=GL08
         return self.acquire.subscribe(callback, event_type, run)
 
-    def unsubscribe(self, cid):
+    def unsubscribe(self, cid):  # numpydoc ignore=GL08
         return self.acquire.unsubscribe(cid)
 
-    def check_value_zero(self, value):
+    def check_value_zero(self, value):  # numpydoc ignore=GL08
         # We can be called either with an integer, or an automatically
         # generated namedtuple with both acquire and capture desired values.
         return value == 0 or (isinstance(value, tuple) and value.acquire == 0)
 
-    def set(self, value, **kwargs):
+    def set(self, value, **kwargs):  # numpydoc ignore=GL08
         if self.check_value_zero(value):
             # Stop both the backend and the detector
             self.acquire.set(0).wait(timeout=30.0)
@@ -94,7 +94,7 @@ class PimegaAcquire(Device):
             return self.acquire.set(1, **kwargs)
 
     # Needed for code calling put directly (namely SingleTrigger)
-    def put(self, value, **kwargs):
+    def put(self, value, **kwargs):  # numpydoc ignore=GL08
         if self.check_value_zero(value):
             # Stop both the backend and the detector
             self.acquire.put(0, **kwargs)
@@ -112,7 +112,7 @@ class AcquireTimeWithReadout(Device):
 
     det_readout = ADComponent(Signal, value=0.01, kind="config")
 
-    def set_acquire_time_period(self, value, method, **kwargs):
+    def set_acquire_time_period(self, value, method, **kwargs):  # numpydoc ignore=GL08
         # Here value corresponds to AcquireTime. The AcquirePeriod will be set automatically.
         if self.parent.acquire_period.get() <= (value - self.det_readout.get()):
             self.parent.acquire_period.set(
@@ -126,13 +126,13 @@ class AcquireTimeWithReadout(Device):
                 value + self.det_readout.get(), **kwargs
             )
 
-    def set(self, value, **kwargs):
+    def set(self, value, **kwargs):  # numpydoc ignore=GL08
         return self.set_acquire_time_period(value, method="set", **kwargs)
 
-    def put(self, value, **kwargs):
+    def put(self, value, **kwargs):  # numpydoc ignore=GL08
         self.set_acquire_time_period(value, method="put", **kwargs)
 
-    def read(self, *args, **kwargs):
+    def read(self, *args, **kwargs):  # numpydoc ignore=GL08
         res = super().read(*args, **kwargs)
 
         for component in (self.parent.acquire_time, self.parent.acquire_period):
@@ -140,8 +140,7 @@ class AcquireTimeWithReadout(Device):
         return res
 
 
-class PimegaCam(CamBase_V33):
-
+class PimegaCam(CamBase_V33):  # numpydoc ignore=GL08
     magic_start = ADComponent(EpicsSignal, "MagicStart")
     trigger_mode = ADComponent(EpicsSignalWithRBV, "TriggerMode", string=True)
     acquire = ADComponent(PimegaAcquire, "")
@@ -199,35 +198,35 @@ class PimegaCam(CamBase_V33):
         EpicsSignalWithRBV, "dac_defaults_files", kind="config"
     )
 
-    def __init__(self, prefix, name, **kwargs):
-        super(PimegaCam, self).__init__(prefix, name=name, **kwargs)
+    def __init__(self, prefix, name, **kwargs):  # numpydoc ignore=GL08
+        super(PimegaCam, self).__init__(prefix, name=name, **kwargs)  # noqa: UP008
 
 
-class PimegaDetector(DetectorBase):
+class PimegaDetector(DetectorBase):  # numpydoc ignore=GL08
     cam = ADComponent(PimegaCam, "cam1:", kind="config")
 
 
-class PimegaTriggerStatus(ADTriggerStatus):
-    def __str__(self):
+class PimegaTriggerStatus(ADTriggerStatus):  # numpydoc ignore=GL08
+    def __str__(self):  # numpydoc ignore=GL08
         # NOTE: Arbitrary timeout, just in case something goes horribly wrong.
         return "\n".join(self.exception(timeout=2.0).args)
 
 
-class PimegaStartAcquisitionException(Exception):
+class PimegaStartAcquisitionException(Exception):  # numpydoc ignore=GL08
     pass
 
 
-class Pimega(SingleTrigger, PimegaDetector):
+class Pimega(SingleTrigger, PimegaDetector):  # numpydoc ignore=GL08
     _status_type = PimegaTriggerStatus
 
-    def __init__(self, name, prefix, **kwargs):
-        super(Pimega, self).__init__(prefix, name=name, **kwargs)
+    def __init__(self, name, prefix, **kwargs):  # numpydoc ignore=GL08
+        super(Pimega, self).__init__(prefix, name=name, **kwargs)  # noqa: UP008
 
-    def stop(self, *, success=False):
+    def stop(self, *, success=False):  # numpydoc ignore=GL08
         self.cam.acquire.set(0)
         super().stop(success=success)
 
-    def stage(self):
+    def stage(self):  # numpydoc ignore=GL08
         # Make sure the current acquisition status is 'Done'
         self._acquisition_signal.set(0).wait(timeout=30.0)
 
@@ -237,12 +236,14 @@ class Pimega(SingleTrigger, PimegaDetector):
 
         return super().stage()
 
-    def unstage(self):
+    def unstage(self):  # numpydoc ignore=GL08
         super().unstage()
 
         self._acquisition_signal.unsubscribe(self._acquire_setpoint_changed)
 
-    def _acquire_setpoint_changed(self, value, severity, **kwargs):
+    def _acquire_setpoint_changed(
+        self, value, severity, **kwargs
+    ):  # numpydoc ignore=GL08
         if self._status is None or self._status.done:
             return
 
@@ -257,38 +258,36 @@ class Pimega(SingleTrigger, PimegaDetector):
             return
 
 
-class PimegaFlyScan(Pimega, FlyerInterface):
-
+class PimegaFlyScan(Pimega, FlyerInterface):  # numpydoc ignore=GL08
     # 1 week timeout
     complete_timeout = 604800
 
-    def kickoff(self):
+    def kickoff(self):  # numpydoc ignore=GL08
         return self.cam.acquire.set(1, timeout=15)
 
-    def _fly_scan_complete(self, **kwargs):
+    def _fly_scan_complete(self, **kwargs):  # numpydoc ignore=PR01
         """
-        Wait for the Pimega device to acquire and save all the predetermined quantity
-        of images.
+        Wait for the Pimega device to acquire and save all the predetermined quantity of images.
         """
         num2capture = self.cam.num_capture.get()
         num_captured = self.cam.num_captured.get()
 
         return num2capture == num_captured
 
-    def complete(self):
+    def complete(self):  # numpydoc ignore=GL08
         return SubscriptionStatus(
             self.cam.num_captured,
             callback=self._fly_scan_complete,
             timeout=self.complete_timeout,
         )
 
-    def describe_collect(self):
+    def describe_collect(self):  # numpydoc ignore=GL08
         descriptor = {"pimega": {}}
         descriptor["pimega"].update(self.cam.file_name.describe())
         descriptor["pimega"].update(self.cam.file_path.describe())
         return descriptor
 
-    def collect(self):
+    def collect(self):  # numpydoc ignore=GL08
         data = {}
         timestamps = {}
         for device in [self.cam.file_name, self.cam.file_path]:
