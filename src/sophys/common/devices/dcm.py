@@ -328,9 +328,11 @@ class _DCMFly(_BaseFlyer):
     def kickoff(self) -> StatusBase:
         """Start acquisition of data for a pre-supplied trajectory."""
         self._require_tatu()
-        self.fly_scan.start.set(False).wait(10)
-        self.fly_scan.start.set(True).wait(FLY_KICKOFF_WAIT_TIMEOUT)
-        return self.tatu.activate.set(True)
+
+        self.fly_scan.start.set(False, timeout=10.0).wait()
+        self.fly_scan.start.set(True, timeout=FLY_KICKOFF_WAIT_TIMEOUT).wait()
+
+        return self.tatu.activate.set(True, timeout=10.0)
 
     def complete(self) -> StatusBase:
         """Return a status object for monitoring the completion state of the current scan."""
@@ -339,13 +341,17 @@ class _DCMFly(_BaseFlyer):
     def pause(self) -> None:
         """Pause the current scan and trajectory following."""
         self._require_tatu()
-        self.enable_hardware_acquisition.set(False).wait(10)
+
+        self.enable_hardware_acquisition.set(False, timeout=10.0).wait()
+
         return self.tatu.pause()
 
     def resume(self) -> None:
         """Resume operation of the current scan."""
         self._require_tatu()
-        self.enable_hardware_acquisition.set(True).wait(10)
+
+        self.enable_hardware_acquisition.set(True, timeout=10.0).wait()
+
         return self.tatu.resume()
 
 
@@ -360,9 +366,11 @@ class _DCMStep(_BaseFlyerStep):
     def kickoff(self) -> StatusBase:
         """Start acquisition of data for a pre-supplied trajectory."""
         self._require_tatu()
-        self.step_scan.end.set(True)
-        self.step_scan.start.set(False).wait(10)
-        self.step_scan.start.set(True).wait(FLY_KICKOFF_WAIT_TIMEOUT)
+
+        self.step_scan.end.set(True, timeout=10.0)
+        self.step_scan.start.set(False, timeout=10.0).wait()
+        self.step_scan.start.set(True, timeout=FLY_KICKOFF_WAIT_TIMEOUT).wait()
+
         return self.tatu.activate.set(True)
 
     def complete(self) -> StatusBase:
@@ -372,13 +380,17 @@ class _DCMStep(_BaseFlyerStep):
     def pause(self) -> None:
         """Pause the current scan and trajectory following."""
         self._require_tatu()
-        self.enable_hardware_acquisition.set(False).wait(10)
+
+        self.enable_hardware_acquisition.set(False, timeout=10.0).wait()
+
         return self.tatu.pause()
 
     def resume(self) -> None:
         """Resume operation of the current scan."""
         self._require_tatu()
-        self.enable_hardware_acquisition.set(True).wait(10)
+
+        self.enable_hardware_acquisition.set(True, timeout=10.0).wait()
+
         return self.tatu.resume()
 
 
