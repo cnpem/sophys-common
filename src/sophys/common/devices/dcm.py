@@ -2,7 +2,7 @@
 
 import time
 from enum import Enum
-from typing import Dict, Generator
+from typing import Dict, Generator, cast
 
 from ophyd import (
     Component,
@@ -282,11 +282,13 @@ class _BaseDCMFlyerCommon:
 class RequiresTatu:
     """Mixin that enforces the presence of a Tatu instance."""
 
-    def _require_tatu(self):
-        if getattr(self, "tatu", None) is None:
-            raise RuntimeError(
-                f"{self.__class__.__name__} requires a valid 'tatu' instance."
-            )
+    def _ensure_tatu(self) -> Device:
+        if hasattr(self, "tatu") and self.tatu is not None:
+            return cast(Device, self.tatu)
+
+        raise RuntimeError(
+            f"{self.__class__.__name__} requires a valid 'tatu' instance."
+        )
 
 
 class _BaseFlyerStep(
@@ -327,12 +329,12 @@ class _DCMFly(_BaseFlyer):
 
     def kickoff(self) -> StatusBase:
         """Start acquisition of data for a pre-supplied trajectory."""
-        self._require_tatu()
+        tatu = self._ensure_tatu()
 
         self.fly_scan.start.set(False, timeout=10.0).wait()
         self.fly_scan.start.set(True, timeout=FLY_KICKOFF_WAIT_TIMEOUT).wait()
 
-        return self.tatu.activate.set(True, timeout=10.0)
+        return tatu.activate.set(True, timeout=10.0)
 
     def complete(self) -> StatusBase:
         """Return a status object for monitoring the completion state of the current scan."""
@@ -340,19 +342,19 @@ class _DCMFly(_BaseFlyer):
 
     def pause(self) -> None:
         """Pause the current scan and trajectory following."""
-        self._require_tatu()
+        tatu = self._ensure_tatu()
 
         self.enable_hardware_acquisition.set(False, timeout=10.0).wait()
 
-        return self.tatu.pause()
+        return tatu.pause()
 
     def resume(self) -> None:
         """Resume operation of the current scan."""
-        self._require_tatu()
+        tatu = self._ensure_tatu()
 
         self.enable_hardware_acquisition.set(True, timeout=10.0).wait()
 
-        return self.tatu.resume()
+        return tatu.resume()
 
 
 class _DCMStep(_BaseFlyerStep):
@@ -365,13 +367,13 @@ class _DCMStep(_BaseFlyerStep):
 
     def kickoff(self) -> StatusBase:
         """Start acquisition of data for a pre-supplied trajectory."""
-        self._require_tatu()
+        tatu = self._ensure_tatu()
 
         self.step_scan.end.set(True, timeout=10.0)
         self.step_scan.start.set(False, timeout=10.0).wait()
         self.step_scan.start.set(True, timeout=FLY_KICKOFF_WAIT_TIMEOUT).wait()
 
-        return self.tatu.activate.set(True)
+        return tatu.activate.set(True)
 
     def complete(self) -> StatusBase:
         """Return a status object for monitoring the completion state of the current scan."""
@@ -379,19 +381,19 @@ class _DCMStep(_BaseFlyerStep):
 
     def pause(self) -> None:
         """Pause the current scan and trajectory following."""
-        self._require_tatu()
+        tatu = self._ensure_tatu()
 
         self.enable_hardware_acquisition.set(False, timeout=10.0).wait()
 
-        return self.tatu.pause()
+        return tatu.pause()
 
     def resume(self) -> None:
         """Resume operation of the current scan."""
-        self._require_tatu()
+        tatu = self._ensure_tatu()
 
         self.enable_hardware_acquisition.set(True, timeout=10.0).wait()
 
-        return self.tatu.resume()
+        return tatu.resume()
 
 
 class DCMFactory:
