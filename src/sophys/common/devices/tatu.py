@@ -1,15 +1,20 @@
-from ophyd import (  # numpydoc ignore=GL08
+# numpydoc ignore=GL08
+
+import time as ttime
+from typing import Generator
+
+from ophyd import (
     Component,
     Device,
     DynamicDeviceComponent,
     EpicsSignal,
     EpicsSignalRO,
     FormattedComponent,
+    Signal,
 )
 from ophyd.flyers import FlyerInterface
 
-from sophys.common.utils.status import PremadeStatus
-
+from ..utils.status import PremadeStatus
 from .crio import CRIO_9403
 
 
@@ -201,32 +206,35 @@ class TatuOutput(Device):
 
 class TatuFlyScan(FlyerInterface):
     """
-    Tatu Flyscan device. This is a flyer device with kickoff, complete and collect methods.
+    Flyer base implementation for TATU devices.
+
+    Extended classes should replace these methods with appropriate implementations for
+    their use-case, especially the 'complete' method.
     """
 
     def kickoff(self):
-        """
-        Kickoff Tatu device.
+        """Start a trigger pulse from pre-configured TATU parameters."""
+        if not hasattr(self, "activate") or not isinstance(self.activate, Signal):
+            raise RuntimeError(
+                "Failed to kickoff TATU instance, due to a missing valid 'activate' signal."
+            )
 
-        Activates the TATU to start sending triggers.
-        """
         return self.activate.set(1, timeout=10)
 
     def complete(self):
         """
-        Complete method for the TATU.
+        Wait for TATU to complete a scan.
 
-        In this case already consider success
-        because the main objective is to activate
-        TATU through kickoff().
+        Since the device can be used only as a trigger forwarder, without internal scan logic,
+        the default implementation doesn't wait for anything.
         """
         return PremadeStatus(success=True)
 
-    def describe_collect(self):  # numpydoc ignore=GL08
+    def describe_collect(self) -> dict[str, dict]:  # numpydoc ignore=GL08
         return {}
 
-    def collect(self):  # numpydoc ignore=GL08
-        return []
+    def collect(self) -> Generator[dict, None, None]:  # numpydoc ignore=GL08
+        yield {"time": ttime.time(), "timestamps": {}, "data": {}}
 
 
 class TatuBase(Device, TatuFlyScan):
