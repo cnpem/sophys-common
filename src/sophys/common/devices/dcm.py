@@ -1,6 +1,8 @@
+# numpydoc ignore=GL08
+
 import time
 from enum import Enum
-from typing import Dict, Generator
+from typing import Dict, Generator, cast
 
 from ophyd import (
     Component,
@@ -30,9 +32,7 @@ class ScanType(str, Enum):
 
 
 class DcmGranite(Device):
-    """
-    Device for controlling the DCM Granite.
-    """
+    """Device for controlling the DCM Granite."""
 
     leveler1 = Component(ControllableMotor, "m1")
     leveler2 = Component(ControllableMotor, "m2")
@@ -53,8 +53,7 @@ class DcmGranite(Device):
 
 
 class Energy(PVPositionerIsClose):
-    """Positioner for controlling and reading back DCM energy.
-    Default tolarance is 1eV."""
+    """Positioner for controlling and reading back DCM energy. Default tolarance is 1eV."""
 
     setpoint = Component(EpicsSignal, "Energy_SP", kind="omitted")
     readback = Component(EpicsSignalRO, "GonRx_Energy_RBV", kind="hinted")
@@ -63,7 +62,7 @@ class Energy(PVPositionerIsClose):
 
 
 class BaseShs(PVPositionerIsClose):
-    """Base class for HD-DCM short-stroke"""
+    """Base class for HD-DCM short-stroke."""
 
     error_rms = FormattedComponent(
         EpicsSignalRO, "{prefix}Shs{shs_axis}_RMSError_RBV", kind="config"
@@ -71,7 +70,18 @@ class BaseShs(PVPositionerIsClose):
 
 
 class UncoupledShortStroke(BaseShs):
-    """Uncoupled mode positioner for a short stroke axis of the DCM Lite."""
+    """
+    Uncoupled mode positioner for a short stroke axis of the DCM Lite.
+
+    Parameters
+    ----------
+    prefix : str
+        PV prefix for the device.
+    shs_axis : str
+        Axis identifier (e.g., 'Rx', 'Rz', 'Uy').
+    **kwargs : dict of arguments, optional
+        Additional keyword arguments to pass to 'BaseShs''s constructor.
+    """
 
     readback = FormattedComponent(
         EpicsSignal, "{prefix}Shs{shs_axis}_S_RBV", kind="hinted"
@@ -82,18 +92,24 @@ class UncoupledShortStroke(BaseShs):
 
     atol = 0.02
 
-    def __init__(self, prefix, shs_axis, **kwargs):
-        """
-        Parameters:
-            prefix (str): PV prefix for the device.
-            shs_axis (str): Axis identifier (e.g., 'Rx', 'Rz', 'Uy').
-        """
+    def __init__(self, prefix, shs_axis, **kwargs):  # numpydoc ignore=GL08
         self.shs_axis = shs_axis
         super().__init__(prefix=prefix, **kwargs)
 
 
 class CoupledShortStroke(BaseShs):
-    """Coupled mode positioner for a short stroke axis of the DCM Lite."""
+    """
+    Coupled mode positioner for a short stroke axis of the DCM Lite.
+
+    Parameters
+    ----------
+    prefix : str
+        PV prefix for the device.
+    shs_axis : str
+        Axis identifier (e.g., 'Rx', 'Rz', 'Uy').
+    **kwargs : dict of arguments, optional
+        Additional keyword arguments to pass to 'BaseShs''s constructor.
+    """
 
     readback = FormattedComponent(
         EpicsSignal, "{prefix}Shs{shs_axis}_Offset_RBV", kind="hinted"
@@ -102,12 +118,7 @@ class CoupledShortStroke(BaseShs):
         EpicsSignalRO, "{prefix}Shs{shs_axis}_Offset", kind="config"
     )
 
-    def __init__(self, prefix, shs_axis, **kwargs):
-        """
-        Parameters:
-            prefix (str): PV prefix for the device.
-            shs_axis (str): Axis identifier (e.g., 'Rx', 'Rz', 'Uy').
-        """
+    def __init__(self, prefix, shs_axis, **kwargs):  # numpydoc ignore=GL08
         self.shs_axis = shs_axis
         super().__init__(prefix=prefix, **kwargs)
 
@@ -149,7 +160,18 @@ class FlyScan(Device):
 
 
 class DCMBase(Device):
-    """Main device abstraction for the HDDCM (High-Dynamic Double Crystal Monochromator)."""
+    """
+    Main device abstraction for the HDDCM (High-Dynamic Double Crystal Monochromator).
+
+    Parameters
+    ----------
+    prefix : str, optional
+        PV prefix.
+    tatu : TatuDevice, optional
+        Optional reference to a Tatu Device controller object.
+    **kwargs : dict of arguments, optional
+        Additional keyword arguments to pass to 'Device''s constructor.
+    """
 
     bragg = Component(EpicsSignalRO, "GonRx_S_RBV", name="bragg", kind="hinted")
     energy = Component(Energy, "", name="energy", kind="hinted")
@@ -170,7 +192,7 @@ class DCMBase(Device):
 
     @property
     def gap(self):
-        """Returns the active gap axis device, depending on coupled mode."""
+        """Return the active gap axis device, depending on coupled mode."""
         if self.shs_coupled.get():
             return self.gap_coupled
         else:
@@ -178,7 +200,7 @@ class DCMBase(Device):
 
     @property
     def pitch(self):
-        """Returns the active pitch axis device, depending on coupled mode."""
+        """Return the active pitch axis device, depending on coupled mode."""
         if self.shs_coupled.get():
             return self.pitch_coupled
         else:
@@ -186,18 +208,13 @@ class DCMBase(Device):
 
     @property
     def roll(self):
-        """Returns the active roll axis device, depending on coupled mode."""
+        """Return the active roll axis device, depending on coupled mode."""
         if self.shs_coupled.get():
             return self.roll_coupled
         else:
             return self.roll_uncoupled
 
-    def __init__(self, prefix="", tatu=None, **kwargs):
-        """
-        Parameters:
-            prefix (str): PV prefix.
-            tatu (TatuDevice): Optional reference to a Tatu Device controller object.
-        """
+    def __init__(self, prefix="", tatu=None, **kwargs):  # numpydoc ignore=GL08
         self.tatu = tatu
         super().__init__(prefix, **kwargs)
 
@@ -211,13 +228,29 @@ class GoniometerGantry(PVPositionerIsClose):
 
 
 class HDDCML(DCMBase):
+    """
+    Device for the HD-DCM Lite monochromator series.
+
+    Parameters
+    ----------
+    prefix : str, optional
+        PV prefix.
+    tatu : TatuDevice, optional
+        Optional reference to a Tatu Device controller object.
+    granite_prefix : str, optional
+        PV Prefix for the granite base motors. Defaults to 'PB01:'.
+    **kwargs : dict of arguments, optional
+        Additional keyword arguments to pass to 'Device''s constructor.
+    """
 
     bragg = Component(GoniometerGantry, "", name="bragg", kind="config")
     base = FormattedComponent(
         DcmGranite, "{granite_prefix}", name="base", kind="config"
     )
 
-    def __init__(self, prefix="", tatu=None, granite_prefix="PB01:", **kwargs):
+    def __init__(
+        self, prefix="", tatu=None, granite_prefix="PB01:", **kwargs
+    ):  # numpydoc ignore=GL08
         self.granite_prefix = prefix + granite_prefix
         super().__init__(f"{prefix}DCM01:", tatu, **kwargs)
 
@@ -249,11 +282,13 @@ class _BaseDCMFlyerCommon:
 class RequiresTatu:
     """Mixin that enforces the presence of a Tatu instance."""
 
-    def _require_tatu(self):
-        if getattr(self, "tatu", None) is None:
-            raise RuntimeError(
-                f"{self.__class__.__name__} requires a valid 'tatu' instance."
-            )
+    def _ensure_tatu(self) -> Device:
+        if hasattr(self, "tatu") and self.tatu is not None:
+            return cast(Device, self.tatu)
+
+        raise RuntimeError(
+            f"{self.__class__.__name__} requires a valid 'tatu' instance."
+        )
 
 
 class _BaseFlyerStep(
@@ -262,9 +297,11 @@ class _BaseFlyerStep(
     """Base class for step scan flyer, combining DCM device and acquisition logic."""
 
     def describe_collect(self) -> Dict[str, Dict]:
+        """Describe the data collected by this flyer during an acquisition."""
         return self._describe_from_config("step_scan")
 
     def collect(self) -> Generator[Dict, None, None]:
+        """Collect data acquired during a previous scan."""
         return self._collect_from_config("step_scan")
 
 
@@ -274,9 +311,11 @@ class _BaseFlyer(
     """Base class for fly scan flyer, combining DCM device and acquisition logic."""
 
     def describe_collect(self) -> Dict[str, Dict]:
+        """Describe the data collected by this flyer during an acquisition."""
         return self._describe_from_config("fly_scan")
 
     def collect(self) -> Generator[Dict, None, None]:
+        """Collect data acquired during a previous scan."""
         return self._collect_from_config("fly_scan")
 
 
@@ -289,23 +328,33 @@ class _DCMFly(_BaseFlyer):
         return value == 1
 
     def kickoff(self) -> StatusBase:
-        self._require_tatu()
-        self.fly_scan.start.set(False).wait(10)
-        self.fly_scan.start.set(True).wait(FLY_KICKOFF_WAIT_TIMEOUT)
-        return self.tatu.activate.set(True)
+        """Start acquisition of data for a pre-supplied trajectory."""
+        tatu = self._ensure_tatu()
+
+        self.fly_scan.start.set(False, timeout=10.0).wait()
+        self.fly_scan.start.set(True, timeout=FLY_KICKOFF_WAIT_TIMEOUT).wait()
+
+        return tatu.activate.set(True, timeout=10.0)
 
     def complete(self) -> StatusBase:
+        """Return a status object for monitoring the completion state of the current scan."""
         return SubscriptionStatus(self.fly_scan.active, self._check_fly_scan)
 
     def pause(self) -> None:
-        self._require_tatu()
-        self.enable_hardware_acquisition.set(False).wait(10)
-        return self.tatu.pause()
+        """Pause the current scan and trajectory following."""
+        tatu = self._ensure_tatu()
+
+        self.enable_hardware_acquisition.set(False, timeout=10.0).wait()
+
+        return tatu.pause()
 
     def resume(self) -> None:
-        self._require_tatu()
-        self.enable_hardware_acquisition.set(True).wait(10)
-        return self.tatu.resume()
+        """Resume operation of the current scan."""
+        tatu = self._ensure_tatu()
+
+        self.enable_hardware_acquisition.set(True, timeout=10.0).wait()
+
+        return tatu.resume()
 
 
 class _DCMStep(_BaseFlyerStep):
@@ -317,24 +366,34 @@ class _DCMStep(_BaseFlyerStep):
         return value == 1
 
     def kickoff(self) -> StatusBase:
-        self._require_tatu()
-        self.step_scan.end.set(True)
-        self.step_scan.start.set(False).wait(10)
-        self.step_scan.start.set(True).wait(FLY_KICKOFF_WAIT_TIMEOUT)
-        return self.tatu.activate.set(True)
+        """Start acquisition of data for a pre-supplied trajectory."""
+        tatu = self._ensure_tatu()
+
+        self.step_scan.end.set(True, timeout=10.0)
+        self.step_scan.start.set(False, timeout=10.0).wait()
+        self.step_scan.start.set(True, timeout=FLY_KICKOFF_WAIT_TIMEOUT).wait()
+
+        return tatu.activate.set(True)
 
     def complete(self) -> StatusBase:
+        """Return a status object for monitoring the completion state of the current scan."""
         return SubscriptionStatus(self.step_scan.finished, self._check_step_scan)
 
     def pause(self) -> None:
-        self._require_tatu()
-        self.enable_hardware_acquisition.set(False).wait(10)
-        return self.tatu.pause()
+        """Pause the current scan and trajectory following."""
+        tatu = self._ensure_tatu()
+
+        self.enable_hardware_acquisition.set(False, timeout=10.0).wait()
+
+        return tatu.pause()
 
     def resume(self) -> None:
-        self._require_tatu()
-        self.enable_hardware_acquisition.set(True).wait(10)
-        return self.tatu.resume()
+        """Resume operation of the current scan."""
+        tatu = self._ensure_tatu()
+
+        self.enable_hardware_acquisition.set(True, timeout=10.0).wait()
+
+        return tatu.resume()
 
 
 class DCMFactory:
@@ -344,16 +403,26 @@ class DCMFactory:
     def create(scan_mode: ScanType, prefix: str, name: str, **kwargs) -> DCMBase:
         """
         Create an DCMBase object with behavior according to the scan mode.
+
         How to use:
             dcm = DCMFactory.create(ScanType.FLY_SCAN, prefix='...', name='my_dcm')
             if Tatu is needed, pass tatu=... as a keyword argument.
-        Parameters:
-            scan_mode (ScanType): Desired scan mode (step, fly, epics).
-            prefix (str): PV prefix for the device.
-            name (str): Device name.
 
-        Returns:
-            HDDCML or DCMBase or subclass: Appropriate scan mode implementation.
+        Parameters
+        ----------
+        scan_mode : ScanType
+            Desired scan mode (step, fly, epics).
+        prefix : str
+            PV prefix for the device.
+        name : str
+            Device name.
+        **kwargs : dict of arguments, optional
+            Additional keyword arguments to pass to the superclasses constructor.
+
+        Returns
+        -------
+        HDDCML, DCMBase or subclass
+            Appropriate scan mode implementation.
         """
         if scan_mode == ScanType.STEP_SCAN:
             return _DCMStep(prefix, name="__" + name + "_step", **kwargs)
