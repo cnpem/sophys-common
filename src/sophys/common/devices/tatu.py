@@ -1,15 +1,22 @@
-from ophyd import (  # numpydoc ignore=GL08
+# numpydoc ignore=GL08
+
+import time as ttime
+from typing import Generator
+
+from bluesky.protocols import Status, Stageable
+
+from ophyd import (
     Component,
     Device,
     DynamicDeviceComponent,
     EpicsSignal,
     EpicsSignalRO,
     FormattedComponent,
+    Signal,
 )
 from ophyd.flyers import FlyerInterface
 
-from sophys.common.utils.status import PremadeStatus
-
+from ..utils.status import PremadeStatus
 from .crio import CRIO_9403
 
 
@@ -201,35 +208,38 @@ class TatuOutput(Device):
 
 class TatuFlyScan(FlyerInterface):
     """
-    Tatu Flyscan device. This is a flyer device with kickoff, complete and collect methods.
+    Flyer base implementation for TATU devices.
+
+    Extended classes should replace these methods with appropriate implementations for
+    their use-case, especially the 'complete' method.
     """
 
     def kickoff(self):
-        """
-        Kickoff Tatu device.
+        """Start a trigger pulse from pre-configured TATU parameters."""
+        if not hasattr(self, "activate") or not isinstance(self.activate, Signal):
+            raise RuntimeError(
+                "Failed to kickoff TATU instance, due to a missing valid 'activate' signal."
+            )
 
-        Activates the TATU to start sending triggers.
-        """
         return self.activate.set(1, timeout=10)
 
     def complete(self):
         """
-        Complete method for the TATU.
+        Wait for TATU to complete a scan.
 
-        In this case already consider success
-        because the main objective is to activate
-        TATU through kickoff().
+        Since the device can be used only as a trigger forwarder, without internal scan logic,
+        the default implementation doesn't wait for anything.
         """
         return PremadeStatus(success=True)
 
-    def describe_collect(self):  # numpydoc ignore=GL08
+    def describe_collect(self) -> dict[str, dict]:  # numpydoc ignore=GL08
         return {}
 
-    def collect(self):  # numpydoc ignore=GL08
-        return []
+    def collect(self) -> Generator[dict, None, None]:  # numpydoc ignore=GL08
+        yield {"time": ttime.time(), "timestamps": {}, "data": {}}
 
 
-class TatuBase(Device, TatuFlyScan):
+class TatuBase(Stageable, Device, TatuFlyScan):
     """
     Base device for the TATU software, which produces or a distribute digital signals to coordinate events \
     and actions to achieve a synchronized operation at a beamline.
@@ -238,11 +248,10 @@ class TatuBase(Device, TatuFlyScan):
 
     Parameters
     ----------
-
     prefix : str
         The PV prefix for all components of the device.
     **kwargs
-        Arbitrary keyword arguments.
+        Keyword arguments for the base Device class.
     """
 
     activate = Component(EpicsSignal, "TatuActive", write_pv="Activate")
@@ -271,29 +280,37 @@ class TatuBase(Device, TatuFlyScan):
 
     def __init__(self, prefix, **kwargs):  # numpydoc ignore=GL08
         self.prefix = prefix
+
+        self._old_master_mode_state = None
+
         super().__init__(prefix=prefix, **kwargs)
 
-    def stage(self):  # numpydoc ignore=GL08
-        super().stage()
-        self.activate.set(1).wait()
+    def stage(self) -> Status:  # numpydoc ignore=GL08
+        # NOTE: Don't use the Ophyd staging logic, use the Bluesky interface and return a Status object.
+        return self.activate.set(1, timeout=10)
 
-    def unstage(self):  # numpydoc ignore=GL08
-        super().unstage()
-        self.activate.set(0).wait()
+    def unstage(self) -> Status:  # numpydoc ignore=GL08
+        # NOTE: Don't use the Ophyd staging logic, use the Bluesky interface and return a Status object.
+        return self.activate.set(0, timeout=10)
 
-    def stop(self):  # numpydoc ignore=GL08
-        super().stop()
-        self.tatu_stop.set(1)
-        self.activate.set(0).wait()
+    def stop(self, success: bool = True):  # numpydoc ignore=GL08
+        self.pause()
+
+        return super().stop(success=success)
 
     def pause(self):  # numpydoc ignore=GL08
-        self.master_mode_state = self.master_mode.get()
-        self.tatu_stop.set(1)
-        self.activate.set(0).wait()
+        self._old_master_mode_state = self.master_mode.get()
+
+        self.tatu_stop.set(1, timeout=10)
+        self.activate.set(0, timeout=10).wait()
 
     def resume(self):  # numpydoc ignore=GL08
-        self.master_mode.set(self.master_mode_state).wait()
-        self.activate.set(1).wait()
+        if self._old_master_mode_state is not None:
+            self.master_mode.set(self._old_master_mode_state, timeout=10).wait()
+
+            self._old_master_mode_state = None
+
+        self.activate.set(1, timeout=10).wait()
 
 
 class Tatu9401(TatuBase):
