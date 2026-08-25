@@ -239,7 +239,7 @@ class TatuFlyScan(FlyerInterface):
         yield {"time": ttime.time(), "timestamps": {}, "data": {}}
 
 
-class TatuBase(Stageable, Device, TatuFlyScan):
+class TatuBase(Device, TatuFlyScan):
     """
     Base device for the TATU software, which produces or a distribute digital signals to coordinate events \
     and actions to achieve a synchronized operation at a beamline.
