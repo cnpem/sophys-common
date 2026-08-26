@@ -233,10 +233,14 @@ class TatuFlyScan(FlyerInterface):
         return PremadeStatus(success=True)
 
     def describe_collect(self) -> dict[str, dict]:  # numpydoc ignore=GL08
-        return {}
+        return {"tatu_collect": {}}
 
     def collect(self) -> Generator[dict, None, None]:  # numpydoc ignore=GL08
-        yield {"time": ttime.time(), "timestamps": {}, "data": {}}
+        yield {
+            "time": ttime.time(),
+            "timestamps": {},
+            "data": {},
+        }
 
 
 class TatuBase(Device, TatuFlyScan):
