@@ -3,6 +3,7 @@ from ophyd import (
     Component,
     EpicsSignalWithRBV,
     EpicsSignalRO,
+    EpicsSignal,
 )  # numpydoc ignore=GL08
 from ophyd.pv_positioner import PVPositionerIsClose
 
@@ -12,7 +13,7 @@ class MFCMixFluid(Device):
     Device that aggregates the PVs with suffix `Mix` from the MFC's IOC. It's meant to be used as a `Component` for the `MFC` device.
     """
 
-    fluid_name = Component(EpicsSignalRO, "FluidNameList", string=True, kind="config")
+    fluid_name = Component(EpicsSignal, "FluidNameList", string=True, kind="config")
     fraction_type = Component(
         EpicsSignalRO, "FractionType_RBV", string=True, kind="config"
     )
