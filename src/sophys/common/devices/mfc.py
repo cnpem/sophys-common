@@ -9,7 +9,7 @@ from ophyd.pv_positioner import PVPositionerIsClose
 
 class MFCMixFluid(Device):
     """
-    Device that aggragates the PVs with suffix `Mix` from the MFC's IOC. It's meant to be used as a `Component` for the `MFC` device.
+    Device that aggregates the PVs with suffix `Mix` from the MFC's IOC. It's meant to be used as a `Component` for the `MFC` device.
     """
 
     fluid_name = Component(EpicsSignalRO, "FluidNameList", string=True, kind="config")
@@ -46,12 +46,16 @@ class MFC(PVPositionerIsClose):
     See Also
     --------
     ophyd.pv_positioner.PVPositionerIsClose: Base class for `PVPositioner` that updates done status based on np.isclose.
+
+    Notes
+    -----
+    The signals `raw_setpoint` and `raw_readback` represent the dimensionless metered value of the flow in the MFC devices.
+
+    The `capacity` signal reresents 100% of the device's capacity in the selected `capacity_units`.
     """
 
     raw_setpoint = Component(EpicsSignalWithRBV, "Setpoint", kind="config")
-    raw_readback = Component(
-        EpicsSignalRO, "Measure_RBV", kind="config"
-    )  # Dimensionless metered value of flow
+    raw_readback = Component(EpicsSignalRO, "Measure_RBV", kind="config")
 
     readback = Component(EpicsSignalRO, "FloatMeasure_RBV", kind="hinted")
     setpoint = Component(EpicsSignalWithRBV, "FloatSetpoint", kind="config")
