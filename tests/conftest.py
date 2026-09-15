@@ -55,3 +55,9 @@ def run_engine_without_md(kafka_producer, kafka_topic):
     RE = RunEngine()
     RE.subscribe(lambda name, doc: kafka_producer.send(kafka_topic, (name, doc)))
     return RE
+
+
+@pytest.fixture(scope="function")
+def run_engine_without_kafka():
+    RE = RunEngine()
+    return RE
