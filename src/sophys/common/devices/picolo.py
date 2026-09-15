@@ -95,6 +95,7 @@ class PicoloChannel(Device):
 
     enable = Component(EpicsSignalWithRBV, "Enable", kind="config")
     engvalue = Component(EpicsSignal, "EngValue", kind="hinted")
+    saturation_factor = Component(EpicsSignal, "SatFactor", kind="config")
     saturated = Component(EpicsSignal, "Saturated", kind="config")
     range = Component(EpicsSignalWithRBV, "Range", string=True, kind="config")
     auto_range = Component(EpicsSignalWithRBV, "AutoRange", kind="omitted")
