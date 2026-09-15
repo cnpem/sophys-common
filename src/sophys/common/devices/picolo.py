@@ -1,4 +1,4 @@
-from time import time
+from time import time, sleep
 from ophyd import (
     Device,
     Component,
@@ -8,6 +8,7 @@ from ophyd import (
     DynamicDeviceComponent,
     EpicsSignalRO,
 )
+from ophyd.pv_positioner import PVPositionerComparator
 from ophyd.flyers import FlyerInterface
 from ophyd.signal import DEFAULT_WRITE_TIMEOUT, DEFAULT_CONNECTION_TIMEOUT
 from ophyd.status import SubscriptionStatus, StatusBase, Status
@@ -82,6 +83,19 @@ class PicoloAcquisitionTimeWithRBV(PicoloAcquisitionTimeMixin, EpicsSignalWithRB
     pass
 
 
+class PicoloRebootSignal(PVPositionerComparator):
+    setpoint = Component(EpicsSignal, "")
+    readback = Component(EpicsSignalRO, "")
+
+    def done_comparator(self, readback, setpoint):
+        if setpoint == 1:
+            sleep(10)
+            self.parent.continuous_mode.stop_acq.set(1).wait()
+            sleep(3)
+            return True
+        return False
+
+
 class PicoloChannel(Device):
     """
     Device for one of the channels in the Picolo picoammeter.
@@ -150,8 +164,7 @@ class Picolo(Device):
     common_sample_rate = Component(
         EpicsSignal, "SampleRate", string=True, kind="omitted"
     )
-    reboot = Component(EpicsSignal, "Reboot", kind="omitted")
-
+    reboot = Component(PicoloRebootSignal, "Reboot", kind="omitted")
     acquisition_time = Component(
         PicoloAcquisitionTime, "AcquisitionTime", string=True, kind="omitted"
     )
