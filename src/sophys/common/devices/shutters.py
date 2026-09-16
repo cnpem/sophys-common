@@ -171,10 +171,10 @@ class ShutterOpenClose(Device):
                 )
 
         if value == 0 and not self._is_closed():
-            self.close.set(1, *args, **kwargs).wait()
+            self.close.put(1, *args, **kwargs, wait=True)
 
         elif value == 1 and self._is_closed():
-            self.open.set(1, *args, **kwargs).wait()
+            self.open.put(1, *args, **kwargs, wait=True)
 
         else:
             return PremadeStatus(success=True)
