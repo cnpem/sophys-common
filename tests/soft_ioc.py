@@ -2,6 +2,8 @@ import multiprocessing
 
 from caproto.server import PVGroup, SubGroup, pvproperty, run as run_caproto_server
 from caproto.server.records import MotorFields
+from caproto import ChannelType
+import asyncio
 
 
 async def broadcast_precision_to_fields(record):
@@ -180,8 +182,98 @@ class MockSlitIOC(PVGroup):
     )
 
 
+class FakeToggleShutter(PVGroup):
+    """
+    A `caproto` softIOC for a toggle shutter, i.e., a shutter with one actuation PV and one readback PV.
+
+    Notes
+    -----
+    The shutters IOC is somewhat counter intuitive. Their status PVs report Closed as the 1 value, and Opened as the 0 value.
+    This is repeated here, since the Ophyd devices handle this behavior inside them.
+    """
+
+    setpoint = pvproperty(name="OPENCLOSE", value=0)
+    readback = pvproperty(
+        name="STATUS",
+        value="Closed",
+        record="mbbi",
+        enum_strings=("Opened", "Closed"),
+        dtype=ChannelType.ENUM,
+        read_only=True,
+    )
+
+    @setpoint.putter
+    async def setpoint(self, instance, value):
+        if bool(value) is not True:
+            return value
+
+        if self.readback.raw_value:  # Closed (1) -> Open (0)
+            await asyncio.gather(self.readback.write(0))
+        else:  # Opened (0) -> Close (1)
+            await asyncio.gather(self.readback.write(1))
+        return False
+
+
+class FakeShutter(PVGroup):
+    """
+    A `caproto` softIOC for a open/close shutter, i.e., a shutter with two actuation PVs and two readback PVs.
+
+    Notes
+    -----
+    The shutters IOC is somewhat counter intuitive. Their status PVs report Closed as the 1 value, and Opened as the 0 value.
+    This is repeated here, since the Ophyd devices handle this behavior inside them.
+    """
+
+    open = pvproperty(name="OPEN", value=0)
+    close = pvproperty(name="CLOSE", value=0)
+    ps = pvproperty(
+        name="PS_STATUS",
+        value="Closed",
+        record="mbbi",
+        enum_strings=("Opened", "Closed"),
+        dtype=ChannelType.ENUM,
+        read_only=True,
+    )
+    gs = pvproperty(
+        name="GS_STATUS",
+        value="Closed",
+        record="mbbi",
+        enum_strings=("Opened", "Closed"),
+        dtype=ChannelType.ENUM,
+        read_only=True,
+    )
+
+    @open.putter
+    async def open(self, instance, value):
+        if bool(value) is not True:
+            return value
+
+        if self.ps.raw_value and self.gs.raw_value:  # Closed (1) -> Open (0)
+            await asyncio.gather(
+                self.ps.write(0),
+                self.gs.write(0),
+            )
+
+        return False
+
+    @close.putter
+    async def close(self, instance, value):
+        if bool(value) is not True:
+            return value
+
+        if (not self.ps.raw_value) and (not self.gs.raw_value):  # Opened -> Close
+            await asyncio.gather(
+                self.ps.write(1),
+                self.gs.write(1),
+            )
+
+        return False
+
+
 class TestIOC(PVGroup):
     slit = SubGroup(MockSlitIOC, prefix="SLIT:")
+    toggle_shutter = SubGroup(FakeToggleShutter, prefix="TOGGLE_SHUTTER:")
+    shutter = SubGroup(FakeShutter, prefix="SHUTTER:")
 
 
 def _ioc_init():
