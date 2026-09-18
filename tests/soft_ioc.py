@@ -207,6 +207,10 @@ class FakeToggleShutter(PVGroup):
         if bool(value) is not True:
             return value
 
+        if hasattr(self, "permission"):
+            if not self.permission.raw_value:
+                return False
+
         if self.readback.raw_value:  # Closed (1) -> Open (0)
             await asyncio.gather(self.readback.write(0))
         else:  # Opened (0) -> Close (1)
@@ -248,6 +252,10 @@ class FakeShutter(PVGroup):
         if bool(value) is not True:
             return value
 
+        if hasattr(self, "permission"):
+            if not self.permission.raw_value:
+                return False
+
         if self.ps.raw_value and self.gs.raw_value:  # Closed (1) -> Open (0)
             await asyncio.gather(
                 self.ps.write(0),
@@ -261,6 +269,10 @@ class FakeShutter(PVGroup):
         if bool(value) is not True:
             return value
 
+        if hasattr(self, "permission"):
+            if not self.permission.raw_value:
+                return False
+
         if (not self.ps.raw_value) and (not self.gs.raw_value):  # Opened -> Close
             await asyncio.gather(
                 self.ps.write(1),
@@ -270,10 +282,22 @@ class FakeShutter(PVGroup):
         return False
 
 
+class FakePermissionShutter(FakeShutter):
+    permission = pvproperty(name="PERM", dtype=bool)
+
+
+class FakePermissionToggleShutter(FakeToggleShutter):
+    permission = pvproperty(name="PERM", dtype=bool)
+
+
 class TestIOC(PVGroup):
     slit = SubGroup(MockSlitIOC, prefix="SLIT:")
     toggle_shutter = SubGroup(FakeToggleShutter, prefix="TOGGLE_SHUTTER:")
+    toggle_shutter_with_perm = SubGroup(
+        FakePermissionToggleShutter, prefix="PERM_TOGGLE_SHUTTER:"
+    )
     shutter = SubGroup(FakeShutter, prefix="SHUTTER:")
+    shutter_with_perm = SubGroup(FakePermissionShutter, prefix="PERM_SHUTTER:")
 
 
 def _ioc_init():
