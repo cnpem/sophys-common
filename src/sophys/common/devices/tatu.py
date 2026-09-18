@@ -47,6 +47,10 @@ class TatuInput(Device):
         EpicsSignal, "{prefix}AnalogAssocCh{input_number}"
     )
 
+    trigger_hold_time = FormattedComponent(
+        EpicsSignal, "{prefix}TriggerHoldTimeIO{input_number}"
+    )
+
     def __init__(self, prefix, input_number, **kwargs):  # numpydoc ignore=GL08
         self.input_number = input_number
         super().__init__(prefix=prefix, **kwargs)
