@@ -1,10 +1,9 @@
 # numpydoc ignore=GL08
 
 import time as ttime
-from typing import Generator
+from collections.abc import Generator
 
-from bluesky.protocols import Status, Stageable
-
+from bluesky.protocols import Status
 from ophyd import (
     Component,
     Device,
@@ -46,6 +45,10 @@ class TatuInput(Device):
     )
     analog_assoc = FormattedComponent(
         EpicsSignal, "{prefix}AnalogAssocCh{input_number}"
+    )
+
+    trigger_hold_time = FormattedComponent(
+        EpicsSignal, "{prefix}TriggerHoldTimeIO{input_number}"
     )
 
     def __init__(self, prefix, input_number, **kwargs):  # numpydoc ignore=GL08
