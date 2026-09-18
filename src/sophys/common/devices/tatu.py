@@ -1,10 +1,9 @@
 # numpydoc ignore=GL08
 
 import time as ttime
-from typing import Generator
+from collections.abc import Generator
 
-from bluesky.protocols import Status, Stageable
-
+from bluesky.protocols import Status
 from ophyd import (
     Component,
     Device,
