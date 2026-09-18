@@ -33,6 +33,8 @@ class ReadbackEpicsMotor(EpicsMotor):
         The relative tolerance.
     timeout : float
         Maximum timeout to wait to mark the status as a failure.
+    settle_time : float, optional
+        Time to wait after completion.
     kind : Kind, optional
         Ophyd component kind (e.g., Kind.normal, Kind.hinted).
     read_attrs : list, optional
@@ -53,6 +55,7 @@ class ReadbackEpicsMotor(EpicsMotor):
         tolerance: float,
         relative_tolerance: float,
         timeout: float,
+        settle_time: float | None = None,
         kind=None,
         read_attrs=None,
         configuration_attrs=None,
@@ -62,6 +65,7 @@ class ReadbackEpicsMotor(EpicsMotor):
         self.tolerance = tolerance
         self.rtol = relative_tolerance
         self.status_timeout = timeout
+        self.rbv_settle_time = settle_time
         super().__init__(
             prefix,
             name=name,
@@ -93,6 +97,7 @@ class ReadbackEpicsMotor(EpicsMotor):
             Additional keyword arguments passed to the parent's move method.
         """
         timeout = kwargs.get("timeout", self.status_timeout)
+        settle_time = kwargs.get("settle_time", self.rbv_settle_time)
         self._started_moving = False
         dmov_status = super().move(position, timeout=timeout)
         self.user_setpoint.put(position, wait=False)
@@ -101,7 +106,10 @@ class ReadbackEpicsMotor(EpicsMotor):
             return np.isclose(a=value, b=position, atol=self.tolerance, rtol=self.rtol)
 
         rbv_status = SubscriptionStatus(
-            self.user_readback, check_readback, timeout=timeout
+            self.user_readback,
+            check_readback,
+            settle_time=settle_time,
+            timeout=timeout,
         )
         combined_status = AndStatus(dmov_status, rbv_status)
 
