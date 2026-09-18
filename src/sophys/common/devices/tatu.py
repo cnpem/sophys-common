@@ -52,6 +52,29 @@ class TatuInput(Device):
         super().__init__(prefix=prefix, **kwargs)
 
 
+class TatuInputV2(TatuInput):
+    """
+    PVs for a TATU V2 Input port.
+
+    Parameters
+    ----------
+    prefix : str
+        The PV prefix for all components of the device.
+    input_number : str
+        The number for tatu input port.
+    **kwargs
+        Arbitrary keyword arguments.
+    """
+
+    trigger_hold_time = FormattedComponent(
+        EpicsSignal, "{prefix}TriggerHoldTimeIO{input_number}"
+    )
+
+    def __init__(self, prefix, input_number, **kwargs):  # numpydoc ignore=GL08
+        self.input_number = input_number
+        super().__init__(prefix, input_number, **kwargs)
+
+
 class TatuOutputBase(Device):
     """
     Base configuration and status PVs for a TATU Output port condition.
@@ -348,6 +371,15 @@ class Tatu9401V2(Tatu9401):
         Arbitrary keyword arguments.
     """
 
+    input = DynamicDeviceComponent(
+        {
+            "p0": (TatuInputV2, "", {"input_number": "0"}),
+            "p1": (TatuInputV2, "", {"input_number": "1"}),
+            "p2": (TatuInputV2, "", {"input_number": "2"}),
+            "p3": (TatuInputV2, "", {"input_number": "3"}),
+        }
+    )
+
     output = DynamicDeviceComponent(
         {
             "io4": (TatuOutputV2, "", {"output_number": "4"}),
@@ -427,6 +459,33 @@ class Tatu9403V2(Tatu9403):
 
     This same sequence is repeated for the other channels in the sequence, four inputs, four outputs, for the first 24 IO ports.
     """
+
+    input = DynamicDeviceComponent(
+        {
+            "p0": (TatuInputV2, "", {"input_number": "0"}),
+            "p1": (TatuInputV2, "", {"input_number": "1"}),
+            "p2": (TatuInputV2, "", {"input_number": "2"}),
+            "p3": (TatuInputV2, "", {"input_number": "3"}),
+        }
+    )
+
+    input2 = DynamicDeviceComponent(
+        {
+            "p8": (TatuInputV2, "", {"input_number": "8"}),
+            "p9": (TatuInputV2, "", {"input_number": "9"}),
+            "p10": (TatuInputV2, "", {"input_number": "10"}),
+            "p11": (TatuInputV2, "", {"input_number": "11"}),
+        }
+    )
+
+    input3 = DynamicDeviceComponent(
+        {
+            "p16": (TatuInputV2, "", {"input_number": "16"}),
+            "p17": (TatuInputV2, "", {"input_number": "17"}),
+            "p18": (TatuInputV2, "", {"input_number": "18"}),
+            "p19": (TatuInputV2, "", {"input_number": "19"}),
+        }
+    )
 
     output = DynamicDeviceComponent(
         {
