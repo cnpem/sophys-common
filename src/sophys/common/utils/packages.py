@@ -13,7 +13,7 @@ from urllib.parse import urlsplit, SplitResult
 from requests import get as http_get, Response as HttpResponse
 import tempfile
 
-from typing_extensions import Unpack, cast
+from typing import cast
 
 try:
     from enum import StrEnum
@@ -101,22 +101,22 @@ def _run_command(
         print("  Standard error:")
         print(e.stderr)
 
-        raise RuntimeError
+        raise RuntimeError from e
 
     return _proc
 
 
-StrSequenceType: typing.TypeAlias = typing.Tuple[str, ...]
+StrSequenceType: typing.TypeAlias = tuple[str, ...]
 
 
 def install_packages(
-    *package_specs: Unpack[StrSequenceType],
-    extra_index_url: typing.Optional[list[str]] = None,
+    *package_specs: *StrSequenceType,
+    extra_index_url: list[str] | None = None,
     force_reinstall: bool = False,
     disable_cache: bool = False,
     debug: bool = False,
     backend: PackageManagementBackend | str = PackageManagementBackend.PIP,
-    custom_python_executable: typing.Optional[str] = None,
+    custom_python_executable: str | None = None,
 ):
     """
     Install a package in the current environment.
