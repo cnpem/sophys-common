@@ -92,17 +92,16 @@ class ReadbackEpicsMotor(EpicsMotor):
         **kwargs : dict
             Additional keyword arguments passed to the parent's move method.
         """
+        timeout = kwargs.get("timeout", self.status_timeout)
         self._started_moving = False
-        dmov_status = super(EpicsMotor, self).move(
-            position, timeout=self.status_timeout
-        )
+        dmov_status = super().move(position, timeout=timeout)
         self.user_setpoint.put(position, wait=False)
 
         def check_readback(*args, value, **kwargs):  # numpydoc ignore=GL08
             return np.isclose(a=value, b=position, atol=self.tolerance, rtol=self.rtol)
 
         rbv_status = SubscriptionStatus(
-            self.user_readback, check_readback, timeout=self.status_timeout
+            self.user_readback, check_readback, timeout=timeout
         )
         combined_status = AndStatus(dmov_status, rbv_status)
 
