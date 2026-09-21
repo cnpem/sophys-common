@@ -1,10 +1,7 @@
-import pytest
-
 import msgpack_numpy as msgpack
-
-from kafka import KafkaConsumer, KafkaProducer
-
+import pytest
 from bluesky import RunEngine
+from kafka import KafkaConsumer, KafkaProducer
 
 from .soft_ioc import start_soft_ioc
 
