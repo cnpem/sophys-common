@@ -83,16 +83,15 @@ class ReadbackEpicsMotor(EpicsMotor):
         """
         timeout = kwargs.get("timeout", self.status_timeout)
         settle_time = kwargs.get("settle_time", self.rbv_settle_time)
-        self._started_moving = False
-        dmov_status = super().move(position, timeout=timeout)
-        self.user_setpoint.put(position, wait=False)
+
+        dmov_status = super().move(position, timeout=timeout, wait=False)
 
         def check_readback(*args, value, **kwargs):  # numpydoc ignore=GL08
             return np.isclose(a=value, b=position, atol=self.tolerance, rtol=self.rtol)
 
         rbv_status = SubscriptionStatus(
-            self.user_readback,
-            check_readback,
+            device=self.user_readback,
+            callback=check_readback,
             settle_time=settle_time,
             timeout=timeout,
         )
