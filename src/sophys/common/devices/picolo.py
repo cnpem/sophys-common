@@ -89,7 +89,7 @@ class PicoloRebootSignal(PVPositionerComparator):
 
     def done_comparator(self, readback, setpoint):
         if setpoint == 1:
-            sleep(10)
+            sleep(90)
             self.parent.continuous_mode.stop_acq.set(1).wait()
             sleep(3)
             return True
