@@ -4,6 +4,9 @@ from ..utils.status import PremadeStatus
 from ophyd.status import AndStatus, SubscriptionStatus
 
 
+class ShutterPermissionError(Exception): ...
+
+
 class ShutterToggle(PVPositionerComparator):
     """
     Abstraction layer for shutters with one actuation PV (OPENCLOSE) and one readback PV (PG_STATUS). There's an optional parameter for a permission PV.
@@ -66,9 +69,9 @@ class ShutterToggle(PVPositionerComparator):
                 connection_timeout=2, **kwargs
             )
             if not permission_status:
-                raise PremadeStatus(
+                return PremadeStatus(
                     success=False,
-                    exception=PermissionError(
+                    exception=ShutterPermissionError(
                         f"Shutter open permission is denied: {self.permission_signal.pvname} {permission_status}."
                     ),
                 )
@@ -163,9 +166,9 @@ class ShutterOpenClose(Device):
                 connection_timeout=2, **kwargs
             )
             if not permission_status:
-                raise PremadeStatus(
+                return PremadeStatus(
                     success=False,
-                    exception=PermissionError(
+                    exception=ShutterPermissionError(
                         f"Shutter open permission is denied: {self.permission_signal.pvname} {permission_status}"
                     ),
                 )
