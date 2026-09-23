@@ -89,8 +89,13 @@ class PicoloRebootSignal(PVPositionerComparator):
 
     def done_comparator(self, readback, setpoint):
         if setpoint == 1:
+            print("Starting done comparator")
             sleep(10)
-            self.parent.continuous_mode.stop_acq.set(1).wait()
+            print("Waited for 10 seconds for reboot")
+            print("Trying to get STOP PV value")
+            start = time()
+            self.parent.continuous_mode.stop_acq.get()
+            print(f"Got the PV successfully! Time elapsed: {time() - start}")
             sleep(3)
             return True
         return False
