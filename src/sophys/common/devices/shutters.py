@@ -1,10 +1,15 @@
-from ophyd import EpicsSignal, EpicsSignalRO, FormattedComponent, Device
+from ophyd import (
+    EpicsSignal,
+    EpicsSignalRO,
+    FormattedComponent,
+    Device,
+)  # numpydoc ignore=GL08
 from ophyd.pv_positioner import PVPositionerComparator
 from ..utils.status import PremadeStatus
 from ophyd.status import AndStatus, SubscriptionStatus
 
 
-class ShutterPermissionError(Exception): ...
+class ShutterPermissionError(Exception): ...  # numpydoc ignore=GL08
 
 
 class ShutterToggle(PVPositionerComparator):
@@ -13,26 +18,32 @@ class ShutterToggle(PVPositionerComparator):
 
     Parameters
     ----------
-    prefix: str
+    prefix : str
         Prefix for the shutter's PVs.
 
-    setpoint_suffix: str
+    *args
+        Arguments accepted by `PVPositionerComparator`.
+
+    setpoint_suffix : str
         Suffix for the actuation PV. NOTE: This should be place/location of the shutter, e.g. OEA/FOE.
         The PV will be formatted as "{prefix}{setpoint_suffix}OPENCLOSE".
 
-    readback_suffix: str
-        Suffix for the readback PV, e.g. PG_STATUS
+    readback_suffix : str
+        Suffix for the readback PV, e.g. PG_STATUS.
 
-    permission_suffix: str, optional
+    permission_pv : str, optional
         Permission PV string, if it exists.
 
-    NOTE
-    ----
+    **kwargs
+        Key arguments accepted by `PVPositionerComparator`.
+
+    Notes
+    -----
     This implemantation considers that the value of the `readback` signal is 0 for an open shutter and 1 for a closed shutter.
     This is not so intuitive, so the `set` method considers that 1 is for opening and 0 for closing the shutter.
 
-    Usage Example
-    -------------
+    Examples
+    --------
     >>> shutter = ShutterOpenClose(prefix="prefix", setpoint_suffix="setpoint_suffix", readback="readback_suffix", name="shutter")
     >>> shutter.set(0).wait() # for closing
     >>> shutter.set(1).wait() # for opening
@@ -46,8 +57,9 @@ class ShutterToggle(PVPositionerComparator):
         EpicsSignalRO, "{prefix}{readback_suffix}", kind="hinted"
     )
 
-    def __init__(
+    def __init__(  # numpydoc ignore=GL08
         self,
+        prefix: str,
         *args,
         setpoint_suffix: str,
         readback_suffix: str,
@@ -57,13 +69,13 @@ class ShutterToggle(PVPositionerComparator):
         self.setpoint_suffix = setpoint_suffix
         self.readback_suffix = readback_suffix
         self._permission_pv_name = permission_pv
-        super().__init__(*args, **kwargs)
+        super().__init__(prefix=prefix, *args, **kwargs)
         if self._permission_pv_name is not None:
             self.permission_signal = EpicsSignalRO(
                 f"{self._permission_pv_name}", name="permission"
             )
 
-    def set(self, value, *args, **kwargs):
+    def set(self, value, *args, **kwargs):  # numpydoc ignore=GL08
         if hasattr(self, "permission_signal"):
             permission_status = self.permission_signal.get(
                 connection_timeout=2, **kwargs
@@ -84,7 +96,7 @@ class ShutterToggle(PVPositionerComparator):
         else:
             return PremadeStatus(success=True)
 
-    def done_comparator(self, readback, setpoint):
+    def done_comparator(self, readback, setpoint):  # numpydoc ignore=GL08
         return self.real_setpoint == readback
 
 
@@ -94,23 +106,29 @@ class ShutterOpenClose(Device):
 
     Parameters
     ----------
-    prefix: str
+    prefix : str
         Prefix for the shutter's PVs.
 
-    shutter_suffix: str
+    *args
+        Arguments accepted by `Device`.
+
+    shutter_suffix : str
         Suffix for the OPEN and CLOSE PVs. NOTE: This should be place/location of the shutter, e.g. OEA/FOE.
         The PVs will be formatted as "{prefix}{shutter_suffix}OPEN" and "{prefix}{shutter_suffix}CLOSE".
 
-    ps_suffix: str
-        Suffix for one readback PVs, e.g. PS_STATUS
+    ps_suffix : str
+        Suffix for one readback PVs, e.g. PS_STATUS.
 
-    gs_suffix: str
-        Suffix for the second readback PV, e.g. GS_STATUS
+    gs_suffix : str
+        Suffix for the second readback PV, e.g. GS_STATUS.
 
-    permission_pv: str, optional
+    permission_pv : str, optional
         Permission PV string, if it exists.
 
-    NOTES
+    **kwargs
+        Key arguments accepted by `Device`.
+
+    Notes
     -----
     This implemantation considers that the value of the `readback` signal is 0 for an open shutter and 1 for a closed shutter.
     This is not so intuitive, so the `set` method considers that 1 is for opening and 0 for closing the shutter.
@@ -120,8 +138,8 @@ class ShutterOpenClose(Device):
     There's a `done_comparator` method that returns the state of the shutter, based in the two `readback` PVs. This method is
     used as the `callback` for both `readback` signals.
 
-    Usage Example
-    -------------
+    Examples
+    --------
     >>> shutter = ShutterToggle(prefix="prefix", open_suffix="open_suffix", close_suffix="close_suffix", ps_suffix="ps_suffix", gs_suffix="gs_suffix", name="shutter")
     >>> shutter.set(0).wait() # for closing
     >>> shutter.set(1).wait() # for opening
@@ -141,8 +159,9 @@ class ShutterOpenClose(Device):
         EpicsSignal, "{prefix}{shutter_suffix}CLOSE", kind="config"
     )
 
-    def __init__(
+    def __init__(  # numpydoc ignore=GL08
         self,
+        prefix: str,
         *args,
         shutter_suffix: str,
         ps_suffix: str,
@@ -154,13 +173,13 @@ class ShutterOpenClose(Device):
         self.ps_suffix = ps_suffix
         self.gs_suffix = gs_suffix
         self._permission_pv_name = permission_pv
-        super().__init__(*args, **kwargs)
+        super().__init__(prefix=prefix, *args, **kwargs)
         if self._permission_pv_name is not None:
             self.permission_signal = EpicsSignalRO(
                 f"{self._permission_pv_name}", name="permission"
             )
 
-    def set(self, value, *args, **kwargs):
+    def set(self, value, *args, **kwargs):  # numpydoc ignore=GL08
         if hasattr(self, "permission_signal"):
             permission_status = self.permission_signal.get(
                 connection_timeout=2, **kwargs
@@ -196,6 +215,6 @@ class ShutterOpenClose(Device):
             self.gamma_status.get() == 1
         )  # NOTE: if one of the status is equal to zero, the shutter can be partially open
 
-    def done_comparator(self, value, **kwargs):
+    def done_comparator(self, value, **kwargs):  # numpydoc ignore=GL08
         is_closed = self._is_closed()
         return is_closed if self.setpoint == 0 else not is_closed
