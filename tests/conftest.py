@@ -13,6 +13,16 @@ from .soft_ioc import start_soft_ioc
 def soft_ioc():
     soft_ioc_prefix, stop_soft_ioc = start_soft_ioc()
     yield soft_ioc_prefix
+
+    try:
+        from aioca import purge_channel_caches
+
+        # Purge the channel caches before we stop the IOC to stop
+        # RuntimeError: Event loop is closed errors on teardown
+        purge_channel_caches()
+    except ImportError:
+        pass
+
     stop_soft_ioc()
 
 
