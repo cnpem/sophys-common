@@ -1,4 +1,4 @@
-from time import time
+from time import time, sleep
 from ophyd import (
     Device,
     Component,
@@ -8,6 +8,7 @@ from ophyd import (
     DynamicDeviceComponent,
     EpicsSignalRO,
 )
+from ophyd.pv_positioner import PVPositionerComparator
 from ophyd.flyers import FlyerInterface
 from ophyd.signal import DEFAULT_WRITE_TIMEOUT, DEFAULT_CONNECTION_TIMEOUT
 from ophyd.status import SubscriptionStatus, StatusBase, Status
@@ -82,6 +83,24 @@ class PicoloAcquisitionTimeWithRBV(PicoloAcquisitionTimeMixin, EpicsSignalWithRB
     pass
 
 
+class PicoloRebootSignal(PVPositionerComparator):
+    setpoint = Component(EpicsSignal, "")
+    readback = Component(EpicsSignalRO, "")
+
+    def done_comparator(self, readback, setpoint):
+        if setpoint == 1:
+            print("Starting done comparator")
+            sleep(10)
+            print("Waited for 10 seconds for reboot")
+            print("Trying to get STOP PV value")
+            start = time()
+            self.parent.continuous_mode.stop_acq.get()
+            print(f"Got the PV successfully! Time elapsed: {time() - start}")
+            sleep(3)
+            return True
+        return False
+
+
 class PicoloChannel(Device):
     """
     Device for one of the channels in the Picolo picoammeter.
@@ -95,6 +114,7 @@ class PicoloChannel(Device):
 
     enable = Component(EpicsSignalWithRBV, "Enable", kind="config")
     engvalue = Component(EpicsSignal, "EngValue", kind="hinted")
+    saturation_factor = Component(EpicsSignal, "SatFactor", kind="config")
     saturated = Component(EpicsSignal, "Saturated", kind="config")
     range = Component(EpicsSignalWithRBV, "Range", string=True, kind="config")
     auto_range = Component(EpicsSignalWithRBV, "AutoRange", kind="omitted")
@@ -149,7 +169,7 @@ class Picolo(Device):
     common_sample_rate = Component(
         EpicsSignal, "SampleRate", string=True, kind="omitted"
     )
-
+    reboot = Component(PicoloRebootSignal, "Reboot", kind="omitted")
     acquisition_time = Component(
         PicoloAcquisitionTime, "AcquisitionTime", string=True, kind="omitted"
     )
