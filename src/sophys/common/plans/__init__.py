@@ -5,6 +5,9 @@ from bluesky import plan_stubs as bps
 from bluesky.utils import FailedStatus
 
 
+__all__ = ["mv_with_retry"]
+
+
 RETRY_WARNING_MESSAGE = """Calling a plan (%s) with retry on errors.
 This is not encouraged, as it can hide buggy behavior and increase dead times.
 If possible, fix the underlying issue to avoid needing a retry.
