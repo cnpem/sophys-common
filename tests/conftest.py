@@ -1,3 +1,5 @@
+import os
+
 import pytest
 
 import msgpack_numpy as msgpack
@@ -17,8 +19,23 @@ def soft_ioc():
 
 
 @pytest.fixture(scope="session")
-def kafka_bootstrap_ip():
-    return "localhost:9092"
+def kafka_server():
+    if "CI" not in os.environ:
+        yield "localhost:9093"
+        return
+
+    pytest.importorskip("testcontainers.kafka")
+
+    from testcontainers.kafka import KafkaContainer
+
+    _container = KafkaContainer(image="confluentinc/cp-kafka:7.6.0", port=9093)
+    with _container.with_kraft():
+        yield _container.get_bootstrap_server()
+
+
+@pytest.fixture(scope="session")
+def kafka_bootstrap_ip(kafka_server):
+    yield kafka_server
 
 
 @pytest.fixture(scope="session")
