@@ -20,7 +20,9 @@ def _with_retry_decorator(func):  # numpydoc ignore=PR01
     from functools import wraps
 
     @wraps(func)
-    def __inner(*args, max_attempts=3, ignore_warning=False):  # numpydoc ignore=PR01
+    def __inner(
+        *args, max_attempts=3, ignore_warning=False, **kwargs
+    ):  # numpydoc ignore=PR01
         """Inner handler for dealing with plan retries."""
         _ret = None
 
@@ -32,7 +34,7 @@ def _with_retry_decorator(func):  # numpydoc ignore=PR01
         retries = 0
         while True:
             try:
-                _ret = yield from func(*args)
+                _ret = yield from func(*args, **kwargs)
             except FailedStatus:
                 retries += 1
 
