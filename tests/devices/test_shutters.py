@@ -21,8 +21,9 @@ def test_open_close_shutter(soft_ioc):
         gs_suffix=SHUTTER_PREFIX + "GS_STATUS",
         name="test_shutter",
     )
-    shutter.wait_for_connection(all_signals=True, timeout=5.0)
     shutter.SETTLE_TIME = 0.2
+
+    shutter.get(timeout=5.0)  # Ensure connection of all PVs
 
     st = shutter.set(1, timeout=5)  # The shutter softIOC starts closed, so open it
     st.wait()
@@ -52,7 +53,8 @@ def test_toggle_shutter(soft_ioc):
         readback_suffix=TOGGLE_SHUTTER_PREFIX + "STATUS",
         name="test_shutter_toggle",
     )
-    shutter.wait_for_connection(all_signals=True, timeout=5.0)
+
+    shutter.get(timeout=5.0)  # Ensure connection of all PVs
 
     st = shutter.set(1, timeout=5)  # The shutter softIOC starts closed, so open it
     st.wait()
@@ -92,8 +94,9 @@ def test_permission_shutter(soft_ioc):
         permission_pv=soft_ioc + PERM_SHUTTER_PREFIX + "PERM",
         name="test_shutter",
     )
-    shutter.wait_for_connection(all_signals=True, timeout=5.0)
     shutter.SETTLE_TIME = 0.2
+
+    shutter.get(timeout=5.0)  # Ensure connection of all PVs
 
     assert (
         not shutter.permission_signal.get()
@@ -150,7 +153,8 @@ def test_permission_toggle_shutter(soft_ioc):
         permission_pv=soft_ioc + PERM_TOGGLE_SHUTTER_PREFIX + "PERM",
         name="test_shutter_toggle",
     )
-    shutter.wait_for_connection(all_signals=True, timeout=5.0)
+
+    shutter.get(timeout=5.0)  # Ensure connection of all PVs
 
     assert (
         not shutter.permission_signal.get()
