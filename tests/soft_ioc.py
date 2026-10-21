@@ -300,15 +300,20 @@ class TestIOC(PVGroup):
     shutter_with_perm = SubGroup(FakePermissionShutter, prefix="PERM_SHUTTER:")
 
 
-def _ioc_init():
-    ioc = TestIOC(SOFT_IOC_PREFIX)
+def _ioc_init(suffix: str):
+    ioc = TestIOC(SOFT_IOC_PREFIX + suffix)
     run_caproto_server(ioc.pvdb)
 
 
 def start_soft_ioc() -> tuple[str, callable]:
     # NOTE: This is needed so epics-base doesn't complain about 'forking with threads' on Linux.
     ctx = multiprocessing.get_context("spawn")
-    p = ctx.Process(target=_ioc_init)
+
+    import uuid
+
+    suffix = str(uuid.uuid4())[:8] + ":"
+
+    p = ctx.Process(target=_ioc_init, args=(suffix,))
     p.start()
 
     def stop_soft_ioc():
@@ -318,4 +323,4 @@ def start_soft_ioc() -> tuple[str, callable]:
         if p.is_alive():
             p.kill()
 
-    return SOFT_IOC_PREFIX, stop_soft_ioc
+    return SOFT_IOC_PREFIX + suffix, stop_soft_ioc
