@@ -6,7 +6,7 @@ from ophyd import (
 )  # numpydoc ignore=GL08
 from ophyd.pv_positioner import PVPositionerComparator
 from ..utils.status import PremadeStatus
-from ophyd.status import AndStatus, SubscriptionStatus
+from ophyd.status import AndStatus, StatusBase, SubscriptionStatus
 
 
 class ShutterPermissionError(Exception): ...  # numpydoc ignore=GL08
@@ -145,6 +145,8 @@ class ShutterOpenClose(Device):
     >>> shutter.set(1).wait() # for opening
     """
 
+    SETTLE_TIME = 3.0
+
     setpoint = None
     photon_status = FormattedComponent(
         EpicsSignalRO, "{prefix}{ps_suffix}", kind="hinted"
@@ -179,7 +181,7 @@ class ShutterOpenClose(Device):
                 f"{self._permission_pv_name}", name="permission"
             )
 
-    def set(self, value, *args, **kwargs):  # numpydoc ignore=GL08
+    def set(self, value, *args, **kwargs) -> StatusBase:  # numpydoc ignore=GL08
         if hasattr(self, "permission_signal"):
             permission_status = self.permission_signal.get(
                 connection_timeout=2, **kwargs
@@ -204,8 +206,12 @@ class ShutterOpenClose(Device):
         self.setpoint = value
 
         return AndStatus(
-            SubscriptionStatus(self.photon_status, self.done_comparator, settle_time=3),
-            SubscriptionStatus(self.gamma_status, self.done_comparator, settle_time=3),
+            SubscriptionStatus(
+                self.photon_status, self.done_comparator, settle_time=self.SETTLE_TIME
+            ),
+            SubscriptionStatus(
+                self.gamma_status, self.done_comparator, settle_time=self.SETTLE_TIME
+            ),
             timeout=15,
         )
 
