@@ -1,6 +1,7 @@
 import multiprocessing
 
-from caproto.server import PVGroup, SubGroup, pvproperty, run as run_caproto_server
+from caproto.server import PVGroup, SubGroup, pvproperty
+from caproto.server import run as run_caproto_server
 from caproto.server.records import MotorFields
 
 
@@ -8,7 +9,7 @@ async def broadcast_precision_to_fields(record):
     """Update precision of all fields to that of the given record."""
 
     precision = record.precision
-    for field, prop in record.field_inst.pvdb.items():
+    for prop in record.field_inst.pvdb.values():
         if hasattr(prop, "precision"):
             await prop.write_metadata(precision=precision)
 
@@ -31,14 +32,15 @@ async def motor_record_simulator(instance, async_lib, defaults=None, tick_rate_h
         Update rate in Hz.
     """
     if defaults is None:
-        defaults = dict(
-            velocity=0.1,
-            precision=3,
-            acceleration=1.0,
-            resolution=1e-6,
-            tick_rate_hz=10.0,
-            user_limits=(0.0, 100.0),
-        )
+        defaults = {
+            "velocity": 0.1,
+            "precision": 3,
+            "acceleration": 1.0,
+            "resolution": 1e-6,
+            "tick_rate_hz": 10.0,
+            "user_limits": (0.0, 100.0),
+            "readback_offset": 0.0,
+        }
 
     fields: MotorFields = instance.field_inst
     have_new_position = False
@@ -59,6 +61,7 @@ async def motor_record_simulator(instance, async_lib, defaults=None, tick_rate_h
     await fields.motor_step_size.write(defaults["resolution"])
     await fields.user_low_limit.write(defaults["user_limits"][0])
     await fields.user_high_limit.write(defaults["user_limits"][1])
+    await fields.enable_control.write(1)
 
     dwell = 1.0 / tick_rate_hz
     while True:
@@ -106,7 +109,9 @@ async def motor_record_simulator(instance, async_lib, defaults=None, tick_rate_h
             await async_lib.library.sleep(dwell)
         else:
             # Only executed if we didn't break
-            await fields.user_readback_value.write(target_pos)
+            await fields.user_readback_value.write(
+                target_pos + defaults["readback_offset"]
+            )
 
         await fields.motor_is_moving.write(0)
         await fields.done_moving_to_value.write(1)
@@ -125,6 +130,7 @@ class FakeMotor(PVGroup):
         resolution=1e-6,
         user_limits=(0.0, 100.0),
         tick_rate_hz=10.0,
+        readback_offset=0.0,
         **kwargs,
     ):
         super().__init__(*args, **kwargs)
@@ -136,6 +142,7 @@ class FakeMotor(PVGroup):
             "acceleration": acceleration,
             "resolution": resolution,
             "user_limits": user_limits,
+            "readback_offset": readback_offset,
         }
 
     @motor.startup
@@ -182,6 +189,13 @@ class MockSlitIOC(PVGroup):
 
 class TestIOC(PVGroup):
     slit = SubGroup(MockSlitIOC, prefix="SLIT:")
+    readback = SubGroup(
+        FakeMotor,
+        velocity=100.0,
+        precision=4,
+        prefix="READBACK",
+        readback_offset=0.5,
+    )
 
 
 def _ioc_init():
