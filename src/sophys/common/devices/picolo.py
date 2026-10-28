@@ -1,4 +1,4 @@
-from time import time
+from time import time, sleep  # numpydoc ignore=GL08
 from ophyd import (
     Device,
     Component,
@@ -8,6 +8,7 @@ from ophyd import (
     DynamicDeviceComponent,
     EpicsSignalRO,
 )
+from ophyd.pv_positioner import PVPositionerComparator
 from ophyd.flyers import FlyerInterface
 from ophyd.signal import DEFAULT_WRITE_TIMEOUT, DEFAULT_CONNECTION_TIMEOUT
 from ophyd.status import SubscriptionStatus, StatusBase, Status
@@ -16,13 +17,13 @@ from ..utils.status import PremadeStatus
 from ..utils.interfaces import IEnumValidator
 
 
-class EnumAcquisitionTimeValidator(IEnumValidator):
+class EnumAcquisitionTimeValidator(IEnumValidator):  # numpydoc ignore=PR01
     """Validates acquisition time based on predefined enum values."""
 
-    def __init__(self, enum_string):
+    def __init__(self, enum_string):  # numpydoc ignore=GL08
         self._enums = [float(item.replace(" ms", "")) / 1000 for item in enum_string]
 
-    def format_to_enum(self, value):
+    def format_to_enum(self, value):  # numpydoc ignore=GL08
         ms_value = value * 1000  # Convert seconds to milliseconds
 
         if ms_value == int(ms_value):
@@ -30,7 +31,7 @@ class EnumAcquisitionTimeValidator(IEnumValidator):
         else:
             return f"{ms_value} ms"
 
-    def validate_and_format(self, acquisition_time: float):
+    def validate_and_format(self, acquisition_time: float):  # numpydoc ignore=PR01
         """Validate and format acquisition time."""
         if not self.is_valid(acquisition_time):
             raise ValueError(
@@ -38,12 +39,13 @@ class EnumAcquisitionTimeValidator(IEnumValidator):
             )
         return self.format_to_enum(acquisition_time)
 
-    def is_valid(self, enum_value: float) -> bool:
+    def is_valid(self, enum_value: float) -> bool:  # numpydoc ignore=GL08
         return enum_value in self._enums
 
 
-class PicoloAcquisitionTimeMixin:
-    """A mix-in class for handling acquisition time configuration.
+class PicoloAcquisitionTimeMixin:  # numpydoc ignore=PR01
+    """
+    A mix-in class for handling acquisition time configuration.
 
     This mix-in assumes the presence of a base interface that provides
     the methods `wait_for_connection` and `set`, which are expected to be
@@ -52,12 +54,12 @@ class PicoloAcquisitionTimeMixin:
     enumeration-based validator before passing them to the base `set` method.
     """
 
-    def __init__(self, *args, **kwargs):
+    def __init__(self, *args, **kwargs):  # numpydoc ignore=GL08
         super().__init__(*args, **kwargs)
         self.wait_for_connection(DEFAULT_CONNECTION_TIMEOUT)
         self._time_base_validator = EnumAcquisitionTimeValidator(self.enum_strs)
 
-    def set(self, acquisition_time: float, *args, **kwargs):
+    def set(self, acquisition_time: float, *args, **kwargs):  # numpydoc ignore=GL08
         try:
             formatted_time = self._time_base_validator.validate_and_format(
                 acquisition_time
@@ -82,7 +84,25 @@ class PicoloAcquisitionTimeWithRBV(PicoloAcquisitionTimeMixin, EpicsSignalWithRB
     pass
 
 
-class PicoloChannel(Device):
+class PicoloRebootSignal(PVPositionerComparator):  # numpydoc ignore=GL08
+    setpoint = Component(EpicsSignal, "")
+    readback = Component(EpicsSignalRO, "")
+
+    def done_comparator(self, readback, setpoint):  # numpydoc ignore=GL08
+        if setpoint == 1:
+            print("Starting done comparator")
+            sleep(10)
+            print("Waited for 10 seconds for reboot")
+            print("Trying to get STOP PV value")
+            start = time()
+            self.parent.continuous_mode.stop_acq.get()
+            print(f"Got the PV successfully! Time elapsed: {time() - start}")
+            sleep(3)
+            return True
+        return False
+
+
+class PicoloChannel(Device):  # numpydoc ignore=PR01
     """
     Device for one of the channels in the Picolo picoammeter.
     """
@@ -95,11 +115,12 @@ class PicoloChannel(Device):
 
     enable = Component(EpicsSignalWithRBV, "Enable", kind="config")
     engvalue = Component(EpicsSignal, "EngValue", kind="hinted")
+    saturation_factor = Component(EpicsSignal, "SatFactor", kind="config")
     saturated = Component(EpicsSignal, "Saturated", kind="config")
     range = Component(EpicsSignalWithRBV, "Range", string=True, kind="config")
     auto_range = Component(EpicsSignalWithRBV, "AutoRange", kind="omitted")
     acquire_mode = Component(
-        EpicsSignalWithRBV, "AcquireMode", string=True, kind="config"
+        EpicsSignalWithRBV, "AcquireMode", string=True, write_timeout=5, kind="config"
     )
     state = Component(EpicsSignalRO, "State", string=True, kind="config")
     analog_bw = Component(EpicsSignalRO, "BW_RBV", kind="omitted")
@@ -113,7 +134,7 @@ class PicoloChannel(Device):
     exp_offset = Component(EpicsSignalWithRBV, "ExpOffset", kind="config")
     set_zero = Component(EpicsSignal, "SetZero", kind="omitted")
 
-    def __init__(self, prefix, **kwargs):
+    def __init__(self, prefix, **kwargs):  # numpydoc ignore=GL08
         self.continuous_value = prefix[:-1]
         super().__init__(prefix=prefix, **kwargs)
 
@@ -121,8 +142,10 @@ class PicoloChannel(Device):
 class Picolo(Device):
     """Device for the 4 channel Picolo picoammeter."""
 
-    class DataResetSignal(EpicsSignal):
-        def set(self, value, *, timeout=DEFAULT_WRITE_TIMEOUT, settle_time=None):
+    class DataResetSignal(EpicsSignal):  # numpydoc ignore=GL08
+        def set(
+            self, value, *, timeout=DEFAULT_WRITE_TIMEOUT, settle_time=None
+        ):  # numpydoc ignore=GL08
             _s = Status()
             _s.set_finished()
             if value == 0:
@@ -140,8 +163,12 @@ class Picolo(Device):
 
     range = Component(EpicsSignal, "Range", string=True, kind="config")
     auto_range = Component(EpicsSignal, "AutoRange", kind="omitted")
-    acquire_mode = Component(EpicsSignal, "AcquireMode", string=True, kind="config")
-    samples_per_trigger = Component(EpicsSignalWithRBV, "NumAcquire", kind="config")
+    acquire_mode = Component(
+        EpicsSignal, "AcquireMode", string=True, write_timeout=5, kind="config"
+    )
+    samples_per_trigger = Component(
+        EpicsSignalWithRBV, "NumAcquire", write_timeout=5, kind="config"
+    )
     data_reset = Component(DataResetSignal, "DataReset", kind="omitted")
     data_acquired = Component(EpicsSignal, "DataAcquired", kind="config")
     triggering = Component(EpicsSignal, "Triggering", kind="omitted")
@@ -149,7 +176,7 @@ class Picolo(Device):
     common_sample_rate = Component(
         EpicsSignal, "SampleRate", string=True, kind="omitted"
     )
-
+    reboot = Component(PicoloRebootSignal, "Reboot", kind="omitted")
     acquisition_time = Component(
         PicoloAcquisitionTime, "AcquisitionTime", string=True, kind="omitted"
     )
@@ -164,12 +191,12 @@ class Picolo(Device):
     ch4 = Component(PicoloChannel, "Current4:")
 
 
-class PicoloFlyScan(Picolo, FlyerInterface):
+class PicoloFlyScan(Picolo, FlyerInterface):  # numpydoc ignore=GL08
 
     # 1 week timeout
     complete_timeout = 604800
 
-    def kickoff(self):
+    def kickoff(self):  # numpydoc ignore=GL08
         sts = StatusBase()
         sts.set_finished()
         return sts
@@ -190,19 +217,19 @@ class PicoloFlyScan(Picolo, FlyerInterface):
                 return False
         return True
 
-    def complete(self):
+    def complete(self):  # numpydoc ignore=GL08
         return SubscriptionStatus(
             self, callback=self._fly_scan_complete, timeout=self.complete_timeout
         )
 
-    def describe_collect(self):
+    def describe_collect(self):  # numpydoc ignore=GL08
         descriptor = {"picolo": {}}
         for channel in [self.ch1, self.ch2, self.ch3, self.ch4]:
             if channel.enable.get():
                 descriptor["picolo"].update(channel.data.describe())
         return descriptor
 
-    def collect(self):
+    def collect(self):  # numpydoc ignore=GL08
         data = {}
         timestamps = {}
         for channel in [self.ch1, self.ch2, self.ch3, self.ch4]:
