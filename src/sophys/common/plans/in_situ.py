@@ -1,4 +1,9 @@
-from ..devices.eu3508 import SegmentType, SegmentEndType, EU3508  # numpydoc ignore=GL08
+from ..devices.eu3508 import (
+    SegmentType,
+    SegmentEndType,
+    EU3508ProgStatusType,
+    EU3508,
+)  # numpydoc ignore=GL08
 from types import MappingProxyType
 from typing import Literal, Optional, List, Tuple
 from bluesky.plan_stubs import (
@@ -10,6 +15,7 @@ from bluesky.plan_stubs import (
     unmonitor,
     open_run,
     close_run,
+    stop,
 )
 from logging import getLogger, Logger
 
@@ -172,6 +178,11 @@ def program_eu3508(
     """
     if logger is None:
         getLogger(__file__)
+    if heating_device.running.get() != EU3508ProgStatusType.NOT_RUNNING:
+        logger.warning(
+            f"Device {heating_device.name} is not in 'Not Running' state, so the device will be stopped."
+        )
+        yield from stop(heating_device)
     _md = {
         "plan_name": "program_eu3508",
         "plan_args": {
