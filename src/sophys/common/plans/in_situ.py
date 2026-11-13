@@ -16,6 +16,7 @@ from bluesky.plan_stubs import (
     open_run,
     close_run,
     stop,
+    sleep,
 )
 from logging import getLogger, Logger
 
@@ -202,6 +203,7 @@ def program_eu3508(
             f"Device {heating_device.name} is not in 'Not Running' state, so the device will be stopped."
         )
         yield from stop(heating_device)
+        yield from sleep(5)
     _md = {
         "plan_name": "program_eu3508",
         "plan_args": {
