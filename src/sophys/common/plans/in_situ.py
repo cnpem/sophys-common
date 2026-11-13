@@ -260,3 +260,15 @@ def program_eu3508(
     yield from open_run(md=_md)
     yield from inner()
     yield from close_run("success")
+
+
+def eu3508_contingency_plan(heating_device: EU3508):
+    """
+    Contingency plan for EU3508 device. It stops the equipment, bringing it's setopint to 11°C.
+
+    Parameters
+    ----------
+    heating_device : EU3508
+        An instance of the EU3508 Ophyd device object.
+    """
+    yield from stop(heating_device)
