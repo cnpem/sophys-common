@@ -28,6 +28,11 @@ end_type_enum_map = MappingProxyType(
 )  # read-only mapping dict
 
 
+class EU3508ProgrammingError(Exception):  # numpydoc ignore=GL08
+    def __init__(self, *args):  # numpydoc ignore=GL08
+        super().__init__(*args)
+
+
 def program_eu3508_segment(
     heating_device: EU3508,
     segment_type: Literal["ramp", "dwell"],
@@ -89,16 +94,30 @@ def program_eu3508_segment(
 
     if segment_type_enum_map[segment_type] == SegmentType.RAMP_RATE:
         if any(param is None for param in [temperature, ramp_rate]):
-            raise ValueError(
+            raise EU3508ProgrammingError(
                 "The parameters 'temperature' and 'ramp_rate' are both required when programming a Ramp segment."
             )
 
-        if (temperature < 30) or (temperature > 999):
-            raise ValueError(
-                f"Temperature range for the Hot Air Blower in [30, 999]. Temperature {temperature} °C is out of range."
+        if temperature < 30:
+            logger.warning(
+                f"Received target temperature: {temperature}°C bellow minimum of 30°C."
             )
+            logger.warning("Changing target temperature to 30°C.")
+            temperature = 30
+
+        if temperature > 1000:
+            logger.warning(
+                f"Received target temperature: {temperature}°C above maximum of 1000°C."
+            )
+            logger.warning("Changing target temperature to 1000°C.")
+            temperature = 1000
+
         if ramp_rate > 10:
-            raise ValueError("Temperature rate must be less or equal to 10°C/min")
+            logger.warning(
+                f"Received ramp rate: {ramp_rate}°C/min above maximum of 10°C/min."
+            )
+            logger.warning("Changing ramp rate to 10°C/min.")
+            ramp_rate = 10
 
         if temperature > 400 and ramp_rate > 5:
             logger.warning(
@@ -117,7 +136,7 @@ def program_eu3508_segment(
 
     elif segment_type_enum_map[segment_type] == SegmentType.DWELL:
         if duration is None:
-            raise ValueError(
+            raise EU3508ProgrammingError(
                 "The parameter 'duration' is required when programming a Dwell segment."
             )
         logger.info(f"Segment configuration - Dwell duration: {duration} min")
