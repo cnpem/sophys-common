@@ -123,9 +123,11 @@ class EU3508(Device, FlyerInterface):
 
     start = Component(EpicsSignal, "PROG0:RUN", kind="config")
     skip = Component(EpicsSignal, "PROG0:SKIP", kind="config")
-    reset = Component(EpicsSignal, "PROGRESET", kind="config")  # stop
-    hold = Component(EpicsSignal, "PROGHOLD", kind="config")  # pause
-    run_hold = Component(EpicsSignal, "PROG0:RUNHOLD", kind="config")  # resume
+    reset = Component(EpicsSignal, "PROGRESET", kind="config", write_timeout=10)  # stop
+    hold = Component(EpicsSignal, "PROGHOLD", kind="config", write_timeout=10)  # pause
+    run_hold = Component(
+        EpicsSignal, "PROG0:RUNHOLD", kind="config", write_timeout=10
+    )  # resume
     running = Component(EpicsSignal, "PROGSTAT:RBV", kind="config")
 
     status = Component(EU3508Status, "", kind="config")
