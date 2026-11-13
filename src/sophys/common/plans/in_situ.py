@@ -1,7 +1,16 @@
 from ..devices.eu3508 import SegmentType, SegmentEndType, EU3508  # numpydoc ignore=GL08
 from types import MappingProxyType
-from typing import Literal, Optional
-from bluesky.plan_stubs import mv, kickoff, complete, collect
+from typing import Literal, Optional, List, Tuple
+from bluesky.plan_stubs import (
+    mv,
+    kickoff,
+    complete,
+    collect,
+    monitor,
+    unmonitor,
+    open_run,
+    close_run,
+)
 from logging import getLogger, Logger
 
 
@@ -124,3 +133,100 @@ def program_eu3508_segment(
     if run:
         yield from inner()
     logger.info("Plan finished successfully!")
+
+
+def program_eu3508(
+    heating_device: EU3508,
+    regions: List[
+        Tuple[
+            Literal["ramp", "dwell"],
+            float,
+            float,
+            float,
+        ]
+    ],
+    last_region_end_type: Literal["reset", "dwell"] = "reset",
+    md: dict = {},
+    logger: Optional[Logger] = None,
+):
+    """
+    Program and run a list of segments (or regions) with the 'EU3508' device.
+
+    Parameters
+    ----------
+    heating_device : EU3508
+        Ophyd device object for EU3508.
+    regions : list of tuples
+        A list of tuples where each contains the `segment_type`, `ramp_rate`, `temperature` and `duration`.
+        The `segment_type` can be 'ramp' or 'dwell'.
+    last_region_end_type : str, default="reset"
+        EndType of the last segment. It can be either `reset` or `dwell`.
+    md : dict, optional
+        Optional metadata dictionary.
+    logger : Logger, optional
+        Optional logger for the plan.
+
+    See Also
+    --------
+    program_blower_segment :  Plan to program individual segments in the heating devices.
+    """
+    if logger is None:
+        getLogger(__file__)
+    _md = {
+        "plan_name": "program_eu3508",
+        "plan_args": {
+            "regions": regions,
+            "last_region_end_type": last_region_end_type,
+        },
+        "devices": [f"{heating_device.name}"],
+    }
+
+    _md.update(md)
+    *regions, last_region = regions  # separate the last region to set it's end_type.
+
+    def inner():  # numpydoc ignore=GL08
+        yield from monitor(
+            heating_device.readback, name=f"{heating_device.name}_readback"
+        )
+        yield from monitor(
+            heating_device.setpoint, name=f"{heating_device.name}_setpoint"
+        )
+
+        if len(regions) > 0:
+            for i, (segment_type, ramp_rate, temperature, duration) in enumerate(
+                regions
+            ):
+                logger.info(f"Configuring Segment # {i}")
+                yield from program_eu3508_segment(
+                    heating_device=heating_device,
+                    segment_type=segment_type,
+                    ramp_rate=ramp_rate,
+                    temperature=temperature,
+                    duration=duration,
+                    run=True,
+                    logger=logger,
+                )
+
+        logger.info("Configuring Last Segment")
+        (
+            last_segment_type,
+            last_segment_rate,
+            last_segment_temp,
+            last_segment_duration,
+        ) = last_region
+        yield from program_eu3508_segment(
+            heating_device=heating_device,
+            segment_type=last_segment_type,
+            ramp_rate=last_segment_rate,
+            temperature=last_segment_temp,
+            duration=last_segment_duration,
+            end_type=last_region_end_type,
+            run=True,
+            logger=logger,
+        )
+        yield from unmonitor(heating_device.readback)
+        yield from unmonitor(heating_device.setpoint)
+
+    yield from open_run(md=_md)
+    yield from inner()
+    yield from close_run("success")
