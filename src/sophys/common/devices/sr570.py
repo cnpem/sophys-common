@@ -1,4 +1,4 @@
-from enum import Enum
+from enum import Enum  # numpydoc ignore=GL08
 
 from ophyd import Component, Device, EpicsSignal
 
@@ -34,22 +34,25 @@ SR570_SCALES = [
 
 
 class GainUnits(int, Enum):
-    pA_V = 0
-    nA_V = 1
-    uA_V = 2
-    mA_V = 3
+    """Gain units for the SR570 pre-amplifier."""
+
+    PA_V = 0
+    NA_V = 1
+    UA_V = 2
+    MA_V = 3
 
 
 class GainModes(str, Enum):
+    """Gain modes for the SR570 pre-amplifier."""
+
     HIGH_BW = "HIGH BW"
     LOW_NOISE = "LOW NOISE"
     LOW_DRIFT = "LOW DRIFT"
 
 
 class SR570(Device):
-    """
-    Stanford SR570 pre-amplifier ophyd device.
-    """
+    """Stanford SR570 pre-amplifier ophyd device."""
+
     sensitivity_value = Component(EpicsSignal, "sens_num", kind="normal", string=True)
     sensitivity_unit = Component(EpicsSignal, "sens_unit", kind="normal", string=True)
 
