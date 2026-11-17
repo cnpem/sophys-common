@@ -36,10 +36,10 @@ SR570_SCALES = [
 class GainUnits(int, Enum):
     """Gain units for the SR570 pre-amplifier."""
 
-    PA_V = 0
-    NA_V = 1
-    UA_V = 2
-    MA_V = 3
+    pA_V = 0
+    nA_V = 1
+    uA_V = 2
+    mA_V = 3
 
 
 class GainModes(str, Enum):
