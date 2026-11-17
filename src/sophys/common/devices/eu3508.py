@@ -94,23 +94,37 @@ class EU3508Status(Device):
     power = Component(EpicsSignalRO, "LOOP1:O:RBV", kind="config")
 
 
-def _createSegmentComponents(cls=EU3508Segment, prog_num: str = "0", kind="config"):
+def _create_segment_components(
+    segment_class: type = EU3508Segment,
+    prog_num: str = "0",
+    num_segments: int = 2,
+    kind: str = "config",
+):
     """
     Creates a dictionary that is passed to `create_device_from_components`.
     The dictionary's entries signature is `{"s{i}": Component(cls, "PROG{prog_num}:S{i}:", kind="config)}`
 
     Parameters
     ----------
-    cls: class
+    segment_class : class, default=EU3508Segment
         Class of signal/device to be created inside the parent.
+    prog_num : str, default="0"
+        Programming number of the EU3508 IOC.
+    num_segments : int, deafult=2
+        Number of segments to be created.
+    kind : str or `ophyd.Kind`, optional
+        Parameter passed to the signal/device. Deafults to "config".
 
-    kind: str or `ophyd.Kind`
-        Parameter passed to the signal/device.
+    Returns
+    -------
+    dict
+        Dictionary with the `Component`s configuration.
+        It's signature is `{"s{i}": Component(segment_class, "PROG{prog_num}:S{i}:", kind="config)}`.
     """
     components = {}
-    for i in range(15):
+    for i in range(num_segments):
         components.update(
-            {f"s{i}": Component(cls, f"PROG{prog_num}:S{i + 1}:", kind=kind)}
+            {f"s{i}": Component(segment_class, f"PROG{prog_num}:S{i + 1}:", kind=kind)}
         )
     return components
 
@@ -133,7 +147,7 @@ class EU3508(Device, FlyerInterface):
     status = Component(EU3508Status, "", kind="config")
     segment_status = Component(EU3508SegmentStatus, "PROG:", kind="config")
     segment = Component(
-        create_device_from_components("segment", **_createSegmentComponents()), ""
+        create_device_from_components("segment", **_create_segment_components()), ""
     )
 
     def kickoff(self):  # numpydoc ignore=GL08
