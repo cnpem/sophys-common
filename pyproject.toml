@@ -37,6 +37,7 @@ dev = [
   "pytest-cov",
   "pytest-virtualenv",
   "caproto!=1.2.0",
+  "testcontainers[kafka]",
 ]
 kafka = []
 registry = []

@@ -25,10 +25,8 @@ jobs:
           fetch-tags: true
       - name: Install package
         run: pip install ".[all]"
-      - name: Run Kafka
-        uses: spicyparrot/kafka-kraft-action@v1.1.3
-        with:
-          kafka-version: "3.6.1"
-          kafka-topics: "test_bluesky_raw_docs,1"
       - name: Run pytest
         run: pytest -vvv
+        env:
+          # Testcontainers reads this to avoid pulling images in parallel on slow networks
+          DOCKER_BUILDKIT: 1
