@@ -11,13 +11,15 @@ from bluesky.plan_stubs import (
     kickoff,
     complete,
     collect,
-    monitor,
-    unmonitor,
     open_run,
     close_run,
     stop,
-    sleep,
 )
+from bluesky.preprocessors import (
+    monitor_during_wrapper,
+    contingency_wrapper,
+)
+from bluesky.utils import RunEngineControlException
 from logging import getLogger
 
 logger = getLogger("sophys.common.plans.in_situ")
@@ -195,6 +197,32 @@ def check_eu3508_regions(regions: List[Tuple[Literal["ramp", "dwell"]]]):
                 )
 
 
+def eu3508_run_wrapper(plan, heating_device: EU3508, md: dict = None):
+    """
+    Contingency plan for EU3508 device. It stops the equipment, bringing it's setopint to 11°C.
+
+    Parameters
+    ----------
+    plan : iterable or iterator
+        A generator, list, or similar containing Msg objects.
+    heating_device : EU3508
+        An instance of the EU3508 Ophyd device object.
+    md : dict, optional
+        Metadata to be passed into the 'open_run' message.
+    """
+    rs_uid = yield from open_run(md)
+
+    def except_plan(e):  # numpydoc ignore=GL08
+        yield from stop(heating_device)
+        if isinstance(e, RunEngineControlException):
+            yield from close_run(exit_status=e.exit_status)
+        else:
+            yield from close_run(exit_status="fail", reason=str(e))
+
+    yield from contingency_wrapper(plan, except_plan=except_plan, else_plan=close_run)
+    return rs_uid
+
+
 def program_eu3508(
     heating_device: EU3508,
     regions: List[
@@ -249,12 +277,6 @@ def program_eu3508(
     *regions, last_region = regions  # separate the last region to set it's end_type.
 
     def inner():  # numpydoc ignore=GL08
-        yield from monitor(
-            heating_device.readback, name=f"{heating_device.name}_readback"
-        )
-        yield from monitor(
-            heating_device.setpoint, name=f"{heating_device.name}_setpoint"
-        )
 
         if len(regions) > 0:
             for i, (segment_type, ramp_rate, temperature, duration) in enumerate(
@@ -286,21 +308,8 @@ def program_eu3508(
             end_type=last_region_end_type,
             run=True,
         )
-        yield from unmonitor(heating_device.readback)
-        yield from unmonitor(heating_device.setpoint)
 
-    yield from open_run(md=_md)
-    yield from inner()
-    yield from close_run("success")
-
-
-def eu3508_contingency_plan(heating_device: EU3508):
-    """
-    Contingency plan for EU3508 device. It stops the equipment, bringing it's setopint to 11°C.
-
-    Parameters
-    ----------
-    heating_device : EU3508
-        An instance of the EU3508 Ophyd device object.
-    """
-    yield from stop(heating_device)
+    yield from monitor_during_wrapper(
+        eu3508_run_wrapper(inner(), heating_device, md=_md),
+        [heating_device.readback, heating_device.setpoint],
+    )
