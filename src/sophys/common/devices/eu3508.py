@@ -4,6 +4,7 @@ from ophyd.status import StableSubscriptionStatus
 from ophyd.flyers import FlyerInterface
 from ophyd.device import create_device_from_components
 from time import time as ttime
+from ..utils.signals import EpicsSignalWithDotRBV
 
 
 # --- Enums for mbbi PVs --- #
@@ -34,13 +35,6 @@ class EU3508ProgStatusType(IntEnum):
     END = 4
 
 
-class EpicsSignalWithRBV(EpicsSignal):  # numpydoc ignore=PR01
-    """An Epics signal with `write_pv` being `pvname` and `read_pv` being `pvname:RBV`."""
-
-    def __init__(self, prefix, **kwargs):  # numpydoc ignore=GL08
-        super().__init__(prefix + ":RBV", write_pv=prefix, **kwargs)
-
-
 class EU3508PID(Device):
     """PID control PVs of EU3508."""
 
@@ -63,14 +57,16 @@ class EU3508PID(Device):
 class EU3508Segment(Device):
     """Segment configuration PVs of EU3508."""
 
-    duration = Component(EpicsSignalWithRBV, "DUR", kind="config", write_timeout=10)
+    duration = Component(EpicsSignalWithDotRBV, "DUR", kind="config", write_timeout=10)
     end_type = Component(
-        EpicsSignalWithRBV, "ENDTYP", string=True, kind="config", write_timeout=10
+        EpicsSignalWithDotRBV, "ENDTYP", string=True, kind="config", write_timeout=10
     )
-    ramp_rate = Component(EpicsSignalWithRBV, "RT", kind="config", write_timeout=10)
-    temperature = Component(EpicsSignalWithRBV, "TGT", kind="config", write_timeout=10)
+    ramp_rate = Component(EpicsSignalWithDotRBV, "RT", kind="config", write_timeout=10)
+    temperature = Component(
+        EpicsSignalWithDotRBV, "TGT", kind="config", write_timeout=10
+    )
     type = Component(
-        EpicsSignalWithRBV, "TYP", string=True, kind="config", write_timeout=10
+        EpicsSignalWithDotRBV, "TYP", string=True, kind="config", write_timeout=10
     )
 
 
