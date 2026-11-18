@@ -91,39 +91,6 @@ def program_eu3508_segment(
     )  # write segment type
 
     if segment_type_enum_map[segment_type] == SegmentType.RAMP_RATE:
-        if any(param is None for param in [temperature, ramp_rate]):
-            raise EU3508ProgrammingError(
-                "The parameters 'temperature' and 'ramp_rate' are both required when programming a Ramp segment."
-            )
-
-        if temperature < 30:
-            logger.warning(
-                f"Received target temperature: {temperature}°C below minimum of 30°C."
-            )
-            logger.warning("Changing target temperature to 30°C.")
-            temperature = 30
-
-        if temperature > 1000:
-            logger.warning(
-                f"Received target temperature: {temperature}°C above maximum of 1000°C."
-            )
-            logger.warning("Changing target temperature to 1000°C.")
-            temperature = 1000
-
-        if ramp_rate > 10:
-            logger.warning(
-                f"Received ramp rate: {ramp_rate}°C/min above maximum of 10°C/min."
-            )
-            logger.warning("Changing ramp rate to 10°C/min.")
-            ramp_rate = 10
-
-        if temperature > 400 and ramp_rate > 5:
-            logger.warning(
-                f"Received {ramp_rate}°C/min as ramp rate for target {temperature}°C. "
-                "The maximum rate for targets higher than 400°C is 5°C/min."
-            )
-            logger.warning("Changing ramp rate to 5°C/min.")
-            ramp_rate = 5
 
         logger.info(
             f"Segment configuration - Ramp Rate: {ramp_rate} °C/min; Target temperature: {temperature} °C"
@@ -133,10 +100,7 @@ def program_eu3508_segment(
         yield from mv(heating_device.segment.s0.ramp_rate, ramp_rate)
 
     elif segment_type_enum_map[segment_type] == SegmentType.DWELL:
-        if duration is None:
-            raise EU3508ProgrammingError(
-                "The parameter 'duration' is required when programming a Dwell segment."
-            )
+
         logger.info(f"Segment configuration - Dwell duration: {duration} min")
         yield from mv(heating_device.segment.s0.duration, duration * 60)
 
@@ -156,6 +120,71 @@ def program_eu3508_segment(
     if run:
         yield from inner()
     logger.info("Plan finished successfully!")
+
+
+def check_eu3508_regions(regions: List[Tuple[Literal["ramp", "dwell"]]]):
+    """
+    Check the each region parameter of `regions` and raises `Exceptions` if needed.
+
+    Parameters
+    ----------
+    regions : list of tuples
+        A list of tuples where each contains the `segment_type`, `ramp_rate`, `temperature` and `duration`.
+        The `segment_type` can be 'ramp' or 'dwell'.
+    """
+    if len(regions) == 0:
+        raise EU3508ProgrammingError(
+            "Received an empty list! At least one region is needed to program the device!"
+        )
+    for region in regions:
+        (
+            segment_type,
+            segment_rate,
+            segment_temp,
+            segment_duration,
+        ) = region
+        if segment_type not in segment_type_enum_map.keys():  # Check segment type
+            raise EU3508ProgrammingError(
+                f"Received '{segment_type}' as segment type. Valid values are 'ramp' and 'dwell'."
+            )
+        if segment_type_enum_map[segment_type] == SegmentType.RAMP_RATE:
+
+            if not isinstance(segment_temp, (int, float)):  # Check temp type
+                raise EU3508ProgrammingError(
+                    f"Non-valid type {type(segment_temp)} for temperature parameter. Valid types are int and float."
+                )
+
+            if not isinstance(segment_rate, (int, float)):  # Check rate type
+                raise EU3508ProgrammingError(
+                    f"Non-valid type {type(segment_rate)} for rate parameter. Valid types are int and float."
+                )
+
+            if segment_temp < 30 or segment_temp > 1000:  # Check temp range
+                raise EU3508ProgrammingError(
+                    f"Target temperature: {segment_temp} °C outside valid range of [30, 100] °C."
+                )
+
+            if segment_rate < 0 or segment_rate > 10:  # Check rate range
+                raise EU3508ProgrammingError(
+                    f"Segment rate: {segment_rate} °C/min outside valid range of [0, 10] °C/min."
+                )
+
+            if segment_temp > 400 and segment_rate > 5:  # Check temp and rate range
+                raise EU3508ProgrammingError(
+                    f"Received {segment_rate} °C/min as ramp rate for target {segment_temp} °C. The maximum rate for targets higher than 400 °C is 5 °C/min."
+                )
+
+        elif segment_type_enum_map[segment_type] == SegmentType.DWELL:
+
+            if not isinstance(segment_duration, (int, float)):  # Check dwell type
+                raise EU3508ProgrammingError(
+                    f"Non-valid type {type(segment_duration)} for duration parameter. Valid types are int and float."
+                )
+
+            if segment_duration <= 0:  # Check dwell range
+                raise EU3508ProgrammingError(
+                    f"Negative value for dwell duration: {segment_duration}."
+                )
 
 
 def program_eu3508(
@@ -190,12 +219,15 @@ def program_eu3508(
     --------
     program_blower_segment :  Plan to program individual segments in the heating devices.
     """
-    if heating_device.running.get() != EU3508ProgStatusType.NOT_RUNNING:
-        logger.warning(
-            f"Device {heating_device.name} is not in 'Not Running' state, so the device will be stopped."
+    check_eu3508_regions(regions)  # first of all check regions parameter
+    heating_device_status = heating_device.running.get()
+    if heating_device_status not in {
+        EU3508ProgStatusType.NOT_RUNNING,
+        EU3508ProgStatusType.END,
+    }:
+        raise EU3508ProgrammingError(
+            "EU308 device is not ready for a new programming. Please check if another program is in progress."
         )
-        yield from stop(heating_device)
-        yield from sleep(5)
     _md = {
         "plan_name": "program_eu3508",
         "plan_args": {
