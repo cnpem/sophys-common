@@ -74,6 +74,12 @@ def program_eu3508_segment(
         Whether or not to block the Queue when runnig the programed
         experiment.
 
+    Returns
+    -------
+    Status
+        Complete Status of the `heating_device`.
+        If not blocking queue, the status will always be complete.
+
     Notes
     -----
     This plan always program the segment in the same slot of the available segments of the device.
@@ -108,18 +114,20 @@ def program_eu3508_segment(
     yield from mv(heating_device.segment.s1.end_type, end_type_enum_map[end_type])
 
     def inner():  # numpydoc ignore=GL08
+        logger.info(f"Starting {heating_device.name} device!")
+        yield from kickoff(
+            heating_device, wait=True
+        )  # we can start for both cases and wait, since what actually is lenghty is the complete
         if block_queue:
-            logger.info(f"Starting {heating_device.name} and blocking queue!")
-            yield from kickoff(heating_device, wait=True)
-            yield from complete(heating_device, wait=True)
+            st = yield from complete(heating_device, wait=True)
             yield from collect(heating_device)
         else:
-            logger.info(f"Starting {heating_device.name} whithout blocking queue!")
-            yield from mv(heating_device.start, 1)
+            st = yield from complete(heating_device, wait=False)
+        return st
 
     if run:
-        yield from inner()
-    logger.info("Plan finished successfully!")
+        st = yield from inner()
+        return st
 
 
 def check_eu3508_regions(regions: List[Tuple[Literal["ramp", "dwell"]]]):
@@ -217,7 +225,7 @@ def program_eu3508(
 
     See Also
     --------
-    program_blower_segment :  Plan to program individual segments in the heating devices.
+    program_eu3508_segment :  Plan to program individual segments in the heating devices.
     """
     check_eu3508_regions(regions)  # first of all check regions parameter
     heating_device_status = heating_device.running.get()
