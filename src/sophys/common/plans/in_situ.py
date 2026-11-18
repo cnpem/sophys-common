@@ -18,7 +18,9 @@ from bluesky.plan_stubs import (
     stop,
     sleep,
 )
-from logging import getLogger, Logger
+from logging import getLogger
+
+logger = getLogger("sophys.common.plans.in_situ")
 
 
 segment_type_enum_map = MappingProxyType(
@@ -43,7 +45,6 @@ def program_eu3508_segment(
     end_type: Literal["reset", "dwell"] = "dwell",
     run: bool = False,
     block_queue: bool = True,
-    logger: Optional[Logger] = None,
 ):
     """
     Program a segment in an Eurotherm EU3508 device.
@@ -72,8 +73,6 @@ def program_eu3508_segment(
     block_queue : bool, default=True
         Whether or not to block the Queue when runnig the programed
         experiment.
-    logger : Logger, optional
-        Optional logger for the plan.
 
     Notes
     -----
@@ -85,8 +84,6 @@ def program_eu3508_segment(
     This means, that the first segment is always used to program the 'segment_type'
     and that the second segment is always programmed as an END segment with 'end_type'.
     """
-    if logger is None:
-        logger = getLogger(__file__)
     logger.info(f"Programming {heating_device.name}")
     logger.info(f"Programming segment type as {segment_type}")
     yield from mv(
@@ -101,7 +98,7 @@ def program_eu3508_segment(
 
         if temperature < 30:
             logger.warning(
-                f"Received target temperature: {temperature}°C bellow minimum of 30°C."
+                f"Received target temperature: {temperature}°C below minimum of 30°C."
             )
             logger.warning("Changing target temperature to 30°C.")
             temperature = 30
@@ -173,7 +170,6 @@ def program_eu3508(
     ],
     last_region_end_type: Literal["reset", "dwell"] = "reset",
     md: dict = {},
-    logger: Optional[Logger] = None,
 ):
     """
     Program and run a list of segments (or regions) with the 'EU3508' device.
@@ -189,15 +185,11 @@ def program_eu3508(
         EndType of the last segment. It can be either `reset` or `dwell`.
     md : dict, optional
         Optional metadata dictionary.
-    logger : Logger, optional
-        Optional logger for the plan.
 
     See Also
     --------
     program_blower_segment :  Plan to program individual segments in the heating devices.
     """
-    if logger is None:
-        getLogger(__file__)
     if heating_device.running.get() != EU3508ProgStatusType.NOT_RUNNING:
         logger.warning(
             f"Device {heating_device.name} is not in 'Not Running' state, so the device will be stopped."
@@ -236,7 +228,6 @@ def program_eu3508(
                     temperature=temperature,
                     duration=duration,
                     run=True,
-                    logger=logger,
                 )
 
         logger.info("Configuring Last Segment")
@@ -254,7 +245,6 @@ def program_eu3508(
             duration=last_segment_duration,
             end_type=last_region_end_type,
             run=True,
-            logger=logger,
         )
         yield from unmonitor(heating_device.readback)
         yield from unmonitor(heating_device.setpoint)
