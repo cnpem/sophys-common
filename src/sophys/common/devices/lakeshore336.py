@@ -1,146 +1,166 @@
 from ophyd import (  # numpydoc ignore=GL08
+    Component,
     Device,
     EpicsSignal,
     EpicsSignalRO,
     FormattedComponent,
 )
+from ophyd.pv_positioner import PVPositionerIsClose
 
 
-class Lakeshore336LoopControl(Device):
+class Lakeshore336LoopControl(PVPositionerIsClose):
     """
-    Loop control and general parameter configuration on the Lakeshore336.
+    Temperature loop control for a Lakeshore 336.
 
     Parameters
     ----------
     prefix : str
-        The EPICS prefix for the Lakeshore336.
+        The prefix for the EPICS PVs.
     loop_number : int
-        The loop number to control (1 or 2).
+        The loop number (1 or 2).
+    settle_time : float, optional
+        The time to wait for the temperature to settle after a setpoint change, in seconds.
     **kwargs : dict
-        Additional keyword arguments are passed to the Device constructor.
+        Additional keyword arguments to pass to the parent class.
     """
 
-    temp = FormattedComponent(EpicsSignalRO, "{prefix}TEMP{loop_number}")
+    setpoint = FormattedComponent(
+        EpicsSignal,
+        "{prefix}TEMP{loop_number}:SP:RBV",
+        write_pv="{prefix}TEMP{loop_number}:SP",
+    )
 
-    temp_sp = FormattedComponent(EpicsSignal, "{prefix}TEMP{loop_number}:SP")
-    temp_sp_rbv = FormattedComponent(EpicsSignalRO, "{prefix}TEMP{loop_number}:SP:RBV")
+    readback = FormattedComponent(
+        EpicsSignalRO,
+        "{prefix}TEMP{loop_number}",
+        kind="hinted",
+    )
+
+    atol = 0.1  # in Kelvin
 
     heater = FormattedComponent(
         EpicsSignalRO,
         "{prefix}HEATER{loop_number}:OUTPUT",
-        auto_monitor=True,
         kind="normal",
     )
-    heater_range_sp = FormattedComponent(
+
+    heater_range = FormattedComponent(
         EpicsSignal,
-        "{prefix}HEATER{loop_number}:RANGE:SP",
-        auto_monitor=True,
-        string=True,
-    )
-    heater_range_rbv = FormattedComponent(
-        EpicsSignalRO,
         "{prefix}HEATER{loop_number}:RANGE:SP:RBV",
-        auto_monitor=True,
+        write_pv="{prefix}HEATER{loop_number}:RANGE:SP",
         string=True,
+        kind="config",
     )
 
-    # Lakeshore configuration
-    pid_P_sp = FormattedComponent(
-        EpicsSignal, "{prefix}P{loop_number}:SP", kind="config"
-    )
-    pid_P_rbv = FormattedComponent(
-        EpicsSignalRO, "{prefix}P{loop_number}:SP:RBV", kind="config"
-    )
-
-    pid_I_sp = FormattedComponent(
-        EpicsSignal, "{prefix}I{loop_number}:SP", kind="config"
-    )
-    pid_I_rbv = FormattedComponent(
-        EpicsSignalRO, "{prefix}I{loop_number}:SP:RBV", kind="config"
+    pid_P = FormattedComponent(
+        EpicsSignal,
+        "{prefix}P{loop_number}:SP:RBV",
+        write_pv="{prefix}P{loop_number}:SP",
+        kind="config",
     )
 
-    pid_D_sp = FormattedComponent(
-        EpicsSignal, "{prefix}D{loop_number}:SP", kind="config"
-    )
-    pid_D_rbv = FormattedComponent(
-        EpicsSignalRO, "{prefix}D{loop_number}:SP:RBV", kind="config"
-    )
-
-    ramp_rate_sp = FormattedComponent(EpicsSignal, "{prefix}RAMP_RATE{loop_number}:SP")
-    ramp_rate_rbv = FormattedComponent(
-        EpicsSignalRO, "{prefix}RAMP_RATE{loop_number}:SP:RBV"
+    pid_I = FormattedComponent(
+        EpicsSignal,
+        "{prefix}I{loop_number}:SP:RBV",
+        write_pv="{prefix}I{loop_number}:SP",
+        kind="config",
     )
 
-    ramp_on_sp = FormattedComponent(EpicsSignal, "{prefix}RAMP_ON{loop_number}:SP")
-    ramp_on_rbv = FormattedComponent(
-        EpicsSignalRO, "{prefix}RAMP_ON{loop_number}:SP:RBV"
+    pid_D = FormattedComponent(
+        EpicsSignal,
+        "{prefix}D{loop_number}:SP:RBV",
+        write_pv="{prefix}D{loop_number}:SP",
+        kind="config",
     )
 
-    control_sp = FormattedComponent(
-        EpicsSignal, "{prefix}CTRL_IN{loop_number}:SP", kind="config"
-    )
-    control_rbv = FormattedComponent(
-        EpicsSignalRO, "{prefix}CTRL_IN{loop_number}:SP:RBV", kind="config"
-    )
-
-    manual_sp = FormattedComponent(EpicsSignal, "{prefix}MANUAL_OUT{loop_number}:SP")
-    manual_rbv = FormattedComponent(
-        EpicsSignalRO, "{prefix}MANUAL_OUT{loop_number}:SP:RBV"
+    ramp_rate = FormattedComponent(
+        EpicsSignal,
+        "{prefix}RAMP_RATE{loop_number}:SP:RBV",
+        write_pv="{prefix}RAMP_RATE{loop_number}:SP",
+        kind="config",
     )
 
-    mode_sp = FormattedComponent(
-        EpicsSignal, "{prefix}OUT_MODE{loop_number}:SP", kind="config"
-    )
-    mode_rbv = FormattedComponent(
-        EpicsSignalRO, "{prefix}OUT_MODE{loop_number}:SP:RBV", kind="config"
+    ramp_on = FormattedComponent(
+        EpicsSignal,
+        "{prefix}RAMP_ON{loop_number}:SP:RBV",
+        write_pv="{prefix}RAMP_ON{loop_number}:SP",
+        kind="config",
     )
 
-    def __init__(self, prefix, loop_number, **kwargs):
+    control = FormattedComponent(
+        EpicsSignal,
+        "{prefix}CTRL_IN{loop_number}:SP:RBV",
+        write_pv="{prefix}CTRL_IN{loop_number}:SP",
+        kind="config",
+    )
+
+    manual_out = FormattedComponent(
+        EpicsSignal,
+        "{prefix}MANUAL_OUT{loop_number}:SP:RBV",
+        write_pv="{prefix}MANUAL_OUT{loop_number}:SP",
+        kind="config",
+    )
+
+    mode = FormattedComponent(
+        EpicsSignal,
+        "{prefix}OUT_MODE{loop_number}:SP:RBV",
+        write_pv="{prefix}OUT_MODE{loop_number}:SP",
+        kind="config",
+    )
+
+    def __init__(
+        self,
+        prefix: str,
+        loop_number: int,
+        settle_time: float = 0.0,
+        **kwargs,
+    ):
         """
         Initialize the Lakeshore336LoopControl device.
 
         Parameters
         ----------
         prefix : str
-            The EPICS prefix for the Lakeshore336.
+            The prefix for the EPICS PVs.
         loop_number : int
-            The loop number to control (1 or 2).
+            The loop number (1 or 2).
+        settle_time : float, optional
+            The time to wait for the temperature to settle after a setpoint change, in seconds.
         **kwargs : dict
-            Additional keyword arguments are passed to the Device constructor.
+            Additional keyword arguments to pass to the parent class.
         """
+
+        if loop_number not in (1, 2):
+            raise ValueError("loop_number must be 1 or 2.")
 
         self.loop_number = loop_number
-        super().__init__(prefix=prefix, **kwargs)
-        self._settle_time = 0
+        self._paused_setpoint: float | None = None
 
-    @property
-    def settle_time(self):
-        """Settle time in seconds to wait after a setpoint change before reading the temperature."""
-
-        return self._settle_time
-
-    @settle_time.setter
-    def settle_time(self, value):
-        """
-        Settle time in seconds to wait after a setpoint change before reading the temperature.
-
-        Parameters
-        ----------
-        value : float
-            The settle time in seconds. Must be greater than or equal to 0.
-        """
-        if value < 0:
-            raise ValueError("Settle value needs to be >= 0.")
-        self._settle_time = value
+        super().__init__(prefix=prefix, settle_time=settle_time, **kwargs)
 
     def pause(self):
-        """Change setpoint to current position."""
+        """Hold the current temperature by setting the loop setpoint to the current readback value."""
+        current_sp = self.setpoint.get()
+        current_temp = self.readback.get()
+        self._paused_setpoint = current_sp
+        return self.set(current_temp)
 
-        self.temp_sp.put(self.temp)
+    def resume(self):
+        """
+        Restore the setpoint saved by `pause()`.
+
+        Returns
+        -------
+        Status
+            The status object returned by `set()`.
+        """
+        if self._paused_setpoint is None:
+            raise RuntimeError("No paused setpoint stored. Call pause() first.")
+        return self.set(self._paused_setpoint)
 
 
 class Lakeshore336(Device):
     """Lakeshore336 temperature controller ophyd device."""
 
-    loop1 = FormattedComponent(Lakeshore336LoopControl, "{prefix}", loop_number=1)
-    loop2 = FormattedComponent(Lakeshore336LoopControl, "{prefix}", loop_number=2)
+    loop1 = Component(Lakeshore336LoopControl, "", loop_number=1)
+    loop2 = Component(Lakeshore336LoopControl, "", loop_number=2)
