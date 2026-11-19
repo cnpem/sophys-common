@@ -1,4 +1,4 @@
-import copy
+import copy  # numpydoc ignore=GL08
 import typing
 
 from collections import OrderedDict
@@ -79,7 +79,7 @@ def add_components_to_device(
             for_each_sig(name=component_name, sig=obj._signals[component_name])
 
 
-class EpicsSignalWithCustomReadout(EpicsSignal):
+class EpicsSignalWithCustomReadout(EpicsSignal):  # numpydoc ignore=PR01
     """
     An EpicsSignal subclass extending the validation of the result of a 'set' operation.
 
@@ -93,7 +93,9 @@ class EpicsSignalWithCustomReadout(EpicsSignal):
         If not set, defaults to not trying any type conversion (the default EpicsSignal behavior).
     """
 
-    def __init__(self, read_pv, write_pv, enforce_type=None, **kwargs):
+    def __init__(
+        self, read_pv, write_pv, enforce_type=None, **kwargs
+    ):  # numpydoc ignore=GL08
         super(EpicsSignalWithCustomReadout, self).__init__(
             read_pv=read_pv, write_pv=write_pv, **kwargs
         )
@@ -116,22 +118,24 @@ class EpicsSignalWithCustomReadout(EpicsSignal):
         Parameters
         ----------
         value : any
+            The value to be set.
         expected_readout : any, optional
             Expected value of the 'read_pv' after successfully setting the value.
             If not set, defaults to 'value'.
         timeout : float, optional
             Maximum time to wait.
-        settle_time: float, optional
+        settle_time : float, optional
             Delay after the set() has completed to indicate completion
-            to the caller
+            to the caller.
 
         Returns
         -------
-        st : Status
+        Status
+            Ophyd Status object.
 
         See Also
         --------
-        EpicsSignal.set
+        EpicsSignal.set : Deault behavior of `set` for an `EpicsSignal`.
         """
         self._expected_readout = (
             expected_readout if expected_readout is not None else value
@@ -151,7 +155,7 @@ class EpicsSignalWithCustomReadout(EpicsSignal):
         )
 
     @contextmanager
-    def no_implicit_tolerance(self):
+    def no_implicit_tolerance(self):  # numpydoc ignore=GL08
         self._old_tolerance = self.tolerance
         self._old_rtolerance = self.rtolerance
 
@@ -163,7 +167,7 @@ class EpicsSignalWithCustomReadout(EpicsSignal):
         self.tolerance = self._old_tolerance
         self.rtolerance = self._old_rtolerance
 
-    def _set_and_wait(self, value, timeout, **kwargs):
+    def _set_and_wait(self, value, timeout, **kwargs):  # numpydoc ignore=GL08
         self.put(value, **kwargs)
 
         atol = self.tolerance if not hasattr(self._expected_readout, "atol") else None
@@ -180,25 +184,27 @@ class EpicsSignalWithCustomReadout(EpicsSignal):
             )
 
 
-class EpicsSignalWithCustomReadoutRBV(EpicsSignalWithCustomReadout):
+class EpicsSignalWithCustomReadoutRBV(
+    EpicsSignalWithCustomReadout
+):  # numpydoc ignore=PR01
     """An EpicsSignalWithCustomReadout subclass setting the read_pv to 'write_pv + _RBV' by default."""
 
-    def __init__(self, write_pv, **kwargs):
+    def __init__(self, write_pv, **kwargs):  # numpydoc ignore=GL08
         super().__init__(read_pv=write_pv + "_RBV", write_pv=write_pv, **kwargs)
 
 
-class EpicsSignalMon(EpicsSignalRO):
-    def __init__(self, prefix, **kwargs):
+class EpicsSignalMon(EpicsSignalRO):  # numpydoc ignore=GL08
+    def __init__(self, prefix, **kwargs):  # numpydoc ignore=GL08
         super().__init__(prefix + "-Mon", **kwargs)
 
 
-class EpicsSignalWithRetryRO(EpicsSignalRO):
+class EpicsSignalWithRetryRO(EpicsSignalRO):  # numpydoc ignore=GL08
 
-    def __init__(self, *args, retries=3, **kwargs):
+    def __init__(self, *args, retries=3, **kwargs):  # numpydoc ignore=GL08
         super().__init__(*args, **kwargs)
         self.retries = retries
 
-    def describe(self):
+    def describe(self):  # numpydoc ignore=GL08
         res = OrderedDict()
         for retry_count in range(0, self.retries):
             try:
@@ -210,7 +216,7 @@ class EpicsSignalWithRetryRO(EpicsSignalRO):
                 )
         return res
 
-    def read(self):
+    def read(self):  # numpydoc ignore=GL08
         res = OrderedDict()
         for retry_count in range(0, self.retries):
             try:
@@ -223,54 +229,51 @@ class EpicsSignalWithRetryRO(EpicsSignalRO):
         return res
 
 
-class EpicsSignalWithGetSet(EpicsSignal):
+class EpicsSignalWithGetSet(EpicsSignal):  # numpydoc ignore=PR01
     """
-    A simple Signal with a similar logic of EpicsSignalWithRBV, but
-    pvname has the 'get' prefix and write_pv has the 'set' prefix.
+    A simple Signal with a similar logic of EpicsSignalWithRBV, but pvname has the 'get' prefix and write_pv has the 'set' prefix.
     """
 
-    def __init__(self, prefix, ssuffix, **kwargs):
+    def __init__(self, prefix, ssuffix, **kwargs):  # numpydoc ignore=GL08
         super().__init__(
             f"{prefix}get{ssuffix}", write_pv=f"{prefix}set{ssuffix}", **kwargs
         )
 
 
-class EpicsSignalWithRBSP(EpicsSignal):
+class EpicsSignalWithRBSP(EpicsSignal):  # numpydoc ignore=PR01
     """
-    A simple Signal with a similar logic of EpicsSignalWithRBV, but
-    pvname is -RB and write_pv is -SP.
+    A simple Signal with a similar logic of EpicsSignalWithRBV, but pvname is -RB and write_pv is -SP.
     """
 
-    def __init__(self, prefix, **kwargs):
+    def __init__(self, prefix, **kwargs):  # numpydoc ignore=GL08
         super().__init__(prefix + "-RB", write_pv=prefix + "-SP", **kwargs)
 
 
-class EpicsSignalWithMonSP(EpicsSignal):
+class EpicsSignalWithMonSP(EpicsSignal):  # numpydoc ignore=PR01
     """
-    A simple Signal with a similar logic of EpicsSignalWithRBV, but
-    pvname is -Mon and write_pv is -SP.
+    A simple Signal with a similar logic of EpicsSignalWithRBV, but pvname is -Mon and write_pv is -SP.
     """
 
-    def __init__(self, prefix, **kwargs):
+    def __init__(self, prefix, **kwargs):  # numpydoc ignore=GL08
         super().__init__(prefix + "-Mon", write_pv=prefix + "-SP", **kwargs)
 
 
-class EpicsSignalCmd(EpicsSignal):
+class EpicsSignalCmd(EpicsSignal):  # numpydoc ignore=PR01
     """
     A EpicsSignal with Cmd added to prefix.
     """
 
-    def __init__(self, prefix, **kwargs):
+    def __init__(self, prefix, **kwargs):  # numpydoc ignore=GL08
         super().__init__(prefix + "-Cmd", **kwargs)
 
 
-def create_loose_comparator(common_type, readout):
+def create_loose_comparator(common_type, readout):  # numpydoc ignore=GL08
     ret = _LooseComparator(common_type)()
     ret._value = readout
     return ret
 
 
-def is_loose_comparator(obj):
+def is_loose_comparator(obj):  # numpydoc ignore=GL08
     return hasattr(obj, "_loose_comparator")
 
 
@@ -282,12 +285,14 @@ class _LooseComparator:
     For example, this can be used to automatically cast string variables into float for numerical comparisons.
     """
 
-    class _WrapperObjectMetaclass(type):
-        def __new__(cls, class_name, class_parents, class_attrs, common_type=object):
+    class _WrapperObjectMetaclass(type):  # numpydoc ignore=GL08
+        def __new__(
+            cls, class_name, class_parents, class_attrs, common_type=object
+        ):  # numpydoc ignore=GL08
             if "_value" not in class_attrs:
                 class_attrs["_value"] = None
 
-            def repr(self):
+            def repr(self):  # numpydoc ignore=GL08
                 return "Wrapper object: Value={}, Common type={}".format(
                     self._value, common_type
                 )
@@ -303,15 +308,15 @@ class _LooseComparator:
             ]
             # fmt: on
 
-            def create_binary_attr_impl(attr):
-                def attrs_impl(self, other):
+            def create_binary_attr_impl(attr):  # numpydoc ignore=GL08
+                def attrs_impl(self, other):  # numpydoc ignore=GL08
                     # Calls 'common_type(self) <attr> common_type(other)'
                     return getattr(common_type(self._value), attr)(common_type(other))
 
                 return attrs_impl
 
             # Special case for __eq__ and __ne__ to deal with tolerance
-            def eq_close(self, other):
+            def eq_close(self, other):  # numpydoc ignore=GL08
                 atol = getattr(self, "atol", 0) or 0
                 rtol = getattr(self, "rtol", 0) or 0
 
@@ -320,7 +325,7 @@ class _LooseComparator:
 
                 return np.isclose(a, b, atol=atol, rtol=rtol)
 
-            def ne_close(self, other):
+            def ne_close(self, other):  # numpydoc ignore=GL08
                 return not eq_close(self, other)
 
             class_attrs["__eq__"] = eq_close
@@ -332,7 +337,7 @@ class _LooseComparator:
 
             return super().__new__(cls, class_name, class_parents, class_attrs)
 
-    def __init__(self, common_type):
+    def __init__(self, common_type):  # numpydoc ignore=GL08
         class _WrapperObject(
             metaclass=_LooseComparator._WrapperObjectMetaclass, common_type=common_type
         ):
@@ -340,10 +345,11 @@ class _LooseComparator:
 
         self.__inner_cls = _WrapperObject
 
-    def __call__(self, arg=None):
+    def __call__(self, arg=None):  # numpydoc ignore=GL08
         ret = self.__inner_cls()
         ret._value = arg
         return ret
+
 
 class EpicsSignalWithDotRBV(EpicsSignal):  # numpydoc ignore=PR01
     """An Epics signal with `write_pv` being `pvname` and `read_pv` being `pvname:RBV`."""
