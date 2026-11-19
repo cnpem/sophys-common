@@ -1,4 +1,4 @@
-from enum import Enum, IntEnum  # numpydoc ignore=GL08
+from enum import IntEnum  # numpydoc ignore=GL08
 from ophyd import EpicsSignal, EpicsSignalRO, Component, Device
 from ophyd.status import StableSubscriptionStatus
 from ophyd.flyers import FlyerInterface
@@ -6,9 +6,14 @@ from ophyd.device import create_device_from_components
 from time import time as ttime
 from ..utils.signals import EpicsSignalWithDotRBV
 
+try:
+    from enum import StrEnum
+except ImportError:
+    from strenum import StrEnum
+
 
 # --- Enums for mbbi PVs --- #
-class SegmentType(str, Enum):
+class SegmentType(StrEnum):
     """Enum for EU3508/EU2408 segment types."""
 
     END = "End"
@@ -17,7 +22,7 @@ class SegmentType(str, Enum):
     DWELL = "Dwell"
 
 
-class SegmentEndType(str, Enum):
+class SegmentEndType(StrEnum):
     """Enum for EU2408 segment end types."""
 
     DWELL = "Dwell"
