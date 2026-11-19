@@ -5,7 +5,7 @@ from ..devices.eurotherm import (
     EU3508,
 )  # numpydoc ignore=GL08
 from types import MappingProxyType
-from typing import Literal, Optional, List, Tuple, Annotated
+from typing import Literal, Annotated
 from dataclasses import dataclass
 from bluesky.plan_stubs import (
     mv,
@@ -43,6 +43,9 @@ class EU3508ValueRange:
     max: float
 
 
+RegionType = tuple[Literal["ramp", "dwell"], int | float, int | float, int | float]
+
+
 class EU3508ProgrammingError(Exception):  # numpydoc ignore=GL08
     def __init__(self, *args):  # numpydoc ignore=GL08
         super().__init__(*args)
@@ -51,9 +54,9 @@ class EU3508ProgrammingError(Exception):  # numpydoc ignore=GL08
 def program_eu3508_segment(
     heating_device: EU3508,
     segment_type: Literal["ramp", "dwell"],
-    ramp_rate: Optional[Annotated[float, EU3508ValueRange(0.1, 10)]] = None,
-    temperature: Optional[Annotated[float, EU3508ValueRange(30, 1000)]] = None,
-    duration: Optional[Annotated[float, EU3508ValueRange(0.1, 1440)]] = None,
+    ramp_rate: Annotated[float, EU3508ValueRange(0.1, 10)] | None = None,
+    temperature: Annotated[float, EU3508ValueRange(30, 1000)] | None = None,
+    duration: Annotated[float, EU3508ValueRange(0.1, 1440)] | None = None,
     end_type: Literal["reset", "dwell"] = "dwell",
     run: bool = False,
     block_queue: bool = True,
@@ -78,13 +81,13 @@ def program_eu3508_segment(
         The target temperature in °C for the ramp segment.
     duration : float, optional
         The time spent in minutes during the dwell segment.
-    end_type : str
-        It can be either 'dwell' or 'reset'.
-    run : bool, default=False
-        Whether or not to start the programmed segment.
-    block_queue : bool, default=True
-        Whether or not to block the Queue when runnig the programed
-        experiment.
+    end_type : str, optional
+        It can be either 'dwell' or 'reset'. Defaults to 'dwell'.
+    run : bool, optional
+        Whether or not to start the programmed segment. Defaults to `False`.
+    block_queue : bool, optional
+        Whether or not to block the Queue when runnig the programed.
+        experiment. Defaults to `True`.
 
     Returns
     -------
@@ -142,7 +145,7 @@ def program_eu3508_segment(
         return st
 
 
-def check_eu3508_regions(regions: List[Tuple[Literal["ramp", "dwell"]]]):
+def check_eu3508_regions(regions: list[RegionType]):
     """
     Check the each region parameter of `regions` and raises `Exceptions` if needed.
 
@@ -207,7 +210,7 @@ def check_eu3508_regions(regions: List[Tuple[Literal["ramp", "dwell"]]]):
                 )
 
 
-def eu3508_run_wrapper(plan, heating_device: EU3508, md: dict = None):
+def eu3508_run_wrapper(plan, heating_device: EU3508, md: dict | None = None):
     """
     Contingency plan for EU3508 device. It stops the equipment, bringing it's setopint to 11°C.
 
@@ -235,14 +238,7 @@ def eu3508_run_wrapper(plan, heating_device: EU3508, md: dict = None):
 
 def program_eu3508(
     heating_device: EU3508,
-    regions: List[
-        Tuple[
-            Literal["ramp", "dwell"],
-            Annotated[float, EU3508ValueRange(0.1, 10)],
-            Annotated[float, EU3508ValueRange(30, 1000)],
-            Annotated[float, EU3508ValueRange(0.1, 1440)],
-        ]
-    ],
+    regions: list[RegionType],
     last_region_end_type: Literal["reset", "dwell"] = "reset",
     md: dict = {},
 ):
