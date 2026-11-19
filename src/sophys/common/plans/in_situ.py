@@ -5,7 +5,8 @@ from ..devices.eu3508 import (
     EU3508,
 )  # numpydoc ignore=GL08
 from types import MappingProxyType
-from typing import Literal, Optional, List, Tuple
+from typing import Literal, Optional, List, Tuple, Annotated
+from dataclasses import dataclass
 from bluesky.plan_stubs import (
     mv,
     kickoff,
@@ -33,6 +34,15 @@ end_type_enum_map = MappingProxyType(
 )  # read-only mapping dict
 
 
+# TODO: Add a validator inside this data class
+@dataclass
+class EU3508ValueRange:
+    """Value range for EU3508 segment parameters."""
+
+    min: float
+    max: float
+
+
 class EU3508ProgrammingError(Exception):  # numpydoc ignore=GL08
     def __init__(self, *args):  # numpydoc ignore=GL08
         super().__init__(*args)
@@ -41,9 +51,9 @@ class EU3508ProgrammingError(Exception):  # numpydoc ignore=GL08
 def program_eu3508_segment(
     heating_device: EU3508,
     segment_type: Literal["ramp", "dwell"],
-    ramp_rate: Optional[float] = None,
-    temperature: Optional[float] = None,
-    duration: Optional[float] = None,
+    ramp_rate: Optional[Annotated[float, EU3508ValueRange(0.1, 10)]] = None,
+    temperature: Optional[Annotated[float, EU3508ValueRange(30, 1000)]] = None,
+    duration: Optional[Annotated[float, EU3508ValueRange(0.1, 1440)]] = None,
     end_type: Literal["reset", "dwell"] = "dwell",
     run: bool = False,
     block_queue: bool = True,
@@ -228,9 +238,9 @@ def program_eu3508(
     regions: List[
         Tuple[
             Literal["ramp", "dwell"],
-            float,
-            float,
-            float,
+            Annotated[float, EU3508ValueRange(0.1, 10)],
+            Annotated[float, EU3508ValueRange(30, 1000)],
+            Annotated[float, EU3508ValueRange(0.1, 1440)],
         ]
     ],
     last_region_end_type: Literal["reset", "dwell"] = "reset",
