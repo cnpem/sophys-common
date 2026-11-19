@@ -1,4 +1,4 @@
-from ..devices.eu3508 import (
+from ..devices.eurotherm import (
     SegmentType,
     SegmentEndType,
     EU3508ProgStatusType,
