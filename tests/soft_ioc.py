@@ -2,6 +2,8 @@ import multiprocessing
 
 from caproto.server import PVGroup, SubGroup, pvproperty, run as run_caproto_server
 from caproto.server.records import MotorFields
+from caproto import ChannelType
+import asyncio
 
 
 async def broadcast_precision_to_fields(record):
@@ -180,19 +182,138 @@ class MockSlitIOC(PVGroup):
     )
 
 
+class FakeToggleShutter(PVGroup):
+    """
+    A `caproto` softIOC for a toggle shutter, i.e., a shutter with one actuation PV and one readback PV.
+
+    Notes
+    -----
+    The shutters IOC is somewhat counter intuitive. Their status PVs report Closed as the 1 value, and Opened as the 0 value.
+    This is repeated here, since the Ophyd devices handle this behavior inside them.
+    """
+
+    setpoint = pvproperty(name="OPENCLOSE", value=0)
+    readback = pvproperty(
+        name="STATUS",
+        value="Closed",
+        record="mbbi",
+        enum_strings=("Opened", "Closed"),
+        dtype=ChannelType.ENUM,
+        read_only=True,
+    )
+
+    @setpoint.putter
+    async def setpoint(self, instance, value):
+        if bool(value) is not True:
+            return value
+
+        if hasattr(self, "permission"):
+            if not self.permission.raw_value:
+                return False
+
+        if self.readback.raw_value:  # Closed (1) -> Open (0)
+            await asyncio.gather(self.readback.write(0))
+        else:  # Opened (0) -> Close (1)
+            await asyncio.gather(self.readback.write(1))
+        return False
+
+
+class FakeShutter(PVGroup):
+    """
+    A `caproto` softIOC for a open/close shutter, i.e., a shutter with two actuation PVs and two readback PVs.
+
+    Notes
+    -----
+    The shutters IOC is somewhat counter intuitive. Their status PVs report Closed as the 1 value, and Opened as the 0 value.
+    This is repeated here, since the Ophyd devices handle this behavior inside them.
+    """
+
+    open = pvproperty(name="OPEN", value=0)
+    close = pvproperty(name="CLOSE", value=0)
+    ps = pvproperty(
+        name="PS_STATUS",
+        value="Closed",
+        record="mbbi",
+        enum_strings=("Opened", "Closed"),
+        dtype=ChannelType.ENUM,
+        read_only=True,
+    )
+    gs = pvproperty(
+        name="GS_STATUS",
+        value="Closed",
+        record="mbbi",
+        enum_strings=("Opened", "Closed"),
+        dtype=ChannelType.ENUM,
+        read_only=True,
+    )
+
+    @open.putter
+    async def open(self, instance, value):
+        if bool(value) is not True:
+            return value
+
+        if hasattr(self, "permission"):
+            if not self.permission.raw_value:
+                return False
+
+        if self.ps.raw_value and self.gs.raw_value:  # Closed (1) -> Open (0)
+            await asyncio.gather(
+                self.ps.write(0),
+                self.gs.write(0),
+            )
+
+        return False
+
+    @close.putter
+    async def close(self, instance, value):
+        if bool(value) is not True:
+            return value
+
+        if hasattr(self, "permission"):
+            if not self.permission.raw_value:
+                return False
+
+        if (not self.ps.raw_value) and (not self.gs.raw_value):  # Opened -> Close
+            await asyncio.gather(
+                self.ps.write(1),
+                self.gs.write(1),
+            )
+
+        return False
+
+
+class FakePermissionShutter(FakeShutter):
+    permission = pvproperty(name="PERM", dtype=bool)
+
+
+class FakePermissionToggleShutter(FakeToggleShutter):
+    permission = pvproperty(name="PERM", dtype=bool)
+
+
 class TestIOC(PVGroup):
     slit = SubGroup(MockSlitIOC, prefix="SLIT:")
+    toggle_shutter = SubGroup(FakeToggleShutter, prefix="TOGGLE_SHUTTER:")
+    toggle_shutter_with_perm = SubGroup(
+        FakePermissionToggleShutter, prefix="PERM_TOGGLE_SHUTTER:"
+    )
+    shutter = SubGroup(FakeShutter, prefix="SHUTTER:")
+    shutter_with_perm = SubGroup(FakePermissionShutter, prefix="PERM_SHUTTER:")
 
 
-def _ioc_init():
-    ioc = TestIOC(SOFT_IOC_PREFIX)
+def _ioc_init(suffix: str):
+    ioc = TestIOC(SOFT_IOC_PREFIX + suffix)
     run_caproto_server(ioc.pvdb)
 
 
 def start_soft_ioc() -> tuple[str, callable]:
     # NOTE: This is needed so epics-base doesn't complain about 'forking with threads' on Linux.
     ctx = multiprocessing.get_context("spawn")
-    p = ctx.Process(target=_ioc_init)
+
+    import uuid
+
+    suffix = str(uuid.uuid4())[:8] + ":"
+
+    p = ctx.Process(target=_ioc_init, args=(suffix,))
     p.start()
 
     def stop_soft_ioc():
@@ -202,4 +323,4 @@ def start_soft_ioc() -> tuple[str, callable]:
         if p.is_alive():
             p.kill()
 
-    return SOFT_IOC_PREFIX, stop_soft_ioc
+    return SOFT_IOC_PREFIX + suffix, stop_soft_ioc
