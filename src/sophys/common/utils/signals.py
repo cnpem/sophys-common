@@ -344,3 +344,9 @@ class _LooseComparator:
         ret = self.__inner_cls()
         ret._value = arg
         return ret
+
+class EpicsSignalWithDotRBV(EpicsSignal):  # numpydoc ignore=PR01
+    """An Epics signal with `write_pv` being `pvname` and `read_pv` being `pvname:RBV`."""
+
+    def __init__(self, prefix, **kwargs):  # numpydoc ignore=GL08
+        super().__init__(prefix + ":RBV", write_pv=prefix, **kwargs)
